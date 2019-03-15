@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="ViewPort" content="width=device-width,initial-scale=1">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <link href="/templates/css/universal_style.css" rel="stylesheet">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="http://static.runoob.com/assets/jquery-validation-1.14.0/dist/jquery.validate.min.js"></script>
+    <script src="http://static.runoob.com/assets/jquery-validation-1.14.0/dist/localization/messages_zh.js"></script>
+    <style>
+        .box{
+            width: 75%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 25%;
+        }
+        .presonal-msg-box{
+            width: 70%;
+            height: 90%;
+            position: absolute;
+            top: 5%;
+            bottom: 5%;
+            left: 5%;
+            right: 5%;
+            border: black 1px solid;
+        }
+        .input-style{
+            width:260px;
+            padding:10px 12px 10px 10px;
+            background-color: #fffde3;
+            /*position: fixed;left:37%;top:9.5%*/
+        }
+        .border{
+            margin: 0 2%;
+        }
+        .line{
+            font-size: 14px;
+            font-weight: bold;
+            border-bottom: 2px solid #005cbf;
+        }
+        .message-box-inner-font{
+            width: 100px;
+            float: left;
+            text-align: right;
+            padding: 18px 0 0 0;
+            margin: 0;
+        }
+        .message-box-inner-input{
+            margin-left: 145px;
+            padding: 14px 0 20px 10px;
+        }
+        .div1{
+            margin: 0 2%;height: 60px;width:50.2%;border-bottom: #34A0CE 1px solid;position: fixed;left: 27.9%
+        }
+        .btn-lg{
+            width: 150px;
+            height: 50px;
+        }
+        .error-msg-box{
+            position: absolute;
+            right:5px ;
+            height: 30px;
+            width: 150px;
+        }
+    </style>
+    <script>
+
+        $.validator.setDefaults({
+            submitHandler:function() {
+                $.ajax({
+                    type:"GET",
+                    url:"/student/info/update",
+                    async:false,
+                    dataType:"json",
+                    data:$("#personal_msg").serialize(),
+                    success:function (data) {
+                        alert(data);
+                    },
+                    error:function (data) {
+                        var json=JSON.parse(data.responseText);
+                        alert(json.message);
+                    }
+                });
+            }
+        });
+        $().ready(function () {
+            $.ajax({
+                type: "GET",
+                url: "/student/info",
+                async: false,
+                dataType: "json",
+                success: function (data) {
+                    /**
+                     * p：key data[p]：key对应的value
+                     */
+                    for (var p in data) {
+                        $("#" + p).val(data[p]);
+                    }
+                },
+                error: function (data) {
+                    var json = JSON.parse(data.responseText);
+                    alert(json.message);
+                }
+            });
+                $("#personal_msg").validate({
+                    errorClass:"error_msg",
+                    rules:{
+                        name:{
+                            required:true
+                        },
+                        sex:{
+                            required:true
+                        },
+                        age:{
+                            required:true
+                        },
+                        birthday:{
+                            required:true
+                        },
+                        addr:{
+                            required:true
+                        },
+                        tel:{
+                            required:true
+                        },
+                        agree:"required"
+                    }
+                });
+        });
+
+    </script>
+</head>
+<body>
+<!--有个大坑！！！！！form和table千万不要嵌套使用！！！！！！就算外观显示正常但是validate验证会失效！！！！-->
+<div class="box">
+    <div class="presonal-msg-box">
+        <div class="border line" style="height: 25px">基础信息</div>
+        <form id="personal_msg" name="personal_msg">
+            <!--<table class="border">-->
+            <div class="border"></div>
+                <!--<tr>-->
+                    <!--<td>-->
+                        <div style="" class="div1">
+                            <div class="message-box-inner-font">姓名:</div>
+                            <div class="message-box-inner-input">
+                                <input type="text" class="input-style form-control" id="name" value="" disabled="disabled">
+                            </div>
+                        </div>
+                    <!--</td>-->
+                    <!--<td>-->
+                        <div style="position: fixed;top:17%" class="div1">
+                            <div class="message-box-inner-font">性别:</div>
+                            <div class="message-box-inner-input">
+                                <input type="text" class="input-style form-control" id="sex" value="" name="sex">
+                            </div>
+                            <div class="error-msg-box" style="position: absolute;top:27%" id="sex-error"></div>
+                        </div>
+                    <!--</td>-->
+                    <!--<td>-->
+                        <div style="position: fixed;top:25%" class="div1">
+                            <div class="message-box-inner-font">出生日期:</div>
+                            <div class="message-box-inner-input">
+                                <input type="text" class="input-style form-control" id="birthday" value="" name="birthday">
+                            </div>
+                            <div class="error-msg-box" style="position: absolute;top:27%" id="birthday-error"></div>
+                        </div>
+                    <!--</td>-->
+                    <!--<td>-->
+                        <div style="position: fixed;top:33%" class="div1">
+                            <div class="message-box-inner-font">年龄:</div>
+                            <div class="message-box-inner-input">
+                                <input type="text" class="input-style form-control" id="age" value="" name="age">
+                            </div>
+                            <div class="error-msg-box" style="position: absolute;top:27%" id="age-error"></div>
+                        </div>
+                    <!--</td>-->
+                    <!--<td>-->
+                        <div style="position: fixed;top:41%" class="div1">
+                            <div class="message-box-inner-font">联系电话:</div>
+                            <div class="message-box-inner-input">
+                                <input type="text" class="input-style form-control" id="tel" value="" name="tel">
+                            </div>
+                            <div class="error-msg-box" style="position: absolute;top:27%" id="tel-error"></div>
+                        </div>
+                    <!--</td>-->
+                    <!--<td>-->
+                        <div style="position: fixed;top:49%" class="div1">
+                            <div class="message-box-inner-font">家庭地址:</div>
+                            <div class="message-box-inner-input">
+                                <input type="text" class="input-style form-control" id="addr" value="" name="addr">
+                            </div>
+                            <div class="error-msg-box" style="position: absolute;top:27%" id="addr-error"></div>
+                        </div>
+                    <!--</td>-->
+                    <!--<td>-->
+                        <div class="submit-button" style="position: absolute;bottom: 5px;left:40%">
+                            <input type="submit" class="btn btn-info btn-lg" id="update" value="修改">
+                        </div>
+                    <!--</td>-->
+                <!--</tr>-->
+            <!--</table>-->
+        </form>
+            <div class="border line" style="height: 25px;position:relative;top: 57%">详细信息</div>
+            <table class="border">
+                <tr>
+                    <td>
+                        <div style="position: fixed;top:63%" class="div1">
+                            <div class="message-box-inner-font">所在学院:</div>
+                            <div class="message-box-inner-input">
+                                <input type="text" class="input-style form-control" id="academy" value="" disabled="disabled">
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="position: fixed;top:71%" class="div1">
+                            <div class="message-box-inner-font">所在班级:</div>
+                            <div class="message-box-inner-input">
+                                <input type="text" class="input-style form-control" id="studentClass" value="" disabled="disabled">
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="position: fixed;top:79%" class="div1">
+                            <div class="message-box-inner-font">学生学号:</div>
+                            <div class="message-box-inner-input">
+                                <input type="text" class="input-style form-control" id="id" value="" disabled="disabled">
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+    </div>
+</div>
+</body>
+</html>
+
+</body>
+</html>

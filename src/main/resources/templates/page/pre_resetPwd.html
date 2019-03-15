@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<<head>
+    <meta charset="UTF-8">
+    <meta name="ViewPort" content="width=device-width,initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.6/css/bootstrap.min.css">
+    <link href="/templates/css/universal_style.css" rel="stylesheet">
+    <link href="/templates/css/style.css" rel="stylesheet">
+    <script src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+    <script src="http://static.runoob.com/assets/jquery-validation-1.14.0/dist/jquery.validate.min.js"></script>
+    <script src="http://static.runoob.com/assets/jquery-validation-1.14.0/dist/localization/messages_zh.js"></script>
+    <script src="https://cdn.staticfile.org/popper.js/1.12.5/umd/popper.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/4.1.0/js/bootstrap.min.js"></script>
+    <style>
+        body{
+            background-color: #F5F5F5;
+        }
+        .input-style{
+            width:400px;
+            padding:10px 12px 10px 10px;
+            background-color: #fffde3;
+        }
+        .header{
+            position: fixed;
+            left: 0;right: 0;top: 0;
+            height: 62px;
+            overflow:hidden;
+            border-bottom:1px solid #d6dfea;
+            background: white;
+        }
+        .header-text{
+            font-size: 25px;
+            color: #1E90FF;
+            position: fixed;
+            top: 1%;
+            left: 47%;
+        }
+        .forgetPwd-container{
+            height: 550px;
+            width: 1100px;
+            background-color: white;
+            padding:0;
+            border:1px solid #a0b1c4;
+            border-radius:5px;
+            overflow:hidden;
+            position: fixed;
+            top: 15%;
+        }
+        .forgetPwd-container-title{
+            display: block;
+            height: 75px;
+            padding: 40px;
+            border-bottom: 1px solid #eee;
+            overflow: hidden;
+            background: white;
+        }
+        .forgetPwd-container-box{
+            height: 240px;
+            position: fixed;
+            top: 40%;
+            left: 37%;
+        }
+        .forgetPwd-container-nav{
+            position: fixed;
+            top: 15%;
+            left: 45%;
+        }
+        .footer{
+            position:fixed;
+            left:0;right:0;bottom:0;
+            line-height:36px;
+            text-align:center;
+            color:#b6b6b6;
+            background-color:#eff4fa;
+            border-top:1px solid #d6dfea;
+        }
+        .btn-lg{
+            width: 400px;
+        }
+        .sendMailAgain-btn{
+            width: 200px;
+            height: 34px;
+            /*position: absolute;*/
+            /*top:26.5%;*/
+            /*left:50%;*/
+        }
+        .input-style{
+            width: 200px;
+        }
+    </style>
+    <script type="text/javascript">
+        $.validator.setDefaults({
+            submitHandler:function () {
+                $.ajax({
+                    type:"GET",
+                    dataType:"text",
+                    data:$("#pre-reset").serialize(),
+                    url:"/checkCaptchaBeforeResetPwd",
+                    success:function (data) {
+                        if(data=="success"){
+                            window.location.href="/to/reset_pwd";
+                        }else{
+                            alert(data);
+                        }
+                    },
+                    error:function (data) {
+                        alert(data.responseText);
+                    }
+                });
+            }
+        });
+
+        $().ready(function () {
+            $("#pre-reset").validate({
+                errorClass:"error_msg",
+                rules:{
+                    captchaCode:{
+                        required:"true"
+                    },
+                },
+            });
+        });
+
+        /**
+         * 此方式用于禁止在一定时间内重新发送邮件，重新发送一次后，下次发送需要等待60s，在此期间button是禁用的而且每秒显示倒计时
+         * @param time
+         */
+        function chronoscope(time) {
+            var button=$("#sendMail");
+            button.attr("disabled",true);
+            if(time<=0){
+                button.val("重新发送");
+            }else{
+                button.val(""+time+"秒可以重新发送");
+            }
+            var handler=setInterval(function () {
+                if(time<=0){
+                    clearInterval(handler);
+                    button.val("重新发送");
+                    button.attr("disabled",false);
+                    return false;
+                }else{
+                    button.val(""+(time--)+"秒后可以重新发送");
+                }
+            },1000);
+        }
+
+        function sendEmail() {
+            $.ajax({
+                type:"GET",
+                dataType:"text",
+                data:$("#username").serialize(),
+                url:"/sendEmailAgain",
+                success:function () {
+                    alert("发送成功");
+                    chronoscope(60);
+                },
+                error:function (data) {
+                    var json=JSON.parse(data.responseText);
+                    alert(json.message);
+                    chronoscope(60);
+                }
+            });
+        }
+
+
+    </script>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="header-text">
+            重置密码
+        </div>
+    </div>
+    <div class="forgetPwd-container">
+        <div class="forgetPwd-container-title">
+            <div class="forgetPwd-container-nav">
+                <ul class="nav nav-pills nav-justified step step-arrow">
+                    <li class="active">
+                        <a>输入账号</a>
+                    </li>
+                    <li class="active">
+                        <a>账号验证</a>
+                    </li>
+                    <li>
+                        <a>重置密码</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="forgetPwd-container-box">
+            已发送验证码至：
+            <h5 id="username" th:text="${session.email}"></h5>
+            <form id="pre-reset" name="pre-reset">
+                <div class="form-group">
+                    <input type="text" class="form-control input-style" id="captchaCode" name="captchaCode" placeholder="验证码" style="float: left">
+                    <input type="button" class="btn btn-default sendMailAgain-btn" id="sendMail" value="重新发送" style="float: right" onclick="sendEmail()"/>
+                </div>
+                <div style="position: absolute;top: 50%">
+                    <input type="submit" class="btn btn-info btn-lg" value="确定"/>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="footer">©2019 xxx. All Rights Reserved.</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="ViewPort" content="width=device-width,initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/templates/css/universal_style.css">
+    <script src="http://static.runoob.com/assets/jquery-validation-1.14.0/lib/jquery.js"></script>
+    <script src="https://cdn.bootcss.com/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+    <script src="http://static.runoob.com/assets/jquery-validation-1.14.0/dist/jquery.validate.min.js"></script>
+    <script src="http://static.runoob.com/assets/jquery-validation-1.14.0/dist/localization/messages_zh.js"></script>
+    <script src="https://cdn.staticfile.org/popper.js/1.12.5/umd/popper.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/4.1.3/js/bootstrap.min.js"></script>
+    <style>
+        .login-background-img{
+            position: fixed;
+            top: 8%;
+            right: 0;
+            left: 0;
+            height: 660px;
+            overflow: hidden;
+            z-index: 1;
+        }
+        .login-area{
+            width: 284px;
+            height: 307px;
+            position: absolute;
+            top: 22%;
+            left: 5%;
+        }
+        .login-error-area{
+            width:334px;
+            height:30px;
+        }
+        .login-card-tab{
+            height: 50px;
+            border-bottom: 1px solid #a0b1c4;
+            background-color: #f9fbfe;
+            border-radius: 6px 6px 0 0;
+        }
+        /*
+        *后期拓展使用
+        *
+        * .login-card-tab-item{
+            float: left;
+            width: 50%;
+            line-height: 50px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .login-card-tab-item-font{
+            font-size: 16px;
+            color: #999999;
+            text-align: center;
+        }
+        */
+        .header{
+            position: fixed;
+            left: 0;right: 0;top: 0;
+            height: 62px;
+            overflow:hidden;
+            border-bottom:1px solid #d6dfea;
+            background:#eff4fa;
+        }
+        .login_container{
+            float:right;
+            border:1px solid #a0b1c4;
+            width:334px;
+            height:500px;
+            background-color:#fff;
+            position:fixed;
+            top: 20%;
+            left: 60%;
+            padding:0;
+            border-radius:5px;
+            overflow:hidden;
+            z-index: 2;
+        }
+        .footer{
+            position:fixed;
+            left:0;right:0;bottom:0;
+            line-height:36px;
+            text-align:center;
+            color:#b6b6b6;
+            background-color:#eff4fa;
+            border-top:1px solid #d6dfea;
+        }
+        .submit-button{
+            position: absolute;
+            top: 100%;
+            right: 30%;
+        }
+        .forget-pwd{
+            color: #0a8745;
+            font-size: small;
+            position:absolute;
+            top:20%;
+            left:77%;
+        }
+        .forget-pwd:hover{
+            color: #006630;
+            text-decoration: none;
+        }
+        .forget-pwd:active{
+            color: #006630;
+        }
+        .rememberMe{
+            font-size: small;
+        }
+        .btn-lg{
+            width: 100px;
+            height: 50px;
+        }
+        .order-style{
+            width: 284px;
+            height: 24px;
+            position: absolute;
+            right: 0%;
+            top: 85%;
+        }
+        .input-style{
+            width: 300px;
+        }
+    </style>
+    <script type="text/javascript">
+        /**
+         *提交表单前进行为空验证
+         */
+        $.validator.setDefaults({
+            submitHandler:function() {
+                $.ajax({
+                    type:"POST",
+                    url:"/loginCheck",
+                    async:false,
+                    dataType:"json",
+                    data:$("#customerForm").serialize(),
+                    success:function (responesText) {
+                        if(responesText.message=="登陆成功"){
+                            window.location.href="/to/home/welcomePage";
+                        }else {
+                            alert(responesText.message);
+                            $("#captchaCode").val("");
+                            refresh();
+                        }
+                    },
+                    error:function (data) {
+                        alert(data.responesJSON.message);
+                    }
+                });
+            }
+        });
+        $().ready(function () {
+            $("#customerForm").validate({
+                errorClass:"error_msg",
+                rules:{
+                    username:{
+                        required:true
+                    },
+                    password:{
+                        required:true
+                    },
+                    captchaCode:{
+                        required:true
+                    },
+                    agree:"required"
+                },
+            });
+        });
+        //刷新验证码 后面加上Math.random是防止使用缓存
+        function refresh() {
+            $("#captcha_img").attr("src","/kaptchaCode?time="+new Date().getTime());
+        }
+    </script>
+</head>
+<body>
+<div class="container">
+    <div class="header"/>
+    <div class="login-background-img">
+        <img th:src="@{/templates/img/login_background.jpg}">
+    </div>
+    <div class="login_container">
+        <div class="login-card-tab">
+            <!--<div class="login-card-tab-item login-card-tab-item-font">-->
+                <!--登录-->
+            <!--</div>-->
+        </div>
+        <div class="login-error-area" id="errorMsgArea"></div>
+        <div class="login-area">
+            <form  id="customerForm">
+                <div class="form-group" align="center">
+                    <input type="text" class="input-style form-control" id="username" name="username" placeholder="用户名">
+                </div>
+                <div class="form-group" align="center">
+                    <input type="password" class="input-style form-control" id="password" name="password" placeholder="密码">
+                </div>
+                <div class="form-group" align="center">
+                    <img src="/kaptchaCode" alt="captcha_img" id="captcha_img" onclick="refresh()">
+                </div>
+                <div class="form-group" align="center">
+                    <input type="text" class="input-style form-control" id="captchaCode" name="captchaCode" placeholder="验证码">
+                </div>
+                <div class="order-style">
+                    <div class="form-check">
+                        <label class="form-check-label">
+                            <div class="rememberMe">
+                                <input type="checkbox" class="form-check-input" name="rememberMe">下次自动登录
+                            </div>
+                        </label>
+                    </div>
+                    <a class="forget-pwd" th:href="@{/to/forget_password}" target="_blank">忘记密码？</a>
+                </div>
+                <div class="submit-button">
+                    <input type="submit" class="btn btn-info btn-lg"  id="customerLogin" value="登录">
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="footer">©2019 xxx. All Rights Reserved.</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en"xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="ViewPort" content="width=device-width,initial-scale=1">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <link href="/templates/css/universal_style.css" rel="stylesheet">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="http://static.runoob.com/assets/jquery-validation-1.14.0/dist/jquery.validate.min.js"></script>
+    <script src="http://static.runoob.com/assets/jquery-validation-1.14.0/dist/localization/messages_zh.js"></script>
+    <style>
+        .title{
+            position: absolute;top: 2%;left: 53%;color: #0056b3
+        }
+        .input-style{
+            width:260px;
+            padding:10px 12px 10px 10px;
+            background-color: #fffde3;
+            /*position: fixed;left:37%;top:9.5%*/
+        }
+        .btn-lg{
+            width: 100px;
+        }
+    </style>
+    <script>
+
+        $.validator.setDefaults({
+            submitHandler:function () {
+                $.ajax({
+                    url:"/resetPwd",
+                    data:$("#stu-reset-pwd").serialize(),
+                    dataType:"text",
+                    type:"POST",
+                    success:function (data) {
+                        alert(data);
+                        if(data=="重置成功！即将关闭此页面!"){
+                            window.location.href="/logout",
+                            window.open("about:blank","_top").close()
+                        }
+                    }
+                })
+            }
+        });
+
+        $().ready(function () {
+            $("#stu-reset-pwd").validate({
+                errorClass:"error_msg",
+                rules:{
+                    password:{
+                        required:true,
+                    },
+                    password2:{
+                        required:true,
+                        equalTo:"#password"
+                    }
+                }
+            });
+        })
+    </script>
+</head>
+<body>
+<div class="title">
+    <h2>重置密码</h2>
+</div>
+<div style="width: 500px;height:400px;position: absolute;left: 40%;top: 25%">
+    <form id="stu-reset-pwd" name="stu-reset-pwd">
+            <div style="position: relative;top: 7%;left: 15%">
+                <h5 style="float: left">请输入密码：</h5>
+                <input type="password" class="input-style form-control" id="password" name="password">
+            </div>
+            <div style="position: relative;top: 15%;right: 7.5%;">
+                <h5 style="float: left">请再次输入密码：</h5>
+                <input type="password" class="input-style form-control" id="password2" name="password2">
+            </div>
+            <div style="position: relative;top: 30%;left: 3%">
+                <input type="submit" class="btn btn-lg btn-info" value="修改">
+            </div>
+    </form>
+</div>
+</body>
+</html>

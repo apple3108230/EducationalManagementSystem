@@ -1,0 +1,9 @@
+      .input-style{
+            width:200px;
+            padding:10px 12px 10px 10px;
+            background-color: #fffde3;
+        }
+      .error_msg{
+          font-size: small;
+          color: red;
+      }
