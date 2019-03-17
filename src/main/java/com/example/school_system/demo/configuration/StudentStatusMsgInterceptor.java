@@ -17,7 +17,7 @@ import javax.servlet.http.HttpServletResponse;
  * 由于编译执行thymeleaf比执行jquery还要更早 所以使用$().ready()方法去提前加载数据是无效的
  */
 @Component
-public class StudentInterceptor implements HandlerInterceptor {
+public class StudentStatusMsgInterceptor implements HandlerInterceptor {
 
     @Autowired
     private StudentService studentService;

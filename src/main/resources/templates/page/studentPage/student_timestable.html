@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="ViewPort" content="width=device-width,initial-scale=1">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <style>
+        .border{
+            margin: 0 2%;
+        }
+        .line{
+            font-size: 14px;
+            font-weight: bold;
+            border-bottom: 2px solid #005cbf;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="border line">教学安排表</div>
+    <div>
+        <select id="term" >
+            <option th:each="term:${session.terms}" th:value="${term}" th:text="${term}"></option>
+        </select>
+    </div>
+</div>
+</body>
+</html>

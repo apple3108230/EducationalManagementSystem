@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 /**
@@ -21,7 +20,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 public class SpringMVCConfiguration extends WebMvcConfigurerAdapter {
 
     @Autowired
-    private StudentInterceptor studentInterceptor;
+    private StudentStatusMsgInterceptor studentStatusMsgInterceptor;
+    @Autowired
+    private StudentTimestableInterceptor studentTimestableInterceptor;
 
     @Override
         public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -40,6 +41,7 @@ public class SpringMVCConfiguration extends WebMvcConfigurerAdapter {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(studentInterceptor).addPathPatterns("/to/home/student_status_msg");
+        registry.addInterceptor(studentStatusMsgInterceptor).addPathPatterns("/to/home/student_status_msg");
+        registry.addInterceptor(studentTimestableInterceptor).addPathPatterns("/to/home/student_timestable");
     }
 }
