@@ -2,11 +2,11 @@ package com.example.school_system.demo.controller;
 
 import com.example.school_system.demo.exception.UserException;
 import com.example.school_system.demo.pojo.Student;
-import com.example.school_system.demo.pojo.Student_status_msg;
+import com.example.school_system.demo.pojo.StudentStatusMsg;
+import com.example.school_system.demo.pojo.Timestable;
 import com.example.school_system.demo.pojo.User;
 import com.example.school_system.demo.service.StudentService;
 import com.example.school_system.demo.utils.WebUtil;
-import com.lowagie.text.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,8 +17,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.*;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -37,7 +37,7 @@ public class StudentController extends BaseController {
      */
     @RequestMapping("/info")
     @ResponseBody
-    public Student getStudnetInfo(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    public Student getStudentInfo(HttpServletRequest request, HttpServletResponse response) throws Exception {
         HttpSession session=request.getSession();
         User user= (User) session.getAttribute("user");
         if(user==null){
@@ -81,7 +81,7 @@ public class StudentController extends BaseController {
     public void getStudentStatusMsg(HttpServletRequest request,HttpServletResponse response){
         HttpSession session=request.getSession();
         User user= (User) session.getAttribute("user");
-        Student_status_msg student_status_msg=studentService.getStudentStatusMsgId(user.getUsername());
+        StudentStatusMsg student_status_msg=studentService.getStudentStatusMsgId(user.getUsername());
         if(student_status_msg==null){
             WebUtil.printJSON("没有相关数据！",response);
         }
@@ -89,14 +89,20 @@ public class StudentController extends BaseController {
         WebUtil.printJSON("success",response);
     }
 
+    /**
+     * 下载学生学籍pdf
+     * WebUtil.creatPDF会生成pdf文件，以供下载
+     * @param request
+     * @param response
+     * @throws SAXException
+     */
     @RequestMapping("/downloadPdf")
     public void downloadPdf(HttpServletRequest request,HttpServletResponse response) throws SAXException {
         User user= (User) request.getSession().getAttribute("user");
         String id=user.getUsername();
-        Student_status_msg student_status_msg=studentService.getStudentStatusMsgId(id);
+        StudentStatusMsg student_status_msg=studentService.getStudentStatusMsgId(id);
         request.getSession().setAttribute("student_status_msg",student_status_msg);
-        //String htmlUrl="C:\\Users\\Administrator\\Desktop\\schoolSys\\src\\main\\resources\\templates\\page\\studentPage\\student_status_msg.html";
-        String pdfUrl="C:\\Users\\Administrator\\Desktop\\schoolSys\\src\\main\\resources\\templates\\pdf\\student-status-msg\\img\\"+id+".pdf";
+        String pdfUrl="C:\\Users\\Administrator\\Desktop\\schoolSys\\src\\main\\resources\\templates\\pdf\\student-status-msg\\"+id+".pdf";
         WebUtil.createPDF(pdfUrl,response,request,request.getServletContext());
         File file=new File(pdfUrl);
         if(file.exists()){
@@ -119,4 +125,13 @@ public class StudentController extends BaseController {
         WebUtil.printJSON("done",response);
     }
 
+    @RequestMapping("/timestable")
+    @ResponseBody
+    public List<Timestable> getStudentTimestable(HttpServletRequest request,HttpServletResponse response,String term){
+        List<Timestable> timestables=studentService.getTimestableByStudentClass((String) request.getSession().getAttribute("studentClass"));
+        if(timestables==null){
+            WebUtil.printJSON("is null",response);
+        }
+        return timestables;
+    }
 }

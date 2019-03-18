@@ -8,21 +8,6 @@
     <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
     <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <style>
-        .border{
-            margin: 2 2%;
-        }
-        .line{
-            font-size: 14px;
-            font-weight: bold;
-            border-bottom: 2px solid #005cbf;
-        }
-        .box{
-            width: 75%;
-            height: 100%;
-            position: absolute;
-            top: 0;
-            left: 20%;
-        }
         table td{
             border: 1px solid black;
         }
@@ -47,7 +32,7 @@
                 <td width="133" th:text="${session.student_status_msg.id}"> </td>
                 <td width="110" align="center" valign="middle">姓    名</td>
                 <td colspan="2" th:text="${session.student_status_msg.name}"> </td>
-                <td width="103" rowspan="6"><img th:src="@{${session.student_status_msg.student_img_url}}" style="width: 100px;height: 139px;border: 0"/></td>
+                <td width="103" rowspan="6"><img th:src="@{${session.student_status_msg.studentImgUrl}}" style="width: 100px;height: 139px;border: 0"/></td>
             </tr>
             <tr>
                 <td align="center" valign="middle">曾 用 名</td>
@@ -59,7 +44,7 @@
                 <td align="center" valign="middle">性    别</td>
                 <td th:text="${session.student_status_msg.sex}"> </td>
                 <td align="center" valign="middle">身份证号</td>
-                <td colspan="2" th:text="${session.student_status_msg.id_num}"> </td>
+                <td colspan="2" th:text="${session.student_status_msg.idNum}"> </td>
             </tr>
             <tr>
                 <td align="center" valign="middle">出生日期</td>
@@ -71,13 +56,13 @@
                 <td align="center" valign="middle">籍    贯</td>
                 <td th:text="${session.student_status_msg.jiguan}"> </td>
                 <td align="center" valign="middle">政治面貌</td>
-                <td colspan="2" th:text="${session.student_status_msg.zz_face}"> </td>
+                <td colspan="2" th:text="${session.student_status_msg.zzFace}"> </td>
             </tr>
             <tr>
                 <td align="center" valign="middle">入党团时间</td>
-                <td th:text="${session.student_status_msg.join_party_time}"> </td>
+                <td th:text="${session.student_status_msg.joinPartyTime}"> </td>
                 <td align="center" valign="middle">出 生 地</td>
-                <td colspan="2" th:text="${session.student_status_msg.birth_place}"> </td>
+                <td colspan="2" th:text="${session.student_status_msg.birthPlace}"> </td>
             </tr>
             <tr>
                 <td align="center" valign="middle">户籍类别</td>
@@ -93,13 +78,13 @@
                 <td align="center" valign="middle">联 系 人</td>
                 <td width="116"> </td>
                 <td width="100" align="center">邮政编码</td>
-                <td th:text="${session.student_status_msg.postal_code}"> </td>
+                <td th:text="${session.student_status_msg.postalCode}"> </td>
             </tr>
             <tr>
                 <td align="center" valign="middle">档案行号</td>
                 <td> </td>
                 <td align="center" valign="middle">联系地址</td>
-                <td colspan="3" th:text="${session.student_status_msg.home_addr}"> </td>
+                <td colspan="3" th:text="${session.student_status_msg.homeAddr}"> </td>
             </tr>
             <tr>
                 <td align="center" valign="middle">档案页号</td>
@@ -119,9 +104,9 @@
                 <td align="center" valign="middle">准考证号</td>
                 <td> </td>
                 <td align="center" valign="middle">考 生 号</td>
-                <td th:text="${session.student_status_msg.student_exam_id}"> </td>
+                <td th:text="${session.student_status_msg.studentExamId}"> </td>
                 <td align="center">考生类别</td>
-                <td th:text="${session.student_status_msg.student_type}"> </td>
+                <td th:text="${session.student_status_msg.studentType}"> </td>
             </tr>
             <tr>
                 <td align="center" valign="middle">健康状况</td>
@@ -133,7 +118,7 @@
                 <td align="center" valign="middle">入学文化程度</td>
                 <td> </td>
                 <td align="center" valign="middle">生源省份</td>
-                <td colspan="3" th:text="${session.student_status_msg.sy_province}"> </td>
+                <td colspan="3" th:text="${session.student_status_msg.syProvince}"> </td>
             </tr>
             <tr>
                 <td align="center" valign="middle">毕业类别</td>
@@ -201,7 +186,7 @@
                 <td align="center" valign="middle">专业</td>
                 <td th:text="${session.student_status_msg.major}"> </td>
                 <td align="center" valign="middle">行政班级</td>
-                <td th:text="${session.student_status_msg.stu_class}"> </td>
+                <td th:text="${session.student_status_msg.stuClass}"> </td>
             </tr>
             <tr>
                 <td align="center">辅 导 员</td>

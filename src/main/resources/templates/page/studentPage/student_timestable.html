@@ -16,15 +16,154 @@
             font-weight: bold;
             border-bottom: 2px solid #005cbf;
         }
+        table td{
+            border: 1px solid black;
+        }
+        table tr{
+            border: 1px solid black;
+        }
+        table {
+            border: 1px solid black;
+        }
     </style>
+    <script>
+        function getTimestable(){
+            $.ajax({
+                url:"/student/timestable",
+                type:"GET",
+                data:{
+                    term:$("#term option:selected").val()
+                },
+                dataType:"json",
+                success:function (data) {
+                    var p=eval(data);
+                    for(var i in p){
+                        var str=p[i].time;
+                        var week=str.charAt(1);
+                        var time=str.substring(4,7);
+                        var notice;
+                        if(p[i].notice==null){
+                            notice=" ";
+                        }else{
+                            notice=p[i].notice;
+                        }
+                        if(week=="一"){
+                            $("#"+"Mon"+time).html(p[i].majorName+"</br>"+p[i].time+notice+"</br>"+p[i].classroomName);
+                        }
+                        if(week=="二"){
+                            $("#"+"Tus"+time).html(p[i].majorName+"</br>"+p[i].time+notice+"</br>"+p[i].classroomName);
+                        }
+                        if(week=="三"){
+                            $("#"+"Wed"+time).html(p[i].majorName+"</br>"+p[i].time+notice+"</br>"+p[i].classroomName);
+                        }
+                        if(week=="四"){
+                            $("#"+"Tur"+time).html(p[i].majorName+"</br>"+p[i].time+notice+"</br>"+p[i].classroomName);
+                        }
+                        if(week=="五"){
+                            $("#"+"Fri"+time).html(p[i].majorName+"</br>"+p[i].time+notice+"</br>"+p[i].classroomName);
+                        }
+                        if(week=="六"){
+                            $("#"+"Sat"+time).html(p[i].majorName+"</br>"+p[i].time+notice+"</br>"+p[i].classroomName);
+                        }
+                        if(week=="日"){
+                            $("#"+"Sun"+time).html(p[i].majorName+"</br>"+p[i].time+notice+"</br>"+p[i].classroomName);
+                        }
+                    }
+                    $("#timestable").show();
+                }
+            });
+        }
+    </script>
 </head>
 <body>
 <div class="container">
     <div class="border line">教学安排表</div>
-    <div>
-        <select id="term" >
-            <option th:each="term:${session.terms}" th:value="${term}" th:text="${term}"></option>
-        </select>
+    <div style="position: absolute;left: 42%;top:5%">
+        <form id="termForm">
+            <select id="term">
+                <option th:each="term:${session.terms}" th:value="${term}" th:text="${term}">2018年-2019年第一学期</option>
+            </select>
+            <input type="button" value="检索" onclick="getTimestable()" style="position: relative;left: 20%;">
+        </form>
+    </div>
+    <div id="timestable" style="width: 1250px;height:600px;position:absolute;top:10%;left:2%;display: none;text-align: center">
+        <table>
+            <tbody>
+            <tr>
+                <td width="37.5" height="40" colspan="2"></td>
+                <td width="167">星期一</td>
+                <td width="167">星期二</td>
+                <td width="167">星期三</td>
+                <td width="167">星期四</td>
+                <td width="167">星期五</td>
+                <td width="167">星期六</td>
+                <td width="167">星期天</td>
+            </tr>
+            <tr>
+                <td width="37.5" height="120" rowspan="2" style="text-align: center">上<br></br>午</td>
+                <td width="37.5" style="text-align: center;font-weight: bold">一</td>
+                <td height="120" id="Mon1-2"></td>
+                <td height="120" id="Tus1-2"></td>
+                <td height="120" id="Wed1-2"></td>
+                <td height="120" id="Tur1-2"></td>
+                <td height="120" id="Fri1-2"></td>
+                <td height="120" id="Sat1-2"></td>
+                <td height="120" id="Sun1-2"></td>
+            </tr>
+            <tr>
+                <td width="37.5" style="text-align: center;font-weight: bold">二</td>
+                <td height="120" id="Mon3-4"></td>
+                <td height="120" id="Tus3-4"></td>
+                <td height="120" id="Wed3-4"></td>
+                <td height="120" id="Tur3-4"></td>
+                <td height="120" id="Fri3-4"></td>
+                <td height="120" id="Sat3-4"></td>
+                <td height="120" id="Sun3-4"></td>
+            </tr>
+            <tr>
+                <td width="37.5" height="120" rowspan="2" style="text-align: center">下<br></br>午</td>
+                <td width="37.5" style="text-align: center;font-weight: bold">三</td>
+                <td height="120" id="Mon5-6"></td>
+                <td height="120" id="Tus5-6"></td>
+                <td height="120" id="Wed5-6"></td>
+                <td height="120" id="Tur5-6"></td>
+                <td height="120" id="Fri5-6"></td>
+                <td height="120" id="Sat5-6"></td>
+                <td height="120" id="Sun5-6"></td>
+            </tr>
+            <tr>
+                <td width="37.5" style="text-align: center;font-weight: bold">四</td>
+                <td height="120" id="Mon7-8"></td>
+                <td height="120" id="Tus7-8"></td>
+                <td height="120" id="Wed7-8"></td>
+                <td height="120" id="Tur7-8"></td>
+                <td height="120" id="Fri7-8"></td>
+                <td height="120" id="Sat7-8"></td>
+                <td height="120" id="Sun7-8"></td>
+            </tr>
+            <tr>
+                <td width="37.5" height="40" rowspan="2" style="text-align: center">晚</br>上</td>
+                <td width="37.5" style="text-align: center;font-weight: bold">五</td>
+                <td id="Mon9-10"></td>
+                <td id="Tus9-10"></td>
+                <td id="Wed9-10"></td>
+                <td id="Tur9-10"></td>
+                <td id="Fri9-10"></td>
+                <td id="Sat9-10"></td>
+                <td id="Sun9-10"></td>
+            </tr>
+            <tr>
+                <td width="37.5" style="text-align: center;font-weight: bold">六</td>
+                <td id="Mon11-12"></td>
+                <td id="Tus11-12"></td>
+                <td id="Wed11-12"></td>
+                <td id="Tur11-12"></td>
+                <td id="Fri11-12"></td>
+                <td id="Sat11-12"></td>
+                <td id="Sun11-12"></td>
+            </tr>
+            </tbody>
+        </table>
     </div>
 </div>
 </body>

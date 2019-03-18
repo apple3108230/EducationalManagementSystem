@@ -16,30 +16,30 @@ import java.util.Map;
  * @param xuezhi 学制
  * @param cengci 层次
  */
-public class Student_status_msg {
+public class StudentStatusMsg {
     private String id;
     private String name;
     private String sex;
     private String birthday;
     private String nation;
-    private String id_num;
-    private String zz_face;
-    private String home_addr;
+    private String idNum;
+    private String zzFace;
+    private String homeAddr;
     private String tel;
     private String email;
     private String jiguan;
-    private String student_exam_id;
-    private String sy_province;
+    private String studentExamId;
+    private String syProvince;
     private String academy;
     private String major;
-    private String stu_class;
+    private String stuClass;
     private String xuezhi;
     private String cengci;
-    private String join_party_time;
-    private String birth_place;
-    private String postal_code;
-    private String student_type;
-    private String student_img_url;
+    private String joinPartyTime;
+    private String birthPlace;
+    private String postalCode;
+    private String studentType;
+    private String studentImgUrl;
 
 
     private Map<String,Object> toMap(){
@@ -48,22 +48,22 @@ public class Student_status_msg {
         map.put("姓名",name);
         map.put("性别",sex);
         map.put("出生日期",birthday);
-        map.put("出生地",birth_place);
+        map.put("出生地",birthPlace);
         map.put("民族",nation);
-        map.put("证件号码",id_num);
-        map.put("入党时间",join_party_time);
-        map.put("政治面貌",zz_face);
-        map.put("家庭地址",home_addr);
-        map.put("邮政编码",postal_code);
+        map.put("证件号码",idNum);
+        map.put("入党时间",joinPartyTime);
+        map.put("政治面貌",zzFace);
+        map.put("家庭地址",homeAddr);
+        map.put("邮政编码",postalCode);
         map.put("联系电话",tel);
         map.put("电子邮箱",email);
         map.put("籍贯",jiguan);
-        map.put("考生类型",student_type);
-        map.put("考生号",student_exam_id);
-        map.put("生源地",sy_province);
+        map.put("考生类型",studentType);
+        map.put("考生号",studentExamId);
+        map.put("生源地",syProvince);
         map.put("学院",academy);
         map.put("专业",major);
-        map.put("班级",stu_class);
+        map.put("班级",stuClass);
         map.put("学制",xuezhi);
         map.put("层次",cengci);
         return map;

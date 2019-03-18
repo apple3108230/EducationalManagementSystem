@@ -1,6 +1,6 @@
 package com.example.school_system.demo.configuration;
 
-import com.example.school_system.demo.pojo.Student_status_msg;
+import com.example.school_system.demo.pojo.StudentStatusMsg;
 import com.example.school_system.demo.pojo.User;
 import com.example.school_system.demo.service.StudentService;
 import com.example.school_system.demo.utils.WebUtil;
@@ -31,12 +31,12 @@ public class StudentStatusMsgInterceptor implements HandlerInterceptor {
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
         User user= (User) request.getSession().getAttribute("user");
         String username=user.getUsername();
-        Student_status_msg student_status_msg=studentService.getStudentStatusMsgId(username);
+        StudentStatusMsg student_status_msg=studentService.getStudentStatusMsgId(username);
         if(student_status_msg==null){
             WebUtil.printJSON("没有相关数据！",response);
         }
-        if(student_status_msg.getStudent_img_url()==null){
-            student_status_msg.setStudent_img_url("/templates/pdf/student-status-msg/student_img/default.jpg");
+        if(student_status_msg.getStudentImgUrl()==null){
+            student_status_msg.setStudentImgUrl("/templates/pdf/student-status-msg/student_img/default.jpg");
         }
         request.getSession().setAttribute("student_status_msg",student_status_msg);
     }

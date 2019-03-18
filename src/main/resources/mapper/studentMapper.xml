@@ -18,7 +18,10 @@
             </if>
         </foreach>
     </update>
-    <select id="getStudentStatusMsgId" parameterType="string" resultType="student_status_msg">
+    <select id="getStudentStatusMsgId" parameterType="string" resultType="studentStatusMsg">
         select * from student_status_msg where id=#{id}
+    </select>
+    <select id="getTimestableByStudentClass" resultType="timestable">
+        select * from timestable where class_name=#{studentClass}
     </select>
 </mapper>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE generatorConfiguration PUBLIC
+        "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+<generatorConfiguration>
+    <!--引入配置文件-->
+    <properties resource="application.properties"></properties>
+    <context id="DB2Tables" targetRuntime="MyBatis3">
+        <!--除去自动生成的注释-->
+        <commentGenerator>
+            <property name="suppressAllComment" value="false"></property>
+        </commentGenerator>
+        <!--数据库连接信息-->
+        <jdbcConnection driverClass="${spring.datasource.driver-class-name}"
+                        connectionURL="${spring.datasource.url}"
+                        userId="${spring.datasource.username}"
+                        password="${spring.datasource.password}">
+
+        </jdbcConnection>
+        <!--默认为false 把jdbc的decimal和numeric类型解析为Integer；为true则解析为BigDecimal-->
+        <javaTypeResolver>
+            <property name="forceBigDecimals" value="false"></property>
+        </javaTypeResolver>
+        <!--指定pojo生成的位置-->
+        <javaModelGenerator targetPackage="com.example.school_system.demo.pojo" targetProject="src/main/java">
+            <!--在mysql中基本可以认为schema的名称和数据库的实例名称是一样的，一个数据库有一个schema
+                enableSubPackages:是否让schema作为包的后缀-->
+            <property name="enableSubPackages" value="true"></property>
+            <!--从数据库返回的值进行清理空格-->
+            <property name="trimStrings" value="true"></property>
+        </javaModelGenerator>
+        <!--由于生成的mapper和dao不是很好且比较复杂，所以这里仅生成pojo-->
+        <!--指定mapper生成的位置-->
+        <!--<sqlMapGenerator targetPackage="com.example.school_system.demo.generatorMapper" targetProject="src/main/java">-->
+            <!--<property name="enableSubPackages" value="true"></property>-->
+        <!--</sqlMapGenerator>-->
+        <!--指定dao生成的位置
+            type="XMLMAPPER",生成SQLMap XML文件和独立的Mapper接口-->
+        <!--<javaClientGenerator type="XMLMAPPER" targetPackage="com.example.school_system.demo.generatorDao" targetProject="src/main/java">-->
+            <!--<property name="enableSubPackages" value="true"></property>-->
+        <!--</javaClientGenerator>-->
+        <!--指定表-->
+        <table tableName="major"></table>
+        <table tableName="major_class"></table>
+        <table tableName="classroom"></table>
+        <table tableName="course"></table>
+        <table tableName="sensitive_operation"></table>
+        <table tableName="teacher_msg"></table>
+        <table tableName="timestable"></table>
+    </context>
+</generatorConfiguration>
