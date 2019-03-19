@@ -21,7 +21,27 @@
     <select id="getStudentStatusMsgId" parameterType="string" resultType="studentStatusMsg">
         select * from student_status_msg where id=#{id}
     </select>
-    <select id="getTimestableByStudentClass" resultType="timestable">
-        select * from timestable where class_name=#{studentClass}
+    <resultMap id="timestableResult" type="com.example.school_system.demo.pojo.Timestable">
+        <id property="id" column="timestable_id"></id>
+        <result property="className" column="class_name"></result>
+        <result property="time" column="time"></result>
+        <result property="classroomName" column="classroom_name"></result>
+        <result property="weeks" column="weeks"></result>
+        <result property="term" column="term"></result>
+        <result property="notice" column="notice"></result>
+        <association property="course" javaType="com.example.school_system.demo.pojo.Course">
+            <id property="id" column="course_id"></id>
+            <result property="courseName" column="course_name"></result>
+            <result property="teacherName" column="teacher_name"></result>
+            <result property="courseName" column="course_name"></result>
+            <result property="classHour" column="class_hour"></result>
+            <result property="teacherClassHour" column="teacher_class_hour"></result>
+            <result property="computerClass" column="computer_class"></result>
+            <result property="classType" column="class_type"></result>
+            <result property="majorName" column="major_name"></result>
+        </association>
+    </resultMap>
+    <select id="getTimestableByStudentClass" parameterType="string" resultMap="timestableResult">
+        select timestable.id,class_name,course.teacher_name,course.course_name,time,classroom_name,weeks,term,notice from timestable left outer join course on timestable.course_id=course_id
     </select>
 </mapper>

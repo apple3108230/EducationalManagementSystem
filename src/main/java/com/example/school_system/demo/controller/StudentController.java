@@ -1,10 +1,7 @@
 package com.example.school_system.demo.controller;
 
 import com.example.school_system.demo.exception.UserException;
-import com.example.school_system.demo.pojo.Student;
-import com.example.school_system.demo.pojo.StudentStatusMsg;
-import com.example.school_system.demo.pojo.Timestable;
-import com.example.school_system.demo.pojo.User;
+import com.example.school_system.demo.pojo.*;
 import com.example.school_system.demo.service.StudentService;
 import com.example.school_system.demo.utils.WebUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Controller
 @RequestMapping("/student")
@@ -127,11 +122,16 @@ public class StudentController extends BaseController {
 
     @RequestMapping("/timestable")
     @ResponseBody
-    public List<Timestable> getStudentTimestable(HttpServletRequest request,HttpServletResponse response,String term){
+    public List<TimestablePo> getStudentTimestable(HttpServletRequest request,HttpServletResponse response,String term){
         List<Timestable> timestables=studentService.getTimestableByStudentClass((String) request.getSession().getAttribute("studentClass"));
         if(timestables==null){
             WebUtil.printJSON("is null",response);
         }
-        return timestables;
+        List<TimestablePo> timestablePos=new ArrayList<TimestablePo>();
+        for(int i=0;i<timestables.size();i++){
+            TimestablePo timestablePo=timestables.get(i).toTimestablePo();
+            timestablePos.add(timestablePo);
+        }
+        return timestablePos;
     }
 }
