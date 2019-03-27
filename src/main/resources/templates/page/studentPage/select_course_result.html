@@ -1,0 +1,58 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="ViewPort" content="width=device-width,initial-scale=1">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <style>
+        .border{
+            margin: 0 2%;
+        }
+        .line{
+            font-size: 14px;
+            font-weight: bold;
+            border-bottom: 2px solid #005cbf;
+        }
+        table td{
+            border: 1px solid black;
+        }
+        table tr{
+            border: 1px solid black;
+        }
+        table th{
+            border: 1px solid black;
+            text-align: center;
+        }
+        table {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="border line">正选结果</div>
+    <div style="width: 90%;height: 80%;position: absolute;left: 10%;right: 10%;top: 5%">
+        <table style="position: absolute;left: 10%;text-align: center;">
+            <tbody id="tbody">
+            <tr>
+                <th width="100px" height="50px">&nbsp;</th>
+                <th width="150px" height="50px">课程id</th>
+                <th width="300px" height="50px">课程名称</th>
+                <th width="150px" height="50px">授课老师</th>
+            </tr>
+            <tr th:each="course:${session.courses}">
+                <td height="50px"> </td>
+                <td height="50px" th:text="${course.id}"></td>
+                <td height="50px" th:text="${course.courseName}"></td>
+                <td height="50px" th:text="${course.teacherName}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

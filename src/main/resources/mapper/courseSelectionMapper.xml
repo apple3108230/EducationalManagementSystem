@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.school_system.demo.dao.CourseSelectionDao">
+    <insert id="insertCourseSelection" parameterType="string">
+        insert into course_selection values (#{courseId},#{studentId},#{peopleNum})
+    </insert>
+    <select id="defaultGetCourse" resultType="course">
+        select * from course where class_type="选修"
+    </select>
+    <select id="getSelectCourseResult" parameterType="string" resultType="selectCourseResult">
+        select course_id,student_id from course_selection LEFT outer join course on course.class_type="选修" and course.major_name=#{majorName} and course_selection.course_id=course.id
+    </select>
+</mapper>
