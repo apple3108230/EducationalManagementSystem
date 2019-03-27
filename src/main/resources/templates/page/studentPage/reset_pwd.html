@@ -34,10 +34,11 @@
                     dataType:"text",
                     type:"POST",
                     success:function (data) {
-                        alert(data);
-                        if(data=="重置成功！即将关闭此页面!"){
-                            window.location.href="/logout",
-                            window.open("about:blank","_top").close()
+                        var json=JSON.parse(data);
+                        alert(json.message)
+                        if(json.message=="重置成功！即将关闭此页面!"){
+                            window.location.href="/logout";
+                            window.open("about:blank","_top").close();
                         }
                     }
                 })

@@ -135,7 +135,7 @@
                     dataType:"json",
                     data:$("#customerForm").serialize(),
                     success:function (responesText) {
-                        if(responesText.message=="登陆成功"){
+                        if(responesText.message=="登录成功！"){
                             window.location.href="/to/home/welcomePage";
                         }else {
                             alert(responesText.message);

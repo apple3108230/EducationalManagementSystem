@@ -1,23 +1,32 @@
 package com.example.school_system.demo.service.Impl;
 
 import com.example.school_system.demo.dao.StudentDao;
+import com.example.school_system.demo.pojo.Course;
 import com.example.school_system.demo.pojo.Student;
 import com.example.school_system.demo.pojo.StudentStatusMsg;
 import com.example.school_system.demo.pojo.Timestable;
+import com.example.school_system.demo.service.CourseSelectionService;
 import com.example.school_system.demo.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.sql.Time;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 public class StudentServiceImpl implements StudentService {
 
     @Autowired
     private StudentDao studentDao;
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+    @Autowired
+    private CourseSelectionService courseSelectionService;
+
 
     @Override
     public Student getStudentById(String id) {
@@ -38,4 +47,10 @@ public class StudentServiceImpl implements StudentService {
     public List<Timestable> getTimestableByStudentClass(String studentClass) {
         return studentDao.getTimestableByStudentClass(studentClass);
     }
+
+    @Override
+    public List<Course> getCourseByMajorName(String majorName) {
+        return studentDao.getCourseByMajorName(majorName);
+    }
+
 }

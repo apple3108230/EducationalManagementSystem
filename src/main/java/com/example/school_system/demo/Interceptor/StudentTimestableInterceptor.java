@@ -1,4 +1,4 @@
-package com.example.school_system.demo.configuration;
+package com.example.school_system.demo.Interceptor;
 
 import com.example.school_system.demo.pojo.Student;
 import com.example.school_system.demo.pojo.User;

@@ -10,6 +10,7 @@ import org.apache.shiro.crypto.hash.SimpleHash;
 import org.apache.shiro.session.SessionException;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ByteSource;
+import org.json.simple.JSONObject;
 import org.springframework.mail.MailException;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -58,10 +59,10 @@ public class BaseServiceController extends BaseController{
 
     //进入登录界面
     @GetMapping("/home")
-    public String index(HttpServletRequest request) {
+    public String index(HttpServletRequest request) throws UserException {
         //判断是否使用了rememberMe功能，使用了则直接进入系统，否则进入登录页面
         if (CookieUtil.cookieExist(request,"rememberMe")) {
-            return toPage("home");
+            return toPrivatePage("welcomePage",request);
         }
         return toPage("login");
     }
@@ -101,7 +102,9 @@ public class BaseServiceController extends BaseController{
         HttpSession session=request.getSession();
         session.setAttribute("username",username);
         session.setAttribute("email",user.getEmail());
-        WebUtil.printJSON("发送成功！",response);
+        JSONObject json=new JSONObject();
+        json.put("message","发送成功！");
+        WebUtil.printJSON(json.toJSONString(),response);
     }
 
     /**
@@ -114,30 +117,26 @@ public class BaseServiceController extends BaseController{
         HttpSession session=request.getSession();
         String username= (String) session.getAttribute("username");
         User user=sendEmailMethod(username,request);
-        WebUtil.printJSON("发送成功！",response);
+        JSONObject json=new JSONObject();
+        json.put("message","发送成功！");
+        WebUtil.printJSON(json.toJSONString(),response);
     }
 
     @GetMapping("/checkCaptchaBeforeResetPwd")
     private void checkCaptchaBeforeResetPwd(HttpServletRequest request,HttpServletResponse response,String captchaCode){
         HttpSession session=request.getSession();
         String code= (String) session.getAttribute((String) session.getAttribute("email"));
+        JSONObject json=new JSONObject();
         if(captchaCode.equals(code)){
-            WebUtil.printJSON("success",response);
+            json.put("message","success");
+            WebUtil.printJSON(json.toJSONString(),response);
+            json.clear();
         }else{
-            WebUtil.printJSON("验证码错误！",response);
+            json.put("message","验证码错误！");
+            WebUtil.printJSON(json.toJSONString(),response);
+            json.clear();
         }
     }
-
-//    @GetMapping("/toPreResetPwd")
-//    public String toPreResetPwd(){
-//        return "pre_resetPwd";
-//    }
-//
-//    @GetMapping("/toResetPwd")
-//    public String toResetPwd(){
-//        return "reset_pwd";
-//    }
-
 
     /**
      * 重置密码 用户名作为salt，加密次数为1024次，加密方式为MD5,数据库保存salt值
@@ -161,26 +160,12 @@ public class BaseServiceController extends BaseController{
             String newPwd=(new SimpleHash("MD5",password,source,hashInterations)).toString();
             String salt=source.toString();
             baseService.resetPwdByName(newPwd,salt,username);
-            WebUtil.printJSON("重置成功！",response);
+            JSONObject json=new JSONObject();
+            json.put("message","重置成功！");
+            WebUtil.printJSON(json.toJSONString(),response);
         }
     }
 
-
-//    @GetMapping("/logout")
-//    public void logout(ServletRequest request,HttpServletResponse response){
-//        //Subject subject= SecurityUtils.getSubject();
-//        ServletContext context=request.getServletContext();
-//        HttpServletRequest req=(HttpServletRequest) request;
-//        HttpSession session=req.getSession();
-//        try{
-//            context.removeAttribute("user");
-//            session.invalidate();
-//            //subject.logout();
-//        }catch(SessionException e){
-//            WebUtil.printJSON("无法退出系统！原因："+e.getMessage(),response);
-//        }
-//        WebUtil.printJSON("退出成功！",response);
-//    }
 
 
 }

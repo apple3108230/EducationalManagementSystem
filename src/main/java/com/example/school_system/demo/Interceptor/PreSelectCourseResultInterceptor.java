@@ -1,26 +1,28 @@
-package com.example.school_system.demo.configuration;
+package com.example.school_system.demo.Interceptor;
 
-import com.example.school_system.demo.pojo.StudentStatusMsg;
+import com.example.school_system.demo.dao.StudentDao;
+import com.example.school_system.demo.pojo.Course;
 import com.example.school_system.demo.pojo.User;
-import com.example.school_system.demo.service.StudentService;
 import com.example.school_system.demo.utils.WebUtil;
+import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
-/**
- * 此过滤器是用于加载学生学籍信息页面前先进行获取数据
- * 由于编译执行thymeleaf比执行jquery还要更早 所以使用$().ready()方法去提前加载数据是无效的
- */
 @Component
-public class StudentStatusMsgInterceptor implements HandlerInterceptor {
+public class PreSelectCourseResultInterceptor implements HandlerInterceptor {
 
     @Autowired
-    private StudentService studentService;
+    private StringRedisTemplate redisTemplate;
+    @Autowired
+    private StudentDao studentDao;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -30,15 +32,16 @@ public class StudentStatusMsgInterceptor implements HandlerInterceptor {
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
         User user= (User) request.getSession().getAttribute("user");
-        String username=user.getUsername();
-        StudentStatusMsg student_status_msg=studentService.getStudentStatusMsgId(username);
-        if(student_status_msg==null){
-            WebUtil.printJSON("没有相关数据！",response);
+        Set<String> courseIds=redisTemplate.opsForSet().members("student:"+user.getUsername());
+        List<Course> courseList=new ArrayList<>();
+        if(courseIds.size()==0||courseIds==null){
+            WebUtil.printToWeb("您还没有预选课程！",response);
         }
-        if(student_status_msg.getStudentImgUrl()==null){
-            student_status_msg.setStudentImgUrl("/templates/pdf/student-status-msg/student_img/default.jpg");
-        }
-        request.getSession().setAttribute("student_status_msg",student_status_msg);
+        courseIds.forEach(value->{
+            Course course=studentDao.getCourseByCourseId(value);
+            courseList.add(course);
+        });
+        request.getSession().setAttribute("courseList",courseList);
     }
 
     @Override

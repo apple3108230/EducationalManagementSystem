@@ -1,5 +1,6 @@
 package com.example.school_system.demo.configuration;
 
+import com.example.school_system.demo.Interceptor.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -23,6 +24,12 @@ public class SpringMVCConfiguration extends WebMvcConfigurerAdapter {
     private StudentStatusMsgInterceptor studentStatusMsgInterceptor;
     @Autowired
     private StudentTimestableInterceptor studentTimestableInterceptor;
+    @Autowired
+    private CourseSelectionInterceptor courseSelectionInterceptor;
+    @Autowired
+    private PreSelectCourseResultInterceptor preSelectCourseResultInterceptor;
+    @Autowired
+    private SelectCourseResultInterceptor selectCourseResultInterceptor;
 
     @Override
         public void addResourceHandlers(ResourceHandlerRegistry registry) {
@@ -43,5 +50,8 @@ public class SpringMVCConfiguration extends WebMvcConfigurerAdapter {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(studentStatusMsgInterceptor).addPathPatterns("/to/home/student_status_msg");
         registry.addInterceptor(studentTimestableInterceptor).addPathPatterns("/to/home/student_timestable");
+        registry.addInterceptor(courseSelectionInterceptor).addPathPatterns("/to/home/pre_select_course");
+        registry.addInterceptor(preSelectCourseResultInterceptor).addPathPatterns("/to/home/pre_select_course_result").addPathPatterns("/to/home/cancel_course");
+        registry.addInterceptor(selectCourseResultInterceptor).addPathPatterns("/to/home/select_course_result");
     }
 }

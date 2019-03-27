@@ -1,5 +1,6 @@
 package com.example.school_system.demo.pojo;
 
+import com.example.school_system.demo.utils.StringUtil;
 import lombok.Data;
 
 import java.util.LinkedHashMap;
@@ -44,7 +45,7 @@ public class StudentStatusMsg {
 
     private Map<String,Object> toMap(){
         Map<String,Object> map=new LinkedHashMap<String,Object>();
-        map.put("学号",id);
+        map.put("学号", StringUtil.formatIdString(id));
         map.put("姓名",name);
         map.put("性别",sex);
         map.put("出生日期",birthday);

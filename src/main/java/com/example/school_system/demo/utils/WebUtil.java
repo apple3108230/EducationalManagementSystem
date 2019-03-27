@@ -3,6 +3,7 @@ package com.example.school_system.demo.utils;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.pdf.BaseFont;
 import net.coobird.thumbnailator.Thumbnails;
+import org.json.simple.JSONObject;
 import org.w3c.dom.Document;
 import org.xhtmlrenderer.pdf.ITextFontResolver;
 import org.xhtmlrenderer.pdf.ITextRenderer;
@@ -37,12 +38,11 @@ public class WebUtil {
      *
      * @param result
      * @param response
-     * 以json形式，把信息输出到页面
+     * 把信息输出到页面上
      */
-    public static void printJSON(String result, HttpServletResponse response){
+    public static void printToWeb(String result, HttpServletResponse response){
         response.setCharacterEncoding("UTF-8");
         response.setContentType("text/html;charset=UTF-8");
-        response.setContentType("application/json;charaset=utf-8");
         try {
             PrintWriter out = response.getWriter();
             out.printf(result);
@@ -51,6 +51,25 @@ public class WebUtil {
         }catch (IOException exception){
             exception.printStackTrace();
         }
+    }
+
+    /**
+     * 返回json数据到页面
+     * @param result
+     * @param response
+     */
+    public static void printJSON(String result,HttpServletResponse response){
+        response.setContentType("UTF-8");
+        response.setContentType("application/json;charset=UTF-8");
+        try{
+            PrintWriter out=response.getWriter();
+            out.printf(result);
+            out.flush();
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     /**
@@ -104,11 +123,17 @@ public class WebUtil {
             renderer.createPDF(outputStream);
             outputStream.close();
         }catch (IOException e){
-            WebUtil.printJSON(e.getMessage(),response);
+            JSONObject json=new JSONObject();
+            json.put("message",e.getMessage());
+            WebUtil.printJSON(json.toJSONString(),response);
         } catch (DocumentException e) {
-            WebUtil.printJSON(e.getMessage(),response);
+            JSONObject json=new JSONObject();
+            json.put("message",e.getMessage());
+            WebUtil.printJSON(json.toJSONString(),response);
         } catch (ParserConfigurationException e) {
-            e.printStackTrace();
+            JSONObject json=new JSONObject();
+            json.put("message",e.getMessage());
+            WebUtil.printJSON(json.toJSONString(),response);
         }
     }
 

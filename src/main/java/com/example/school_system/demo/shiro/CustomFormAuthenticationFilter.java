@@ -11,6 +11,8 @@ import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.filter.authc.FormAuthenticationFilter;
 import org.apache.shiro.web.util.WebUtils;
+import org.json.simple.JSONObject;
+
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -49,7 +51,9 @@ public class CustomFormAuthenticationFilter extends FormAuthenticationFilter {
                     return executeLogin(request, response);
                 } else {
                     if (WebUtil.isAjax(httpServletRequest)) {
-                        WebUtil.printJSON("{\"message\":\"验证码错误\"}", httpServletResponse);
+                        JSONObject json=new JSONObject();
+                        json.put("message","验证码错误");
+                        WebUtil.printJSON(json.toJSONString(), httpServletResponse);
                         return false;
                     } else {
                         httpServletRequest.setAttribute("shiroLoginFailure", "captchaCodeError");
@@ -92,7 +96,9 @@ public class CustomFormAuthenticationFilter extends FormAuthenticationFilter {
         session.setAttribute("user",user);
 
         if(WebUtil.isAjax(httpServletRequest)){
-            WebUtil.printJSON("{\"message\":\"登陆成功\"}",httpServletResponse);
+            JSONObject json=new JSONObject();
+            json.put("message","登录成功！");
+            WebUtil.printJSON(json.toJSONString(),httpServletResponse);
         }
         else {
             //跳转到首页，若不设置则还会停留在登录界面
@@ -124,12 +130,19 @@ public class CustomFormAuthenticationFilter extends FormAuthenticationFilter {
         }
         //获取错误类的名字
         String msg=e.getClass().getSimpleName();
+        JSONObject json=new JSONObject();
         if("IncorrectCredentialsException".equals(msg)){
-            WebUtil.printJSON("{\"message\":\"密码错误！\"}",httpServletResponse);
+            json.put("message","密码错误！");
+            WebUtil.printJSON(json.toJSONString(),httpServletResponse);
+            json.clear();
         }else if("UnknownAccountException".equals(msg)){
-            WebUtil.printJSON("{\"message\":\"用户不存在！\"}",httpServletResponse);
+            json.put("message","用户不存在！");
+            WebUtil.printJSON(json.toJSONString(),httpServletResponse);
+            json.clear();
         }else if("CaptchaCodeError".equals(msg)){
-            WebUtil.printJSON("{\"message\":\"验证码错误！\"}",httpServletResponse);
+            json.put("message","验证码错误！");
+            WebUtil.printJSON(json.toJSONString(),httpServletResponse);
+            json.clear();
         }
         return false;
     }

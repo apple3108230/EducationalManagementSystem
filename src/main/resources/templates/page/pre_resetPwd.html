@@ -97,10 +97,11 @@
                     data:$("#pre-reset").serialize(),
                     url:"/checkCaptchaBeforeResetPwd",
                     success:function (data) {
-                        if(data=="success"){
+                        var json=JSON.parse(data);
+                        if(data.message=="success"){
                             window.location.href="/to/reset_pwd";
                         }else{
-                            alert(data);
+                            alert(data.message);
                         }
                     },
                     error:function (data) {
@@ -156,8 +157,7 @@
                     chronoscope(60);
                 },
                 error:function (data) {
-                    var json=JSON.parse(data.responseText);
-                    alert(json.message);
+                    alert(data);
                     chronoscope(60);
                 }
             });

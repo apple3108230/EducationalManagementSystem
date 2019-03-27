@@ -78,11 +78,11 @@
                     dataType:"json",
                     data:$("#personal_msg").serialize(),
                     success:function (data) {
-                        alert(data);
+                        var json=JSON.parse(data);
+                        alert(data.message);
                     },
                     error:function (data) {
-                        var json=JSON.parse(data.responseText);
-                        alert(json.message);
+                        alert(data);
                     }
                 });
             }
@@ -102,8 +102,7 @@
                     }
                 },
                 error: function (data) {
-                    var json = JSON.parse(data.responseText);
-                    alert(json.message);
+                    alert(data);
                 }
             });
                 $("#personal_msg").validate({

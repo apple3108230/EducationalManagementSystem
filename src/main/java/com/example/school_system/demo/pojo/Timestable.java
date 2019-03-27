@@ -1,5 +1,7 @@
 package com.example.school_system.demo.pojo;
 
+import com.example.school_system.demo.utils.StringUtil;
+
 public class Timestable {
     /**
      *
@@ -242,17 +244,17 @@ public class Timestable {
         this.notice = notice == null ? null : notice.trim();
     }
 
-    public TimestablePo toTimestablePo(){
-        TimestablePo timestablePo=new TimestablePo();
-        timestablePo.setId(getId());
-        timestablePo.setClassName(getClassName());
-        timestablePo.setClassroomName(getClassroomName());
-        timestablePo.setNotice(getNotice());
-        timestablePo.setTerm(getTerm());
-        timestablePo.setTime(getTime());
-        timestablePo.setWeeks(getWeeks());
-        timestablePo.setTeacherName(getCourse().getTeacherName());
-        timestablePo.setCourseName(getCourse().getCourseName());
-        return timestablePo;
+    public TimestableVo toTimestablePo(){
+        TimestableVo timestableVo =new TimestableVo();
+        timestableVo.setId(getId());
+        timestableVo.setClassName(getClassName());
+        timestableVo.setClassroomName(getClassroomName());
+        timestableVo.setNotice(getNotice());
+        timestableVo.setTerm(getTerm());
+        timestableVo.setTime(getTime());
+        timestableVo.setWeeks(getWeeks());
+        timestableVo.setTeacherName(getCourse().getTeacherName());
+        timestableVo.setCourseName(getCourse().getCourseName());
+        return timestableVo;
     }
 }

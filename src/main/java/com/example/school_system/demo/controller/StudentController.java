@@ -2,8 +2,10 @@ package com.example.school_system.demo.controller;
 
 import com.example.school_system.demo.exception.UserException;
 import com.example.school_system.demo.pojo.*;
+import com.example.school_system.demo.service.CourseSelectionService;
 import com.example.school_system.demo.service.StudentService;
 import com.example.school_system.demo.utils.WebUtil;
+import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +24,9 @@ public class StudentController extends BaseController {
 
     @Autowired
     private StudentService studentService;
+    @Autowired
+    private CourseSelectionService courseSelectionService;
+
 
     /**
      * 获取学生信息
@@ -46,6 +51,17 @@ public class StudentController extends BaseController {
         return student;
     }
 
+    /**
+     * 更新个人信息
+     * @param sex
+     * @param age
+     * @param birthday
+     * @param addr
+     * @param tel
+     * @param request
+     * @param response
+     * @throws Exception
+     */
     @RequestMapping("/info/update")
     public void updateStudentInfo(String sex,String age,String birthday,String addr,String tel,
                                   HttpServletRequest request,HttpServletResponse response) throws Exception {
@@ -63,26 +79,11 @@ public class StudentController extends BaseController {
         map.put("tel",tel);
         map.put("addr",addr);
         studentService.updateInfoById(map);
-        WebUtil.printJSON("修改成功！",response);
+        JSONObject json=new JSONObject();
+        json.put("message","修改成功！");
+        WebUtil.printJSON(json.toJSONString(),response);
     }
 
-    /**
-     * 通过$().ready()进行加载数据是行不通 所以放弃此方法
-     * @deprecated
-     * @param request
-     * @param response
-     */
-    @RequestMapping("/student_status/info")
-    public void getStudentStatusMsg(HttpServletRequest request,HttpServletResponse response){
-        HttpSession session=request.getSession();
-        User user= (User) session.getAttribute("user");
-        StudentStatusMsg student_status_msg=studentService.getStudentStatusMsgId(user.getUsername());
-        if(student_status_msg==null){
-            WebUtil.printJSON("没有相关数据！",response);
-        }
-        session.setAttribute("student_status_msg",student_status_msg);
-        WebUtil.printJSON("success",response);
-    }
 
     /**
      * 下载学生学籍pdf
@@ -114,24 +115,89 @@ public class StudentController extends BaseController {
                     i=bufferedInputStream.read(buffer);
                 }
             }catch (IOException e){
-                WebUtil.printJSON(e.getMessage(),response);
+                JSONObject json=new JSONObject();
+                json.put("message",e.getMessage());
+                WebUtil.printJSON(json.toJSONString(),response);
             }
         }
-        WebUtil.printJSON("done",response);
+        JSONObject json=new JSONObject();
+        json.put("message","done");
+        WebUtil.printJSON(json.toJSONString(),response);
     }
 
+    /**
+     *获取课程表信息，用于给前端回填数据
+     * @param request
+     * @param response
+     * @param term
+     * @return
+     */
     @RequestMapping("/timestable")
     @ResponseBody
-    public List<TimestablePo> getStudentTimestable(HttpServletRequest request,HttpServletResponse response,String term){
+    public List<TimestableVo> getStudentTimestable(HttpServletRequest request, HttpServletResponse response, String term){
         List<Timestable> timestables=studentService.getTimestableByStudentClass((String) request.getSession().getAttribute("studentClass"));
         if(timestables==null){
-            WebUtil.printJSON("is null",response);
+            JSONObject json=new JSONObject();
+            json.put("message","is null");
+            WebUtil.printJSON(json.toJSONString(),response);
         }
-        List<TimestablePo> timestablePos=new ArrayList<TimestablePo>();
+        List<TimestableVo> timestableVos =new ArrayList<TimestableVo>();
         for(int i=0;i<timestables.size();i++){
-            TimestablePo timestablePo=timestables.get(i).toTimestablePo();
-            timestablePos.add(timestablePo);
+            TimestableVo timestableVo =timestables.get(i).toTimestablePo();
+            timestableVos.add(timestableVo);
         }
-        return timestablePos;
+        return timestableVos;
     }
+
+    /**
+     * 预选课程
+     * @param response
+     * @param request
+     * @param courseId
+     */
+    @RequestMapping("/selectCourse")
+    public void selectCourse(HttpServletResponse response,HttpServletRequest request,String courseId){
+        HttpSession session=request.getSession();
+        User user= (User) session.getAttribute("user");
+        String studentId=user.getUsername();
+        Long result=courseSelectionService.selectCourse(courseId,studentId);
+        JSONObject json=new JSONObject();
+        if(result==-1){
+            json.put("message","您已经选择过此课程了，不能重复选择！");
+            WebUtil.printJSON(json.toJSONString(),response);
+            json.clear();
+        }
+        if(result==0){
+            json.put("message","课程可选人数不足，无法选择！");
+            WebUtil.printJSON(json.toJSONString(),response);
+            json.clear();
+        }
+        if(result==1){
+            json.put("message","预选成功！");
+            WebUtil.printJSON(json.toJSONString(),response);
+            json.clear();
+        }
+    }
+
+    /**
+     * 取消预选课程
+     * @param response
+     * @param request
+     * @param courseId 课程id
+     */
+    @RequestMapping("/cancelCourse")
+    public void cancelCourse(HttpServletResponse response,HttpServletRequest request,String courseId){
+        User user= (User) request.getSession().getAttribute("user");
+        String studentId=user.getUsername();
+        Long result=courseSelectionService.cancelSelectedCourse(courseId,studentId);
+        JSONObject json=new JSONObject();
+        if(result==1){
+            json.put("message","success");
+            WebUtil.printJSON(json.toJSONString(),response);
+            json.clear();
+        }
+        json.put("message","无法取消此课程！");
+        WebUtil.printJSON(json.toJSONString(),response);
+    }
+
 }
