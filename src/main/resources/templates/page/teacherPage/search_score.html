@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="ViewPort" content="width=device-width,initial-scale=1">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script>
+
+        function getScoreTable(data) {
+            for(var size=1;size<21;size++){
+                $("#"+size).html("");
+            }
+            var htmlStr="1<input type='radio' name='selectedScore' value='1'>";
+            var size=data[1].length;
+            if(size==0){
+                alert("无查询结果！");
+                return false;
+            }
+            for(var size=1;size<21;size++){
+                $("#"+size).html("");
+            }
+            var htmlStr="1<input type='radio' name='selectedTask' value='1'>";
+            var size=data[1].length;
+            if(size==0){
+                alert("无查询结果！");
+                return false;
+            }
+            var totalPage=data[0].totalPage;
+            var temp=1;
+            var li="<li><a href=\"#\">&laquo;</a></li>";
+            for(var j=1;j<parseInt(totalPage)+1;j++){
+                var temp1="<li><a href=\"#\" onclick=\"getTaskByPageNum(this)\">"+j+"</a></li>";
+                li=li+temp1;
+            }
+            $(".pagination").html(li+"<li><a href=\"#\">&raquo;</a></li>");
+            for(var i=0;i<data[1].length;i++){
+                var course=data[1][i];
+                var courseType=data[1][i];
+                var studentId=data[1][i];
+                var usualScore=data[1][i];
+                var examScore=data[1][i];
+                var totalScore=data[1][i];
+                var credit=data[1][i];
+                var gpa=data[1][i];
+                var creditGpa=data[1][i];
+                var term=data[1][i];
+                htmlStr=htmlStr+"<td>"+course+"</td>"+"<td>"+courseType+"</td>"+"<td>"+studentId+"</td>"+"<td>"+usualScore+"</td>"+"<td>"+examScore+"</td>"+"<td>"+totalScore+"</td>"+"<td>"+credit+"</td>"+"<td>"+gpa+"</td>"+"<td>"+creditGpa+"</td>"+"<td>"+term+"</td>";
+                $("#"+htmlStr.charAt(0)).html(htmlStr.substring(1));
+                temp=parseInt(temp)+1;
+                htmlStr=temp.toString()+"<input type='radio' name='selectedTask' value="+"'"+temp.toString()+"'>";
+            }
+        }
+
+        function getScoresByPageNum(a) {
+            //移除所有点击效果
+            $("li").removeClass("active");
+            //点击页数后添加点击效果
+            $(a).parent("li").addClass("active");
+            //获取选择的页数
+            var pageNum=$(a).text();
+            var termCondition=$("#hiddenTermCondition").val();
+            var courseCondition=$("#hiddenCourseCondition").val();
+            var classIdCondition=$("#hiddenClassIdCondition").val();
+            var studentIdCondition=$("#hiddenStudentIdCondition").val();
+            var otherCondition=$("#hiddenOtherCondition").val();
+            var conditions={termCondition:termCondition,courseCondition:courseCondition,classIdCondition:classIdCondition,studentIdCondition:studentIdCondition,otherCondition:otherCondition,pageNum:pageNum};
+            $.ajax({
+                url:"/teacher/getNextPage",
+                dataType:"json",
+                type:"post",
+                contentType:"application/json",
+                data:JSON.stringify(conditions),
+                success:function (data) {
+                    getScoreTable(data);
+                },
+                error:function () {
+                    alert("系统错误！请联系管理员");
+                }
+            })
+        }
+
+        function BeforeUpdateScore() {
+            var row=$("input[type='radio']:checked").val();
+            if(row==undefined||row==null||row==""){
+                alert("您还没有选择修改目标！");
+                return false;
+            }
+            $("#"+row).each(function () {
+                var course=$(this).children('td').eq(0).html();
+                var courseType=$(this).children('td').eq(1).html();
+                var studentId=$(this).children('td').eq(2).html();
+                var usualScore=$(this).children('td').eq(3).html();
+                var examScore=$(this).children('td').eq(4).html();
+                var totalScore=$(this).children('td').eq(5).html();
+                var credit=$(this).children('td').eq(6).html();
+                var gpa=$(this).children('td').eq(7).html();
+                var creditGpa=$(this).children('td').eq(8).html();
+                var term=$(this).children('td').eq(9).html();
+                $("#"+row).html(
+                    "<td><button type='button' class='btn btn-info btn-sm' onclick='updateScore(this)' value="+row+">确定</button><button type='button' class='btn btn-danger btn-sm' onclick='deleteScore(this)' value="+row+">删除</button></td>" +
+                    "<td><input type='text' class='input-style form-control' style='width: 182px' id='course' readonly value="+course+"></td>"+
+                    "<td><input type='text' class='input-style form-control courseType' style='width: 92px' id='courseType' readonly value="+courseType+"></td>"+
+                    "<td><input type='text' class='input-style form-control studentId' style='width: 115px' id='studentId' readonly value="+studentId+"></td>"+
+                    "<td><input type='text' class='input-style form-control usualScore' style='width: 70px' id='usualScore' value="+usualScore+"></td>"+
+                    "<td><input type='text' class='input-style form-control examScore' style='width: 70px' id='examScore' value="+examScore+"></td>"+
+                    "<td><input type='text' class='input-style form-control totalScore' style='width: 70px' id='totalScore' value="+totalScore+"></td>"+
+                    "<td><input type='text' class='input-style form-control credit' style='width: 70px' id='credit' value="+credit+"></td>"+
+                    "<td><input type='text' class='input-style form-control gpa' style='width: 70px' id='gpa' value="+gpa+"></td>"+
+                    "<td><input type='text' class='input-style form-control creditGpa' style='width: 70px' id='creditGpa' value="+creditGpa+"></td>"+
+                    "<td><input type='text' class='input-style form-control term' style='width: 248px' id='term' value="+term+"></td>");
+            })
+            $("#updateScore").attr("disabled",true);
+        }
+
+        function deleteScore(button) {
+            var row=$(button).val();
+            $("#"+row).each(function (){
+                var course=$(this).children('td').eq(1).find("#course").val();
+                var studentId=$(this).children('td').eq(3).find(".input-style,.form-control,.studentId").val();
+                var deleteScoreInfo={course:course,studentId:studentId};
+                $.ajax({
+                    url:"/teacher/deleteScore",
+                    type:"post",
+                    contentType:"application/json",
+                    data:JSON.stringify(deleteScoreInfo),
+                    dataType: "json",
+                    success:function (data) {
+                        if(data.message=="删除成功！"){
+                            alert(data.message);
+                        }
+                        for(var i=1;i<21;i++){
+                            $("#"+i).html("");
+                        }
+                    },
+                    error:function () {
+                        alert("删除失败！请联系管理员！");
+                    }
+                })
+            })
+        }
+
+        function updateScore(button) {
+            var row=$(button).val();
+            $("#"+row).each(function (){
+                var course=$(this).children('td').eq(1).find("#course").val();
+                var courseType=$(this).children('td').eq(2).find(".input-style,.form-control,.courseType").val();
+                var studentId=$(this).children('td').eq(3).find(".input-style,.form-control,.studentId").val();
+                var usualScore=$(this).children('td').eq(4).find(".input-style,.form-control,.usualScore").val();
+                var examScore=$(this).children('td').eq(5).find(".input-style,.form-control,.examScore").val();
+                var totalScore=$(this).children('td').eq(6).find(".input-style,.form-control,.totalScore").val();
+                var credit=$(this).children('td').eq(7).find(".input-style,.form-control,.credit").val();
+                var gpa=$(this).children('td').eq(8).find(".input-style,.form-control,.gpa").val();
+                var creditGpa=$(this).children('td').eq(9).find(".input-style,.form-control,.creditGpa").val();
+                var term=$(this).children('td').eq(10).find(".input-style,.form-control,.term").val();
+                var scores={id:"",course:course,courseType:courseType,studentId:studentId,usualScore:usualScore,examScore:examScore,totalScore:totalScore,credit:credit,gpa:gpa,creditGpa:creditGpa,term:term};
+                $.ajax({
+                    url:"/teacher/updateScore",
+                    type:"post",
+                    dataType:"json",
+                    async:false,
+                    contentType: "application/json",
+                    data: JSON.stringify(scores),
+                    success:function (data) {
+                        if(data.message=="修改成功！"){
+                            $("#"+row).html("<tr>" +
+                                "<td><input type='radio' name='selectedScore' value="+row+"></td>" +
+                                "<td>"+course+"</td>"+
+                                "<td>"+studentId+"</td>"+
+                                "<td>"+usualScore+"</td>"+
+                                "<td>"+examScore+"</td>"+
+                                "<td>"+totalScore+"</td>"+
+                                "<td>"+credit+"</td>"+
+                                "<td>"+gpa+"</td>"+
+                                "<td>"+creditGpa+"</td>"+
+                                "<td>"+term+"</td>");
+                        }else{
+                            alert("修改失败！请联系管理员！");
+                            return false;
+                        }
+                        $("#updateScore").attr("disabled",false);
+                    },
+                    error:function () {
+                        alert("修改失败！请联系管理员！");
+                    }
+                })
+            })
+        }
+
+
+
+        function hasSelectCondition(){
+            var termCondition=$("#termCondition").val();
+            var courseCondition=$("#courseIdCondition").val();
+            var classIdCondition=$("#classIdCondition").val();
+            var studentIdCondition=$("#studentIdCondition").val();
+            var otherCondition=$("input[type='radio']:checked").val();
+            if(termCondition==""&&courseCondition==""&&classIdCondition==""&&studentIdCondition==""&&otherCondition==undefined){
+                alert("筛选条件不能为空！");
+                return false;
+            }
+            return true;
+        }
+
+        function searchScore(){
+            var termCondition=$("#termCondition").val();
+            var courseCondition=$("#courseIdCondition").val();
+            var classIdCondition=$("#classIdCondition").val();
+            var studentIdCondition=$("#studentIdCondition").val();
+            var otherCondition=$("input[type='radio']:checked").val();
+            if(otherCondition==undefined){
+                otherCondition="";
+            }
+            var conditions={termCondition:termCondition,courseCondition:courseCondition,classIdCondition:classIdCondition,studentIdCondition:studentIdCondition,otherCondition:otherCondition,pageNum:1};
+            $("#conditionDiv").html("<input type='hidden' id='hiddenTermCondition' value="+"'"+termCondition+"'>"+
+                                    "<input type='hidden' id='hiddenCourseCondition' value="+"'"+courseCondition+"'>"+
+                                    "<input type='hidden' id='hiddenClassIdCondition' value="+"'"+classIdCondition+"'>"+
+                                    "<input type='hidden' id='hiddenStudentIdCondition' value="+"'"+studentIdCondition+"'>"+
+                                    "<input type='hidden' id='hiddenOtherCondition' value="+"'"+otherCondition+"'>");
+            console.log(conditions);
+            if(hasSelectCondition()){
+                $.ajax({
+                    url:"/teacher/queryScore",
+                    async:false,
+                    type:"post",
+                    contentType:"application/json",
+                    dataType:"json",
+                    data:JSON.stringify(conditions),
+                    success:function (data) {
+                        getScoreTable(data);
+                    },
+                    error:function (errorThrown) {
+                        alert("查询失败！请联系管理员");
+                        console.log(errorThrown);
+                    }
+                })
+            }
+        }
+
+    </script>
+    <style>
+
+        .div1{
+            position: absolute;top: 0%;left: 0%;
+            height: 100%;width: 100%;
+            background-color:rgba(0,0,0,0.3);
+            z-index: 100;
+            display: none;
+        }
+        .div2{
+            width: 400px;height: 230px;
+            background-color: white;
+            position: absolute;top:17%;left: 30%;
+            z-index: 1000;
+            border-radius: 10px;
+        }
+
+        .input-style{
+            width:150px;
+            padding:10px 12px 10px 10px;
+            background-color: #fffde3;
+        }
+
+        table tbody td{
+            border: 1px solid silver;
+            text-align: center;
+            height: 20px;
+        }
+
+        table tbody tr{
+            border: 1px solid silver;
+        }
+
+        table th{
+            border-left: 1px solid silver;
+            border-right: 1px solid silver;
+            text-align: center;
+            height: 30px;
+            background-color: lightgray;
+        }
+
+        table tr td input[type=text]{
+        .input-style;
+
+        }
+
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="div1" id="selectConditionWindow">
+        <div class="div2">
+            <div class="modal-header">
+                <button type="button" onclick="$('#selectConditionWindow').hide()" class="close">&times;</button>
+                <h4 class="modal-title">筛选条件</h4>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <input type="radio" name="condition" value="OnlyWatchOwnAcademy">
+                    <label>仅看所在学院学生成绩</label>
+                </div>
+                <div>
+                    <input type="radio" name="condition" value="OnlyWatchElectiveCourse">
+                    <label>仅看选修成绩</label>
+                </div>
+                <div>
+                    <input type="radio" name="condition" value="OnlyWatchCompulsorySubjects">
+                    <label>仅看必修成绩</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="$('#selectConditionWindow').hide()">确定</button>
+            </div>
+        </div>
+    </div>
+    <div style="position:absolute;top: 1%;left: 10%;width: 85%;height: 90%">
+        <div style="height: 50px;width: 100%;background-color:lightgray">
+            <div class="col-lg-7" style="float: left">
+                <div style="margin: 8px">
+                    <label style="float: left;margin: 8px">学期年度</label>
+                    <input class="input-style form-control" placeholder="学年年度" id="termCondition">
+                </div>
+                <div style="margin: 8px;position: absolute;left: 200px;top: 0px">
+                    <label style="position:relative;left: 60px;margin: 8px">课程编号</label>
+                    <input class="input-style form-control" placeholder="课程编号" style="position: absolute;left: 140px;top: 0px" id="courseIdCondition">
+                </div>
+                <div style="margin: 8px;position: absolute;left: 200px;top: 0px">
+                    <label style="position:relative;left: 310px;margin: 8px">班级编号</label>
+                    <input class="input-style form-control" placeholder="班级编号" style="position: absolute;left: 390px;top: 0px" id="classIdCondition">
+                </div>
+                <div style="margin: 8px;position: absolute;left: 200px;top: 0px">
+                    <label style="position:relative;left: 560px;margin: 8px">学生学号</label>
+                    <input class="input-style form-control" placeholder="学生学号" style="position: absolute;left: 640px;top: 0px" id="studentIdCondition">
+                </div>
+            </div>
+        </div>
+        <div style="width: 100%;height: 50px">
+            <div class="col-lg-7" style="float: left;margin: 8px" >
+                <button type="button" class="btn btn-success" id="conditionScreen" onclick="$('#selectConditionWindow').show()" style="margin-left: 8px">
+                    <i class="glyphicon glyphicon-plus"></i>
+                    <span>筛选</span>
+                </button>
+                <button type="button" class="btn btn-primary start" id="searchScore" onclick="searchScore()" style="margin-left: 8px">
+                    <i class="glyphicon glyphicon-search"></i>
+                    <span>查询</span>
+                </button>
+                <button type="button" class="btn btn-warning delete" id="printTable" style="margin-left: 8px">
+                    <i class="glyphicon glyphicon-print "></i>
+                    <span>打印</span>
+                </button>
+                <shiro:hasRole name="teacherAdmin">
+                    <button type="button" class="btn btn-danger delete" id="updateScore" onclick="BeforeUpdateScore()" style="margin-left: 8px">
+                        <i class="glyphicon glyphicon-wrench "></i>
+                        <span>修改</span>
+                    </button>
+                </shiro:hasRole>
+            </div>
+        </div>
+        <table style="width: 100%;height: 540px;" id="studentsScore">
+            <thead style="background-color: white">
+            <tr>
+                <th>&nbsp;&nbsp;</th>
+                <th>课程名</th>
+                <th>课程类型</th>
+                <th>学生学号</th>
+                <th>平时成绩</th>
+                <th>期末成绩</th>
+                <th>总成绩</th>
+                <th>学分</th>
+                <th>绩点</th>
+                <th>学分绩点</th>
+                <th>学期年度</th>
+            </tr>
+            <tbody id="tbody1">
+            <tr id="1"></tr>
+            <tr id="2"></tr>
+            <tr id="3"></tr>
+            <tr id="4"></tr>
+            <tr id="5"></tr>
+            <tr id="6"></tr>
+            <tr id="7"></tr>
+            <tr id="8"></tr>
+            <tr id="9"></tr>
+            <tr id="10"></tr>
+            <tr id="11"></tr>
+            <tr id="12"></tr>
+            <tr id="13"></tr>
+            <tr id="14"></tr>
+            <tr id="15"></tr>
+            <tr id="16"></tr>
+            <tr id="17"></tr>
+            <tr id="18"></tr>
+            <tr id="19"></tr>
+            <tr id="20"></tr>
+            </tbody>
+            <tfoot>
+            <tr>
+                <td colspan="10">
+                    <ul class="pagination" style="float: right;margin-bottom: 0px">
+                    </ul>
+                </td>
+            </tr>
+            </tfoot>
+        </table>
+    </div>
+    <div style="display: none" id="conditionDiv"></div>
+</div>
+</body>
+</html>

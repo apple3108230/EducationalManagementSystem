@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="ViewPort" content="width=device-width,initial-scale=1">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="http://www.bootcss.com/p/bootstrap-switch/static/stylesheets/bootstrapSwitch.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="http://www.bootcss.com/p/bootstrap-switch/static/js/bootstrapSwitch.js"></script>
+    <style>
+
+        .div1{
+            position: absolute;top: 0%;left: 0%;
+            height: 100%;width: 100%;
+            background-color:rgba(0,0,0,0.3);
+            z-index: 100;
+            display: none;
+        }
+        .div2{
+            width: 400px;height: 230px;
+            background-color: white;
+            position: absolute;top:17%;left: 30%;
+            z-index: 1000;
+            border-radius: 10px;
+        }
+
+        .input-style{
+            width:150px;
+            padding:10px 12px 10px 10px;
+            background-color: #fffde3;
+        }
+
+        table tbody td{
+            border: 1px solid silver;
+            text-align: center;
+            height: 20px;
+        }
+
+        table tbody tr{
+            border: 1px solid silver;
+        }
+
+        table th{
+            border-left: 1px solid silver;
+            border-right: 1px solid silver;
+            text-align: center;
+            height: 30px;
+            background-color: lightgray;
+        }
+
+    </style>
+    <script>
+
+        $(document).ready(function () {
+            $.ajax({
+                url:"/admin/getTasks",
+                type:"get",
+                data:"academyNameCondition="+""+"&majorNameCondition="+""+"&classIdCondition="+""+"&pageNum=1",
+                dataType:"json",
+                success:function (data) {
+                    getTasks(data);
+                }
+            })
+        })
+
+        var timeIsIllegal=false;
+
+        function getTasks(data) {
+            for(var size=1;size<21;size++){
+                $("#"+size).html("");
+            }
+            var htmlStr="1<input type='radio' name='selectedTask' value='1'>";
+            var size=data[1].length;
+            if(size==0){
+                alert("无查询结果！");
+                return false;
+            }
+            var totalPage=data[0].totalPage;
+            var useSuperMode=data[0].useSuperMode;
+            $("input[name='useSuperMode']").attr("checked",useSuperMode);
+            var temp=1;
+            var li="<li><a href=\"#\">&laquo;</a></li>";
+            for(var j=1;j<parseInt(totalPage)+1;j++){
+                var temp1="<li><a href=\"#\" onclick=\"getTaskByPageNum(this)\">"+j+"</a></li>";
+                li=li+temp1;
+            }
+            $(".pagination").html(li+"<li><a href=\"#\">&raquo;</a></li>");
+            for(var i=0;i<data[1].length;i++){
+                var academyName=data[1][i].academyName;
+                var majorName=data[1][i].majorName;
+                var className=data[1][i].className;
+                var courseId=data[1][i].courseId;
+                var time=data[1][i].time;
+                htmlStr=htmlStr+"<td>"+academyName+"</td>"+"<td>"+majorName+"</td>"+"<td>"+className+"</td>"+"<td>"+courseId+"</td>"+"<td>"+time+"</td>";
+                $("#"+htmlStr.charAt(0)).html(htmlStr.substring(1));
+                temp=parseInt(temp)+1;
+                htmlStr=temp.toString()+"<input type='radio' name='selectedTask' value="+"'"+temp.toString()+"'>";
+            }
+        }
+
+        //前端进行判断时间格式 后台进行判断时间大小
+        function checkTime(s_year,s_month,s_day,s_hour,s_minute,s_second,e_year,e_month,e_day,e_hour,e_minute,e_second) {
+            var start_yyyy_mm_dd=s_year+"-"+s_month+"-"+s_day;
+            var start_hh_mm_ss=s_hour+":"+s_minute+":"+s_second;
+            var end_yyyy_mm_dd=e_year+"-"+e_month+"-"+e_day;
+            var end_hh_mm_ss=e_hour+":"+e_minute+":"+e_second;
+            var time_ymd=/^(\d{4})-(0\d{1}|1[0-2])-(0\d{1}|[12]\d{1}|3[01])$/;
+            var time_hms=/^(0\d{1}|1\d{1}|2[0-3]):[0-5]\d{1}:([0-5]\d{1})$/;
+            if(time_ymd.test(start_yyyy_mm_dd)){
+                if(!time_hms.test(start_hh_mm_ss)){
+                    alert("您输入的开始时间格式有误！");
+                    timeIsIllegal=false;
+                }
+            }else{
+                alert("您输入的开始时间格式有误！");
+                timeIsIllegal=false;
+            }
+            if(time_ymd.test(end_yyyy_mm_dd)){
+                if(!time_hms.test(end_hh_mm_ss)){
+                    alert("您输入的结束时间格式有误！");
+                    timeIsIllegal=false;
+                }
+            }else{
+                alert("您输入的结束时间格式有误！");
+                timeIsIllegal=false;
+            }
+            $.ajax({
+                url:"/checkTime",
+                dataType:"json",
+                type:"get",
+                async:false,
+                data:"startTime="+start_yyyy_mm_dd+" "+start_hh_mm_ss+"&endTime="+end_yyyy_mm_dd+" "+end_hh_mm_ss,
+                success:function (data) {
+                    if(data.message=="success"){
+                        alert("设置成功！");
+                        $('#superModeWindow').hide();
+                        $('#customModeWindow').hide();
+                        timeIsIllegal=true;
+                    }else{
+                        alert(data.message);
+                        timeIsIllegal=false;
+                    }
+                },
+                error:function () {
+                    alert("system error!");
+                    timeIsIllegal=false;
+                }
+            })
+        }
+
+        function checkUseSuperMode() {
+            if($("input[name='useSuperMode']:checked").val()!=undefined){
+                alert("使用此功能则会默认启动所有专业的预选课程功能，预选课程为对应专业的所有选修课，仅需设置选课开始时间以及结束时间");
+                $("#superModeWindow").show();
+            }
+        }
+
+        function getTable(s_year,s_month,s_day,s_hour,s_minute,s_second,e_year,e_month,e_day,e_hour,e_minute,e_second) {
+            checkTime(s_year,s_month,s_day,s_hour,s_minute,s_second,e_year,e_month,e_day,e_hour,e_minute,e_second);
+            if(timeIsIllegal){
+                console.log(timeIsIllegal);
+                var start_yyyy_mm_dd=s_year+"-"+s_month+"-"+s_day;
+                var start_hh_mm_ss=s_hour+":"+s_minute+":"+s_second;
+                var end_yyyy_mm_dd=e_year+"-"+e_month+"-"+e_day;
+                var end_hh_mm_ss=e_hour+":"+e_minute+":"+e_second;
+                alert("开启预选课功能后，默认在结束预选课后的第二天的凌晨2点进行数据写入！")
+                $.ajax({
+                    url:"/admin/uploadTaskForSuperMode",
+                    type:"get",
+                    data:"startTime="+start_yyyy_mm_dd+" "+start_hh_mm_ss+"&endTime="+end_yyyy_mm_dd+" "+end_hh_mm_ss,
+                    async:false,
+                    dataType:"json",
+                    success:function (data) {
+                        if(data.message=="success"){
+                            $.ajax({
+                                url:"/admin/getTasks",
+                                type:"get",
+                                dataType:"json",
+                                async:false,
+                                data:"academyNameCondition="+""+"&majorNameCondition="+""+"&classIdCondition="+""+"&pageNum=1",
+                                success:function (data) {
+                                    getTasks(data);
+                                },
+                                error:function () {
+                                    alert("system error");
+                                }
+                            })
+                            $("#customMode").attr("disabled",true);
+                        }
+                    },
+                    error:function () {
+                        alert("error");
+                    }
+                })
+            }
+        }
+
+        function getTableForCustomMode(s_year,s_month,s_day,s_hour,s_minute,s_second,e_year,e_month,e_day,e_hour,e_minute,e_second) {
+            var majorId=$("#majorId").val();
+            var classId=$("#classId").val();
+            if(majorId==""&&classId==""){
+                alert("班级编号以及专业编号不得同时为空！");
+                return false;
+            }
+            if(majorId!=""&&classId!=""){
+                if(classId.substr(0,5)!=majorId){
+                    alert("您输入的班级编号不是您输入的专业中的班级！");
+                    return false;
+                }
+            }
+            checkTime(s_year,s_month,s_day,s_hour,s_minute,s_second,e_year,e_month,e_day,e_hour,e_minute,e_second);
+            if(timeIsIllegal){
+                var start_yyyy_mm_dd=s_year+"-"+s_month+"-"+s_day;
+                var start_hh_mm_ss=s_hour+":"+s_minute+":"+s_second;
+                var end_yyyy_mm_dd=e_year+"-"+e_month+"-"+e_day;
+                var end_hh_mm_ss=e_hour+":"+e_minute+":"+e_second;
+                alert("开启预选课功能后，默认在结束预选课后的第二天的凌晨2点进行数据写入！")
+                $.ajax({
+                    url:"/admin/uploadTaskForCustomMode",
+                    dataType:"json",
+                    async:false,
+                    type:"get",
+                    data:"majorId="+majorId+"&classId="+classId+"&startTime="+start_yyyy_mm_dd+" "+start_hh_mm_ss+"&endTime="+end_yyyy_mm_dd+" "+end_hh_mm_ss,
+                    success:function (data) {
+                        if(data.message=="添加成功！"){
+                            $.ajax({
+                                url:"/admin/getTasks",
+                                dataType:"json",
+                                type:"get",
+                                async:false,
+                                data:"academyNameCondition="+""+"&majorNameCondition="+""+"&classIdCondition="+""+"&pageNum=1",
+                                success:function (data) {
+                                    getTasks(data);
+                                },
+                                error:function () {
+                                    alert("system error");
+                                }
+                            })
+                            $("input[name='useSuperMode']").attr("disabled",true);
+                        }else{
+                            alert(data.message);
+                        }
+                    },
+                    error:function () {
+                        alert("system error");
+                    }
+                })
+            }
+        }
+
+        function getTaskByPageNum(a) {
+            //移除所有点击效果
+            $("li").removeClass("active");
+            //点击页数后添加点击效果
+            $(a).parent("li").addClass("active");
+            //获取选择的页数
+            var pageNum=$(a).text();
+            var academyName=$("#hiddenAcademyNameCondition").val();
+            var majorName=$("#hiddenMajorNameCondition").val();
+            var classId=$("#hiddenClassIdCondition").val();
+            $.ajax({
+                url:"/admin/getTasks",
+                type:"get",
+                data:"pageNum="+pageNum+"&academyName="+academyName+"&majorName="+majorName+"&classId="+classId,
+                success:function (data) {
+                    getTasks(data);
+                },
+                error:function () {
+                    alert("系统错误！请联系管理员");
+                }
+            })
+        }
+
+        function deleteTask() {
+            var row=$("input[type='radio']:checked").val();
+            $("#"+row).each(function (){
+                // var academy=$(this).children('td').eq(1).html();
+                // var majorName=$(this).children('td').eq(2).html();
+                var className=$(this).children('td').eq(3).html();
+                $.ajax({
+                    url:"/admin/deleteTask",
+                    type:"post",
+                    dataType:"json",
+                    data:"className="+className,
+                    success:function (data) {
+                        if(data.message=="删除成功！"){
+                            for(var i=1;i<21;i++){
+                                $("#"+i).html("");
+                            }
+                            var pageNum=$(".active").text();
+                            var academyName=$("#hiddenAcademyNameCondition").val();
+                            var majorName=$("#hiddenMajorNameCondition").val();
+                            var classId=$("#hiddenClassIdCondition").val();
+                            $.ajax({
+                                url:'/admin/getTasks',
+                                data:"pageNum="+pageNum+"&academyName="+academyName+"&majorName="+majorName+"&classId="+classId,
+                                dataType:"json",
+                                success:function (data) {
+                                    getTasks(data);
+                                },
+                                error:function () {
+                                    alert("system error!");
+                                }
+                            })
+                        }else{
+                            alert("删除失败！请联系管理员！");
+                            return false;
+                        }
+                        $("#deleteTask").attr("disabled",false);
+                    },
+                    error:function () {
+                        alert("删除失败！请联系管理员！");
+                    }
+                })
+            })
+        }
+
+        function searchTask(){
+            var academyNameCondition=$("#academyNameCondition").val();
+            var majorNameCondition=$("#majorNameCondition").val();
+            var classIdCondition=$("#classIdCondition").val();
+            $("#conditionDiv").html("<input type='hidden' id='hiddenAcademyNameCondition' value="+"'"+academyNameCondition+"'>"+
+                "<input type='hidden' id='hiddenMajorNameCondition' value="+"'"+majorNameCondition+"'>"+
+                "<input type='hidden' id='hiddenClassIdCondition' value="+"'"+classIdCondition+"'>");
+            $.ajax({
+                url:"",
+                async:false,
+                type:"get",
+                dataType:"json",
+                data:"academyNameCondition="+academyNameCondition+"&majorNameCondition="+majorNameCondition+"&classIdCondition="+classIdCondition+"&pageNum=1",
+                success:function (data) {
+                    getTasks(data);
+                },
+                error:function (errorThrown) {
+                    alert("查询失败！请联系管理员");
+                    console.log(errorThrown);
+                }
+            })
+        }
+
+    </script>
+</head>
+<body>
+<div class="container">
+    <div class="div1" id="customModeWindow">
+        <div class="div2" style="width: 700px;height: 500px">
+            <div class="modal-header">
+                <button type="button" onclick="$('#customModeWindow').hide()" class="close">&times;</button>
+                <h4 class="modal-title">自定义设置</h4>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <label>请输入需要开通预选的专业编号</label>
+                    <input type="text" class="input-style form-control" id="majorId" placeholder="专业编号">
+                    <br>
+                </div>
+                <div>
+                    <label>请输入需要开通预选的班级编号</label>
+                    <input type="text" class="input-style form-control" id="classId" placeholder="班级编号(默认值为所填专业的所有班级)">
+                    <br>
+                </div>
+                <div style="width: 600px;height: 50px">
+                    <label style="float: left;margin: 8px">开始时间 </label>
+                    <input type="text" class="input-style form-control" style="width: 70px;float: left;margin: 2px" id="start_time_year_forCustom" placeholder="年">
+                    <input type="text" class="input-style form-control" style="width: 70px;float: left;margin: 2px" id="start_time_month_forCustom" placeholder="月">
+                    <input type="text" class="input-style form-control" style="width: 70px;float: left;margin: 2px" id="start_time_day_forCustom" placeholder="日">
+                    <input type="text" class="input-style form-control" style="width: 70px;float: left;margin: 2px" id="start_time_hour_forCustom" placeholder="时">
+                    <input type="text" class="input-style form-control" style="width: 70px;float: left;margin: 2px" id="start_time_minute_forCustom" placeholder="分">
+                    <input type="text" class="input-style form-control" style="width: 70px;float: left;margin: 2px" id="start_time_second_forCustom" placeholder="秒">
+                    <br>
+                </div>
+                <div style="width: 600px;height: 50px">
+                    <label style="float: left;margin: 8px">结束时间 </label>
+                    <input type="text" class="input-style form-control" style="width: 70px;float: left;margin: 2px" id="end_time_year_forCustom" placeholder="年">
+                    <input type="text" class="input-style form-control" style="width: 70px;float: left;margin: 2px" id="end_time_month_forCustom" placeholder="月">
+                    <input type="text" class="input-style form-control" style="width: 70px;float: left;margin: 2px" id="end_time_day_forCustom" placeholder="日">
+                    <input type="text" class="input-style form-control" style="width: 70px;float: left;margin: 2px" id="end_time_hour_forCustom" placeholder="时">
+                    <input type="text" class="input-style form-control" style="width: 70px;float: left;margin: 2px" id="end_time_minute_forCustom" placeholder="分">
+                    <input type="text" class="input-style form-control" style="width: 70px;float: left;margin: 2px" id="end_time_second_forCustom" placeholder="秒">
+                    <br>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="getTableForCustomMode($('#start_time_year_forCustom').val(),$('#start_time_month_forCustom').val(),$('#start_time_day_forCustom').val(),$('#start_time_hour_forCustom').val(),$('#start_time_minute_forCustom').val(),$('#start_time_second_forCustom').val(),
+                                                                                 $('#end_time_year_forCustom').val(),$('#end_time_month_forCustom').val(),$('#end_time_day_forCustom').val(),$('#end_time_hour_forCustom').val(),$('#end_time_minute_forCustom').val(),$('#end_time_second_forCustom').val())">确定</button>
+            </div>
+        </div>
+    </div>
+    <div class="div1" id="superModeWindow">
+        <div class="div2" style="width: 600px;height: 250px">
+            <div class="modal-header">
+                <button type="button" onclick="$('#superModeWindow').hide()" class="close">&times;</button>
+                <h4 class="modal-title">设置时间</h4>
+            </div>
+            <div class="modal-body">
+                <div style="width: 600px;height: 50px">
+                    <label style="float: left;margin: 8px">开始时间 </label>
+                    <input type="text" class="input-style form-control" style="width: 70px;float: left;margin: 2px" id="start_time_year" placeholder="年">
+                    <input type="text" class="input-style form-control" style="width: 70px;float: left;margin: 2px" id="start_time_month" placeholder="月">
+                    <input type="text" class="input-style form-control" style="width: 70px;float: left;margin: 2px" id="start_time_day" placeholder="日">
+                    <input type="text" class="input-style form-control" style="width: 70px;float: left;margin: 2px" id="start_time_hour" placeholder="时">
+                    <input type="text" class="input-style form-control" style="width: 70px;float: left;margin: 2px" id="start_time_minute" placeholder="分">
+                    <input type="text" class="input-style form-control" style="width: 70px;float: left;margin: 2px" id="start_time_second" placeholder="秒">
+                </div>
+                <div style="width: 600px;height: 50px">
+                    <label style="float: left;margin: 8px">结束时间 </label>
+                    <input type="text" class="input-style form-control" style="width: 70px;float: left;margin: 2px" id="end_time_year" placeholder="年">
+                    <input type="text" class="input-style form-control" style="width: 70px;float: left;margin: 2px" id="end_time_month" placeholder="月">
+                    <input type="text" class="input-style form-control" style="width: 70px;float: left;margin: 2px" id="end_time_day" placeholder="日">
+                    <input type="text" class="input-style form-control" style="width: 70px;float: left;margin: 2px" id="end_time_hour" placeholder="时">
+                    <input type="text" class="input-style form-control" style="width: 70px;float: left;margin: 2px" id="end_time_minute" placeholder="分">
+                    <input type="text" class="input-style form-control" style="width: 70px;float: left;margin: 2px" id="end_time_second" placeholder="秒">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="getTable($('#start_time_year').val(),$('#start_time_month').val(),$('#start_time_day').val(),$('#start_time_hour').val(),$('#start_time_minute').val(),$('#start_time_second').val(),
+                                                                                 $('#end_time_year').val(),$('#end_time_month').val(),$('#end_time_day').val(),$('#end_time_hour').val(),$('#end_time_minute').val(),$('#end_time_second').val())">确定</button>
+            </div>
+        </div>
+    </div>
+    <div class="div1" id="selectConditionWindow">
+        <div class="div2">
+            <div class="modal-header">
+                <button type="button" onclick="$('#selectConditionWindow').hide()" class="close">&times;</button>
+                <h4 class="modal-title">筛选条件</h4>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <label>仅看指定学院</label>
+                    <input type="text" class="form-control input-style" id="academyNameCondition" placeholder="学院名称">
+                </div>
+                <div>
+                    <label>仅看指定专业</label>
+                    <input type="text" class="form-control input-style" id="majorNameCondition" placeholder="专业名称">
+                </div>
+                <div>
+                    <label>仅看指定班级</label>
+                    <input type="text" class="form-control input-style" id="classIdCondition" placeholder="班级名称">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="$('#selectConditionWindow').hide()">确定</button>
+            </div>
+        </div>
+    </div>
+    <div style="position:absolute;top: 1%;left: 10%;width: 85%;height: 90%">
+        <div style="height: 50px;width: 100%;background-color:lightgray">
+            <div class="col-lg-7" style="float: left">
+                <div style="margin: 8px">
+                    <label style="float: left;margin: 8px" title="使用此功能则会默认启动所有专业的预选课程功能，预选课程为对应专业的所有选修课，仅需设置选课开始时间以及结束时间">一键开启预选课程功能</label>
+                    <div class="switch">
+                        <input type="checkbox" name="useSuperMode" value="useSuperMode" onchange="checkUseSuperMode()">
+                    </div>
+                </div>
+                <div style="position:absolute;top:6px;left: 400px">
+                    <label style="float: left;margin-right: 8px;margin-top: 8px" title="使用此功能可以自定义需预选课程的专业以及他们预选课程">自定义</label>
+                    <button class="btn btn-primary" id="customMode" onclick="$('#customModeWindow').show()">自定义</button>
+                </div>
+            </div>
+        </div>
+        <div style="width: 100%;height: 50px">
+            <div class="col-lg-7" style="float: left;margin: 8px" >
+                <button type="button" class="btn btn-success" id="conditionScreen" onclick="$('#selectConditionWindow').show()" style="margin-left: 8px">
+                    <i class="glyphicon glyphicon-plus"></i>
+                    <span>筛选</span>
+                </button>
+                <button type="button" class="btn btn-primary start" id="searchTask" onclick="searchTask()" style="margin-left: 8px">
+                    <i class="glyphicon glyphicon-search"></i>
+                    <span>查询</span>
+                </button>
+                <button type="button" class="btn btn-danger delete" id="deleteTask" onclick="deleteTask()" style="margin-left: 8px">
+                    <i class="glyphicon glyphicon-wrench "></i>
+                    <span>删除</span>
+                </button>
+            </div>
+        </div>
+        <table style="width: 100%;height: 540px;" id="taskTable">
+            <thead style="background-color: white">
+            <tr>
+                <th>&nbsp;&nbsp;</th>
+                <th>学院</th>
+                <th>专业</th>
+                <th>班级编号</th>
+                <th>预选课程</th>
+                <th>开始时间-结束时间</th>
+            </tr>
+            <tbody id="tbody1">
+            <tr id="1"></tr>
+            <tr id="2"></tr>
+            <tr id="3"></tr>
+            <tr id="4"></tr>
+            <tr id="5"></tr>
+            <tr id="6"></tr>
+            <tr id="7"></tr>
+            <tr id="8"></tr>
+            <tr id="9"></tr>
+            <tr id="10"></tr>
+            <tr id="11"></tr>
+            <tr id="12"></tr>
+            <tr id="13"></tr>
+            <tr id="14"></tr>
+            <tr id="15"></tr>
+            <tr id="16"></tr>
+            <tr id="17"></tr>
+            <tr id="18"></tr>
+            <tr id="19"></tr>
+            <tr id="20"></tr>
+            </tbody>
+            <tfoot>
+            <tr>
+                <td colspan="10">
+                    <ul class="pagination" style="float: right;margin-bottom: 0px">
+                    </ul>
+                </td>
+            </tr>
+            </tfoot>
+        </table>
+    </div>
+    <div id="hiddenRowInfo"></div>
+</div>
+</body>
+</html>

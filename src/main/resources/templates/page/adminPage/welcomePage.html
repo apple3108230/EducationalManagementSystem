@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="ViewPort" content="width=device-width,initial-scale=1">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <link href="/templates/css/universal_style.css" rel="stylesheet">
+    <link rel="stylesheet" href="/templates/css/nav.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="/templates/js/nav.js"></script>
+    <style>
+        .header{
+            height:54px;
+            z-index: 99999;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            background: #000;
+            color: white;
+        }
+        .iframe-box{
+            width: 85%;height: 92.5%;position: absolute;top:7%;left:15%;
+        }
+    </style>
+    <script>
+        function logout() {
+            if(confirm("是否退出登录？")){
+                $.ajax({
+                    url:"/logout",
+                    dataType:"text",
+                    type:"GET",
+                    success:function () {
+                        alert("退出成功！");
+                        window.location.href="/to/login";
+                    },
+                    error:function (data) {
+                        alert(data);
+                    }
+                });
+                return true;
+            }else{
+                return false;
+            }
+        }
+        //防止退出登录后，使用后退功能还能返回到系统中
+        history.go(1);
+    </script>
+</head>
+<body>
+<div class="header">
+    <h3 style="text-align: center">
+        XXXXX大学教务系统
+    </h3>
+    <a style="position: fixed;top: 3%;right: 0;" onclick="logout()">退出</a>
+</div>
+<div class="nav" style="position: absolute;top: 7%;width: 15%;height: 93%;margin: 0">
+    <div class="nav-top">
+        <div id="icon" style="border-bottom:1px solid rgba(255,255,255,.1)">
+            <img th:src="@{/templates/img/mini.png}">
+        </div>
+    </div>
+    <ul>
+        <li class="nav-item">
+            <a href="#">
+                <span>账号管理</span>
+                <i class="my-icon nav-more"></i>
+            </a>
+            <ul>
+                <li><a th:href="@{/to/home/reset_user_pwd}" target="iframe">重置账号密码</a></li>
+            </ul>
+            <ul>
+                <li><a th:href="@{/to/home/account}" target="iframe">账号管理</a> </li>
+            </ul>
+        </li>
+        <li class="nav-item">
+            <a href="#">
+                <span>教务管理</span>
+                <i class="my-icon nav-more"></i>
+            </a>
+            <ul>
+                <li><a th:href="@{/to/home/pre_select_course_task}" target="iframe">预选课程管理</a> </li>
+            </ul>
+            <ul>
+                <li><a th:href="@{/to/home/classroom_timestable}" target="iframe">课程表管理</a> </li>
+            </ul>
+        </li>
+        <li class="nav-item">
+            <a href="#">
+                <span>系统管理</span>
+                <i class="my-icon nav-more"></i>
+            </a>
+            <ul>
+                <li><a th:href="@{/to/home/sensitive_operation}" target="iframe">敏感操作日志</a></li>
+            </ul>
+            <ul>
+                <li><a th:href="@{/to/home/quartz_task}" target="iframe">定时任务管理</a></li>
+            </ul>
+        </li>
+        <li class="nav-item">
+            <a href="#">
+                <span>其他</span>
+                <i class="my-icon nav-more"></i>
+            </a>
+            <ul>
+                <li><a th:href="@{/to/home/upload_score}" target="iframe">学院信息管理</a></li>
+            </ul>
+            <ul>
+                <li><a th:href="@{/to/home/search_score}" target="iframe">专业信息管理</a></li>
+            </ul>
+            <ul>
+                <li><a th:href="@{/to/home/search_score}" target="iframe">课程信息管理</a></li>
+            </ul>
+            <ul>
+                <li><a th:href="@{/to/home/search_score}" target="iframe">教室信息管理</a></li>
+            </ul>
+        </li>
+    </ul>
+</div>
+<div class="iframe-box" id="iframe">
+    <iframe style="width: 100%;height: 100%;border:0" name="iframe"></iframe>
+</div>
+</body>
+</html>

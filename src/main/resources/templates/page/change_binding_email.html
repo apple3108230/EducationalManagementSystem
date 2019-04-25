@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="ViewPort" content="width=device-width,initial-scale=1">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <link href="/templates/css/universal_style.css" rel="stylesheet">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="http://static.runoob.com/assets/jquery-validation-1.14.0/dist/jquery.validate.min.js"></script>
+    <script src="http://static.runoob.com/assets/jquery-validation-1.14.0/dist/localization/messages_zh.js"></script>
+    <style>
+        .input-style{
+            width:260px;
+            padding:10px 12px 10px 10px;
+            background-color: #fffde3;
+        }
+    </style>
+    <script>
+        $.validator.setDefaults({
+            submitHandler:function () {
+                $.ajax({
+                    url:"/bindingEmail",
+                    data:$("#change_email").serialize(),
+                    dataType:"text",
+                    type:"GET",
+                    success:function (data) {
+                        var json=JSON.parse(data);
+                        alert(json.message);
+                    }
+                })
+            }
+        });
+
+        $().ready(function () {
+            $("#change_email").validate({
+                errorClass:"error_msg",
+                rules:{
+                    email:{
+                        required:true,
+                        email:true
+                    },
+                    email2:{
+                        required:true,
+                        equalTo:"#email",
+                        email:true
+                    }
+                }
+            });
+        })
+    </script>
+</head>
+<body>
+<div class="container">
+    <div style="width: 500px;height:400px;position: absolute;left: 40%;top: 25%">
+        <form id="change_email" name="change_email">
+            <div style="position: fixed;left: 35%">
+                <h5 style="float: left">请输入邮箱：</h5>
+                <input type="text" class="input-style form-control" id="email" name="email">
+            </div>
+            <div style="position: fixed;top: 35%;left: 33%;">
+                <h5 style="float: left">请再次输入邮箱：</h5>
+                <input type="text" class="input-style form-control" id="email2" name="email2">
+            </div>
+            <div style="position: fixed;top: 45%;left: 46%">
+                <input type="submit" class="btn btn-lg btn-info" value="修改">
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

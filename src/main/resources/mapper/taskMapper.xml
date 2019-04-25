@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.school_system.demo.dao.TaskDao">
+
+    <resultMap id="scheduleTaskResult" type="com.example.school_system.demo.pojo.ScheduleTask">
+        <id property="id" column="id"></id>
+        <result property="className" column="class_name"></result>
+        <result property="jobName" column="task_name"></result>
+        <result property="jobGroup" column="task_group"></result>
+        <result property="className" column="class_name"></result>
+        <result property="time" column="time"></result>
+        <result property="scheduleTask" column="schedule_task"></result>
+        <result property="cronExpression" column="cron_expression"></result>
+    </resultMap>
+
+    <select id="getScheduleTaskByCondition" resultMap="scheduleTaskResult" parameterType="java.util.Map">
+        select * from schedule_task where 1=1
+        <foreach collection="conditionMap" index="key" item="value" separator="and" open="and">
+            <if test="key=='schedule_task'">
+                <if test="value!=''">
+                    ${key}=#{value}
+                </if>
+            </if>
+            <if test="key=='time'">
+                <if test="value!=''">
+                    ${key}=#{value}
+                </if>
+            </if>
+            <if test="key=='cron_expression'">
+                <if test="value!=''">
+                    ${key}=#{value}
+                </if>
+            </if>
+        </foreach>
+    </select>
+
+    <select id="getScheduleTaskByLastId" resultMap="scheduleTaskResult" parameterType="java.util.Map">
+        select * from schedule_task where 1=1
+        <foreach collection="conditionMap" index="key" item="value" separator="and" open="and">
+            <if test="key=='schedule_task'">
+                <if test="value!=''">
+                    ${key}=#{value}
+                </if>
+            </if>
+            <if test="key=='time'">
+                <if test="value!=''">
+                    ${key}=#{value}
+                </if>
+            </if>
+        </foreach>
+    </select>
+
+    <select id="getAllScheduleTask" resultMap="scheduleTaskResult">
+        select * from schedule_task
+    </select>
+
+    <update id="updateScheduleTask" parameterType="string">
+        update schedule_task set time=#{time},cron_expression=#{cron_expression} where schedule_task=#{scheduleTask}
+    </update>
+
+    <delete id="deleteScheduleTask" parameterType="string">
+        delete * from schedule_task where schedule_task=#{scheduleTask}
+    </delete>
+
+    <insert id="insertScheduleTask" parameterType="scheduleTask" useGeneratedKeys="true" keyProperty="id">
+        insert into schedule_task(schedule_task,task_name,task_group,cron_expression,class_name,time) values (#{scheduleTask},#{jobName},#{jobGroup},#{cronExpression},#{className},#{time})
+    </insert>
+
+</mapper>

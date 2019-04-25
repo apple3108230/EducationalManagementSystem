@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="ViewPort" content="width=device-width,initial-scale=1">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <style>
+        .border{
+            margin: 0 2%;
+        }
+        .line{
+            font-size: 14px;
+            font-weight: bold;
+            border-bottom: 2px solid #005cbf;
+        }
+        .input-style{
+            width:150px;
+            padding:10px 12px 10px 10px;
+            background-color: #fffde3;
+        }
+    </style>
+    <script>
+        function submitForm() {
+            if($("#username").val()==null||$("#username").val()==""){
+                alert("您还没有输入账号");
+                return false;
+            }
+            $.ajax({
+                url:"/admin/resetUser",
+                type:"get",
+                dataType:"json",
+                data:$("form").serialize(),
+                success:function (data) {
+                    alert(data.message);
+                    $("#username").val("");
+                    $("input[type='checkbox']").attr("checked",false);
+                },
+                error:function () {
+                    alert("系统错误!修改失败！");
+                }
+            })
+        }
+    </script>
+</head>
+<body>
+<div class="container">
+    <div class="border line">
+        重置账号密码
+    </div>
+    <div style="width: 500px;height:400px;position: absolute;left: 40%;top: 25%;">
+        <form>
+            <div style="position:relative;left: 25%;margin-top:30px">
+                <label style="float: left;margin-top: 7px">需要重置的账号：</label>
+                <input type="text" class="form-control input-style" placeholder="账号" id="username" name="username">
+            </div>
+            <div style="position:relative;left: 25%;margin-top: 30px">
+                <input type="checkbox" value="resetBindEmail" name="checkboxValue">是否取消已绑定的邮箱
+            </div>
+            <div style="position: relative;left: 40%;margin-top: 50px">
+                <button type="button" class="btn btn-primary btn-lg" onclick="submitForm()">确定</button>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

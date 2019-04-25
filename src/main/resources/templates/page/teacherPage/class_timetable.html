@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="ViewPort" content="width=device-width,initial-scale=1">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <style>
+        .border{
+            margin: 0 2%;
+        }
+        .line{
+            font-size: 14px;
+            font-weight: bold;
+            border-bottom: 2px solid #005cbf;
+        }
+        .timestable{
+            width: 1000px;height:600px;position:absolute;top:10%;right:0;left:10px;display: none;text-align: center
+        }
+    </style>
+    <script>
+
+        function cleanTable() {
+            for(var i=1;i<43;i++){
+                $("td[name="+i+"]").html("");
+            }
+        }
+
+        function getTimestable(){
+            $.ajax({
+                url:"/teacher/getClassTimestable",
+                type:"GET",
+                data:{
+                    classId:$("#classId option:selected").val()
+                },
+                dataType:"json",
+                success:function (data) {
+                    if(data==''||data==null){
+                        alert("此班级没有课程安排");
+                        return false;
+                    }
+                    cleanTable();
+                    var p=eval(data);
+                    for(var i in p){
+                        var str=p[i].time;
+                        var week=str.charAt(1);
+                        var time=str.substring(4,7);
+                        var notice;
+                        if(p[i].notice==null){
+                            notice=" ";
+                        }else{
+                            notice=p[i].notice;
+                        }
+                        if(week=="一"){
+                            $("#"+"Mon"+time).html(p[i].courseName+"</br>"+p[i].teacherName+"</br>"+p[i].time+notice+"</br>"+p[i].classroomName);
+                        }
+                        if(week=="二"){
+                            $("#"+"Tus"+time).html(p[i].courseName+"</br>"+p[i].teacherName+"</br>"+p[i].time+notice+"</br>"+p[i].classroomName);
+                        }
+                        if(week=="三"){
+                            $("#"+"Wed"+time).html(p[i].courseName+"</br>"+p[i].teacherName+"</br>"+p[i].time+notice+"</br>"+p[i].classroomName);
+                        }
+                        if(week=="四"){
+                            $("#"+"Tur"+time).html(p[i].courseName+"</br>"+p[i].teacherName+"</br>"+p[i].time+notice+"</br>"+p[i].classroomName);
+                        }
+                        if(week=="五"){
+                            $("#"+"Fri"+time).html(p[i].courseName+"</br>"+p[i].teacherName+"</br>"+p[i].time+notice+"</br>"+p[i].classroomName);
+                        }
+                        if(week=="六"){
+                            $("#"+"Sat"+time).html(p[i].courseName+"</br>"+p[i].teacherName+"</br>"+p[i].time+notice+"</br>"+p[i].classroomName);
+                        }
+                        if(week=="日"){
+                            $("#"+"Sun"+time).html(p[i].courseName+"</br>"+p[i].teacherName+"</br>"+p[i].time+notice+"</br>"+p[i].classroomName);
+                        }
+                    }
+                    $("#timestable").show();
+                    $("#printPage").show();
+                }
+            });
+        }
+
+        function printPage() {
+            $("#title").hide();
+            $("#form").hide();
+            $("#printPage").hide();
+            window.print();
+            $("#title").show();
+            $("#form").show();
+            $("#printPage").show();
+        }
+
+    </script>
+</head>
+<body>
+<div class="container">
+    <div class="border line" id="title">班级课程安排表</div>
+    <div style="position: absolute;left: 42%;top:5%" id="form">
+        <form id="termForm">
+            <label>班级编号</label>&nbsp;
+            <select id="classId" style="width:100px">
+                <option th:each="classId:${session.classIds}" th:value="${classId}" th:text="${classId}"></option>
+            </select>
+            <input type="button" value="检索" onclick="getTimestable()" style="position: relative;left: 20%;">
+        </form>
+    </div>
+    <a href="#" style="position:absolute;right: 12%;display: none;" id="printPage" onclick="printPage()">打印</a>
+    <div id="timestable" class="timestable">
+        <table style="border-collapse: collapse;border: 1px solid black">
+            <tbody>
+            <tr style="border-collapse: collapse;border: 1px solid black">
+                <td width="27" height="40" colspan="2" style="border-collapse: collapse;border: 1px solid black"></td>
+                <td width="135" style="border-collapse: collapse;border: 1px solid black">星期一</td>
+                <td width="135" style="border-collapse: collapse;border: 1px solid black">星期二</td>
+                <td width="135" style="border-collapse: collapse;border: 1px solid black">星期三</td>
+                <td width="135" style="border-collapse: collapse;border: 1px solid black">星期四</td>
+                <td width="135" style="border-collapse: collapse;border: 1px solid black">星期五</td>
+                <td width="135" style="border-collapse: collapse;border: 1px solid black">星期六</td>
+                <td width="135" style="border-collapse: collapse;border: 1px solid black">星期天</td>
+            </tr>
+            <tr>
+                <td width="27" height="120" rowspan="2" style="text-align: center;border-collapse: collapse;border: 1px solid black">上<br></br>午</td>
+                <td width="27" style="text-align: center;font-weight: bold;border-collapse: collapse;border: 1px solid black">一</td>
+                <td height="135" id="Mon1-2" name="1" style="border-collapse: collapse;border: 1px solid black"></td>
+                <td height="135" id="Tus1-2" name="2" style="border-collapse: collapse;border: 1px solid black"></td>
+                <td height="135" id="Wed1-2" name="3" style="border-collapse: collapse;border: 1px solid black"></td>
+                <td height="135" id="Tur1-2" name="4" style="border-collapse: collapse;border: 1px solid black"></td>
+                <td height="135" id="Fri1-2" name="5" style="border-collapse: collapse;border: 1px solid black"></td>
+                <td height="135" id="Sat1-2" name="6" style="border-collapse: collapse;border: 1px solid black"></td>
+                <td height="135" id="Sun1-2" name="7" style="border-collapse: collapse;border: 1px solid black"></td>
+            </tr>
+            <tr>
+                <td width="27" style="text-align: center;font-weight: bold;border-collapse: collapse;border: 1px solid black">二</td>
+                <td height="135" id="Mon3-4" name="8" style="border-collapse: collapse;border: 1px solid black"></td>
+                <td height="135" id="Tus3-4" name="9" style="border-collapse: collapse;border: 1px solid black"></td>
+                <td height="135" id="Wed3-4" name="10" style="border-collapse: collapse;border: 1px solid black"></td>
+                <td height="135" id="Tur3-4" name="11" style="border-collapse: collapse;border: 1px solid black"></td>
+                <td height="135" id="Fri3-4" name="12" style="border-collapse: collapse;border: 1px solid black"></td>
+                <td height="135" id="Sat3-4" name="13" style="border-collapse: collapse;border: 1px solid black"></td>
+                <td height="135" id="Sun3-4" name="14" style="border-collapse: collapse;border: 1px solid black"></td>
+            </tr>
+            <tr>
+                <td width="27" height="120" rowspan="2" style="text-align: center;border-collapse: collapse;border: 1px solid black">下<br></br>午</td>
+                <td width="27" style="text-align: center;font-weight: bold;border-collapse: collapse;border: 1px solid black">三</td>
+                <td height="135" id="Mon5-6" name="15" style="border-collapse: collapse;border: 1px solid black"></td>
+                <td height="135" id="Tus5-6" name="16" style="border-collapse: collapse;border: 1px solid black"></td>
+                <td height="135" id="Wed5-6" name="17" style="border-collapse: collapse;border: 1px solid black"></td>
+                <td height="135" id="Tur5-6" name="18" style="border-collapse: collapse;border: 1px solid black"></td>
+                <td height="135" id="Fri5-6" name="19" style="border-collapse: collapse;border: 1px solid black"></td>
+                <td height="135" id="Sat5-6" name="20" style="border-collapse: collapse;border: 1px solid black"></td>
+                <td height="135" id="Sun5-6" name="21" style="border-collapse: collapse;border: 1px solid black"></td>
+            </tr>
+            <tr>
+                <td width="27" style="text-align: center;font-weight: bold;border-collapse: collapse;border: 1px solid black">四</td>
+                <td height="135" id="Mon7-8" name="22" style="border-collapse: collapse;border: 1px solid black"></td>
+                <td height="135" id="Tus7-8" name="23" style="border-collapse: collapse;border: 1px solid black"></td>
+                <td height="135" id="Wed7-8" name="24" style="border-collapse: collapse;border: 1px solid black"></td>
+                <td height="135" id="Tur7-8" name="25" style="border-collapse: collapse;border: 1px solid black"></td>
+                <td height="135" id="Fri7-8" name="26" style="border-collapse: collapse;border: 1px solid black"></td>
+                <td height="135" id="Sat7-8" name="27" style="border-collapse: collapse;border: 1px solid black"></td>
+                <td height="135" id="Sun7-8" name="28" style="border-collapse: collapse;border: 1px solid black"></td>
+            </tr>
+            <tr>
+                <td width="27" height="40" rowspan="2" style="text-align: center;border-collapse: collapse;border: 1px solid black">晚</br>上</td>
+                <td width="27" style="text-align: center;font-weight: bold;border-collapse: collapse;border: 1px solid black">五</td>
+                <td id="Mon9-10" name="29" style="border-collapse: collapse;border: 1px solid black"></td>
+                <td id="Tus9-10" name="30" style="border-collapse: collapse;border: 1px solid black"></td>
+                <td id="Wed9-10" name="31"style="border-collapse: collapse;border: 1px solid black"></td>
+                <td id="Tur9-10" name="32"style="border-collapse: collapse;border: 1px solid black"></td>
+                <td id="Fri9-10" name="33"style="border-collapse: collapse;border: 1px solid black"></td>
+                <td id="Sat9-10" name="34"style="border-collapse: collapse;border: 1px solid black"></td>
+                <td id="Sun9-10" name="35"style="border-collapse: collapse;border: 1px solid black"></td>
+            </tr>
+            <tr>
+                <td width="27" style="text-align: center;font-weight: bold;border-collapse: collapse;border: 1px solid black">六</td>
+                <td id="Mon11-12" name="36"style="border-collapse: collapse;border: 1px solid black"></td>
+                <td id="Tus11-12" name="37"style="border-collapse: collapse;border: 1px solid black"></td>
+                <td id="Wed11-12" name="38"style="border-collapse: collapse;border: 1px solid black"></td>
+                <td id="Tur11-12" name="39"style="border-collapse: collapse;border: 1px solid black"></td>
+                <td id="Fri11-12" name="40"style="border-collapse: collapse;border: 1px solid black"></td>
+                <td id="Sat11-12" name="41"style="border-collapse: collapse;border: 1px solid black"></td>
+                <td id="Sun11-12" name="42"style="border-collapse: collapse;border: 1px solid black"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="ViewPort" content="width=device-width,initial-scale=1">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <style>
+        .border{
+            margin: 0 2%;
+        }
+        .line{
+            font-size: 14px;
+            font-weight: bold;
+            border-bottom: 2px solid #005cbf;
+        }
+        table td{
+            border: 1px solid black;
+            width: 100px;
+            height: 50px;
+        }
+        table tr{
+            border: 1px solid black;
+        }
+        table {
+            border: 1px solid black;
+            width: 600px;
+            height: 300px;
+            text-align: center;
+            position: absolute;
+            top:20%;
+            left: 30%;
+        }
+    </style>
+    <script>
+        $().ready(function () {
+            $.ajax({
+                type:"GET",
+                url:"/teacher/info",
+                async:false,
+                dataType:"json",
+                success:function (data) {
+                    /**
+                     * p：key data[p]：key对应的value
+                     */
+                    for(var p in data){
+                        $("#"+p).html(data[p]);
+                    }
+                },
+                error:function (data) {
+                    alert(data);
+                }
+            })
+        })
+    </script>
+</head>
+<body>
+<div class="container">
+    <div class="border line">个人信息</div>
+    <table>
+        <tbody>
+        <tr>
+            <td>教师id</td>
+            <td id="id"> </td>
+            <td>姓名</td>
+            <td id="name"> </td>
+            <td>性别</td>
+            <td id="sex"> </td>
+        </tr>
+        <tr>
+            <td>出生日期</td>
+            <td id="birthDay"> </td>
+            <td>籍贯</td>
+            <td colspan="3" id="jiguan"></td>
+        </tr>
+        <tr>
+            <td>民族</td>
+            <td id="nation"> </td>
+            <td>政治面貌</td>
+            <td id="zzFace"> </td>
+            <td>学历</td>
+            <td> </td>
+
+        </tr>
+        <tr>
+            <td>婚姻状况</td>
+            <td id="maritalStatus"> </td>
+            <td>健康情况</td>
+            <td colspan="3" id="healthCondition"></td>
+        </tr>
+        <tr>
+            <td>家庭地址</td>
+            <td colspan="5" id="addr"></td>
+        </tr>
+        <tr>
+            <td>联系电话</td>
+            <td colspan="2" id="tel"></td>
+            <td>证件号码</td>
+            <td colspan="2" id="idNum"></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

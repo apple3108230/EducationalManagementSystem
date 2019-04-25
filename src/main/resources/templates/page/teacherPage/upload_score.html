@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="ViewPort" content="width=device-width,initial-scale=1">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/templates/css/jquery.fileupload.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="/templates/js/jquery.ui.widget.js"></script>
+    <script src="/templates/js/jquery.iframe-transport.js"></script>
+    <script src="/templates/js/jquery.fileupload.js"></script>
+    <script src="/templates/js/jquery.fileupload-process.js"></script>
+    <script src="/templates/js/jquery.fileupload-validate.js"></script>
+    <script>
+
+        function showUploadManyWindow() {
+            alert("使用批量上传文件时，最多只能一次性上传10个！");
+            $("#uploadManyWindow").show();
+        }
+
+        function showUploadScoresWindow(){
+            alert("每次只能最多上传10条成绩记录！")
+            $("#uploadWindow").show();
+        }
+
+        function showaddScoreWindow(){
+            for(var i=1;i<=10;i++){
+                var context=$("tr[name="+i+"]").html();
+                if(context==""||context==null){
+                    $("#addScoreWindow").show();
+                    return true;
+                    break;
+                }
+            }
+            $("#addScores").attr("disabled",true);
+            return false;
+
+        }
+
+        $(function() {
+
+            $(document).on("click","#addFile",function () {
+                $("#uploadFiles").click();
+            });
+
+            function validateData(file){
+                var temp=file.name.split(".")
+                var fileName = temp[1];
+                //获取文件大小
+                var fileSize = file.size;
+                if(/(xls|xlsx)$/.test(fileName)&&fileSize <= 1024 * 1024 * 3){
+                    return true;
+                }else if(!/(xls|xlsx)$/.test(fileName)){
+                    //alert("文件名为："+file.name+"格式不正确");
+                    return false;
+                }else if(fileSize > 1024 * 1024 * 3){
+                    //alert("文件名为："+file.name+"超过3m！")
+                    return false;
+                }else{
+                    return false;
+                }
+
+            }
+
+
+            $('#uploadFiles').fileupload({
+                url : '/teacher/uploadFile',
+                Type : 'POST',
+                sequentialUploads:true,//使用队列上传
+                dataType:"json",
+                autoUpload : false
+            })
+            //图片添加完成后触发的事件
+                .on("fileuploadadd", function(e, data) {
+                    $("#addFile").attr("disabled",true);
+                    $("#deleteAll").attr("disabled",false);
+                    $("#StartUploadFile").attr("disabled",false);
+                    if(data.originalFiles.length>10){
+                        alert("超过最大上传数量！");
+                        return false;
+                    }
+                    for(var i=0;i<data.originalFiles.length;i++){
+                        //if(data.originalFiles[i].name!=''&&data.originalFiles[i].name!=null){
+                        //validate(data.files[0]);
+                        if(validateData(data.originalFiles[i])){
+                            var temp1=data.originalFiles[i].name.split(".");
+                            $("#"+i).html("<td>"+data.originalFiles[i].name+"</td><td>"+data.originalFiles[i].size+"</td><td>"+"."+temp1[1]+"</td><td>\n" +
+                                "                                <button type=\"button\" class=\"btn btn-danger delete\">\n" +
+                                "                                    <i class=\"glyphicon glyphicon-trash\"></i>\n" +
+                                "                                    <span>删除文件</span>\n" +
+                                "                                </button>\n" +
+                                "                            </td>");
+
+                        }
+                        //}
+                    }
+                    //隐藏或显示页面元素
+                    $('#progress .bar').css(
+                        'width', '0%'
+                    );
+
+                    //绑定开始上传事件
+                    $('#StartUploadFile').click(function() {
+                        jqXHR = data.submit();
+                        //解绑，防止重复执行
+                        $("#StartUploadFile").off("click");
+                        $("#cancelUpload").attr("disabled",false);
+                        $("#addFile").attr("disabled",true);
+                        $("#deleteAll").attr("disabled",true);
+                        $("#StartUploadFile").attr("disabled",false);
+                    })
+
+                    //绑定点击重选事件
+                    $("#deleteAll").click(function(){
+                        for(var i=0;i<10;i++){
+                            $("#"+i).html("");
+                        }
+                        //解绑，防止重复执行
+                        $("#rechooseFile").off("click");
+                        $("#addFile").attr("disabled",false);
+                    })
+                })
+                //当一个单独的文件处理队列结束触发(验证文件格式和大小)
+                .on("fileuploadprocessalways", function(e, data) {
+                    for(var i=0;i<data.files.length;i++){
+                        file = data.files[i];
+                        if (file.error) {
+                            alert(file.error);
+                        }
+                    }
+                })
+                //显示上传进度条
+                .on("fileuploadprogressall", function(e, data) {
+                    $('#progress .bar').show();
+                    var progress = parseInt(data.loaded / data.total * 100, 10);
+                    $('#progress').css(
+                        'width','100px'
+                    );
+                    $('#progress .bar').css(
+                        'width',progress + '%'
+                    );
+                })
+                //上传请求失败时触发的回调函数
+                .on("fileuploadfail", function(e, data) {
+                    alert(data.errorThrown);
+                })
+                //上传请求成功时触发的回调函数
+                .on("fileuploaddone", function(e, data) {
+                    alert(data.result);
+                    $("#addFile").attr("disabled",false);
+                    $("#deleteAll").attr("disabled",true);
+                    $("#StartUploadFile").attr("disabled",true);
+                    $("#cancelUpload").attr("disabled",true);
+
+                })
+                //上传请求结束后，不管成功，错误或者中止都会被触发
+                .on("fileuploadalways", function(e, data) {
+
+                })
+
+        });
+
+        function isNum(numValue){
+            var reg1=/^[0-9]+(.[0-9]{1})?$/;//非负数
+            if(reg1.test(numValue)){
+                return true;
+            }else{
+                return false;
+            }
+
+        }
+
+        function addScore() {
+            var course=$("#course").val();
+            var studentId=$("#student_id").val();
+            var usualScore=$("#usual_score").val();
+            var examScore=$("#exam_score").val();
+            var credit=$("#credit").val();
+            var term=$("#term").val();
+            if(course!=""&&studentId!=""&&usualScore!=""&&examScore!=""&&credit!=""&&term!=""){
+                if(!isNum(usualScore)||!isNum(examScore)||!isNum(credit)){
+                    alert("平时成绩、期末成绩和学分只能是数字格式！");
+                    return false;
+                }
+                var scoreJson={"course":course,"studentId":studentId,"usualScore":usualScore,"examScore":examScore,"credit":credit,"term":term};
+                $.ajax({
+                    url:"/teacher/checkScoreExist",
+                    contentType:"application/json",
+                    type:"post",
+                    data:JSON.stringify(scoreJson),
+                    dataType: "json",
+                    success:function (data) {
+                        if(data.message=="已经存在此成绩记录！"){
+                            alert(data.message);
+                            return false;
+                        }else{
+                            for(var i=11;i<=20;i++){
+                                var context=$("#"+i).html();
+                                if(context==""||context==null){
+                                    $("#"+i).html("<td class='course'>"+course+"</td><td class='studentId'>"+studentId+"</td><td class='usualScore'>"+usualScore+"</td><td class='examScore'>"+examScore+"</td><td class='credit'>"+credit+"</td><td class='term'>"+term+"</td><td><button type='button' class='btn btn-danger' onclick='BeforechangeScore(this)'>修改</button> </td>");
+                                    alert("添加成功！");
+                                    $("#StartUploadScores").attr("disabled",false);
+                                    $("#deleteAllScores").attr("disabled",false);
+                                    $("#addScoreWindow").hide();
+                                    $("#course").val("");
+                                    $("#student_id").val("");
+                                    $("#usual_score").val("");
+                                    $("#exam_score").val("");
+                                    $("#credit").val("");
+                                    $("#term").val("");
+                                    break;
+                                }
+                            }
+                            return true;
+                        }
+                    },
+                    error:function () {
+                        alert("system error");
+                    }
+                });
+            }else{
+                alert("您有文本框还没输入内容！");
+                return false;
+            }
+        }
+
+        function BeforechangeScore(button) {
+            var course=$(button).parents("tr").find(".course").text();
+            var studentId=$(button).parents("tr").find(".studentId").text();
+            var usualScore=$(button).parents("tr").find(".usualScore").text();
+            var examScore=$(button).parents("tr").find(".examScore").text();
+            var credit=$(button).parents("tr").find(".credit").text();
+            var term=$(button).parents("tr").find(".term").text();
+            $(button).parents("tr").html("       <td><input type=\"text\" class=\"form-control input-style course\" id='course' placeholder=\"考试科目名\" value="+course+"></td>\n" +
+                "                                <td><input type=\"text\" class=\"form-control input-style student_id\" id='studentId' placeholder=\"学生学号\" value="+studentId+"></td>\n" +
+                "                                <td><input type=\"text\" class=\"form-control input-style usual_score\" id='usualScore' placeholder=\"平时成绩\" value="+usualScore+"></td>\n" +
+                "                                <td><input type=\"text\" class=\"form-control input-style exam_score\" id='examScore' placeholder=\"期末成绩\" value="+examScore+"></td>\n" +
+                "                                <td><input type=\"text\" class=\"form-control input-style credit\" id='credit' placeholder=\"学分\" value="+credit+"></td>\n" +
+                "                                <td><input type=\"text\" class=\"form-control input-style term\" id='term' placeholder=\"学期年度\" value="+term+"></td>"+
+                "                                <td><button type='button' class='btn btn-warning' onclick='changeScore(this)'>确定</td>");
+        }
+
+        function changeScore(button) {
+            var course=$(button).parents("tr").find("#course").val().trim();
+            var studentId=$(button).parents("tr").find("#studentId").val().trim();
+            var usualScore=$(button).parents("tr").find("#usualScore").val().trim();
+            var examScore=$(button).parents("tr").find("#examScore").val().trim();
+            var credit=$(button).parents("tr").find("#credit").val().trim();
+            var term=$(button).parents("tr").find("#term").val().trim();
+            if(course!=""&&studentId!=""&&usualScore!=""&&examScore!=""&&credit!=""&&term!=""){
+                if(!isNum(usualScore)||!isNum(examScore)||!isNum(credit)){
+                    alert("平时成绩、期末成绩和学分只能是数字格式！");
+                    return false;
+                }
+                var scoreJson={"course":course,"studentId":studentId,"usualScore":usualScore,"examScore":examScore,"credit":credit,"term":term};
+                $.ajax({
+                    url:"/teacher/checkScoreExist",
+                    contentType:"application/json",
+                    type:"post",
+                    data:JSON.stringify(scoreJson),
+                    success:function (data) {
+                        if(data.message=="已经存在此成绩记录！"){
+                            alert(data.message);
+                            return false;
+                        }else{
+                            $(button).parents("tr").html("<td class='course'>"+course+"</td><td class='studentId'>"+studentId+"</td><td class='usualScore'>"+usualScore+"</td><td class='examScore'>"+examScore+"</td><td class='credit'>"+credit+"</td><td class='term'>"+term+"</td><td><button type='button' class='btn btn-danger' onclick='deleteScore(this)'>删除</button> </td>");
+                            $("#startUploadScores").attr("disabled",false);
+                            $("#deleteAllScores").attr("disabled",false);
+                            alert("修改成功！");
+                            return true;
+                        }
+                    }
+                })
+            }
+        }
+
+        function deleteScores() {
+            for(var i=0;i<=20;i++){
+                $("#"+i).html("");
+            }
+            alert("删除成功！");
+            $("#startUploadScores").attr("disabled",false);
+        }
+
+
+        function htmlTable2Json() {
+            var table=document.getElementById('studentsScore');
+            var json="[";
+            if(table.rows[2].innerHTML==""||table.rows[2].innerHTML==null){
+                alert("您还没有添加成绩，无法上传！");
+                return false;
+            }
+            for(var i=2;i<=table.rows.length;i++){
+                if(table.rows[i].innerHTML==""||table.rows[i].innerHTML==null){
+                    break;
+                }else{
+                    json+='{"course":"' + table.rows[i].cells[0].innerHTML + '","studentId":"' + table.rows[i].cells[1].innerHTML + '","usualScore":"' + table.rows[i].cells[2].innerHTML + '","examScore":"' + table.rows[i].cells[3].innerHTML + '","credit":"' + table.rows[i].cells[4].innerHTML +'","term":"' + table.rows[i].cells[5].innerHTML +'"},'
+                    continue;
+                }
+            }
+            json=json.substr(0,json.length-1);
+            json+="]";
+            return json;
+        }
+
+        function uploadScores() {
+            var scores=htmlTable2Json();
+            $.ajax({
+                url:"/teacher/uploadScores",
+                dataType:"json",
+                // 若不指定application/json，则会报错451
+                contentType:"application/json",
+                type:"POST",
+                data:scores,
+                success:function(data){
+                    var json=JSON.parse(data);
+                    alert(json.message);
+                },
+                error:function () {
+                    alert("上传失败！");
+                }
+            })
+        }
+
+    </script>
+    <style>
+        .div1{
+            position: absolute;top: 0%;left: 0%;
+            height: 100%;width: 100%;
+            background-color:rgba(0,0,0,0.3);
+            z-index: 100;
+            display: none;
+        }
+        .div2{
+            width: 1200px;height: 670px;
+            background-color: white;
+            position: absolute;top:2%;left: 5%;
+            z-index: 1000;
+            border-radius: 10px;
+        }
+
+        .input-style{
+            width:150px;
+            padding:10px 12px 10px 10px;
+            background-color: #fffde3;
+        }
+
+        table tbody td{
+            border: 1px solid silver;
+            text-align: center;
+            height: 50px;
+        }
+
+        table tbody tr{
+            border: 1px solid silver;
+        }
+
+        table th{
+            border-left: 1px solid silver;
+            border-right: 1px solid silver;
+            text-align: center;
+            height: 30px;
+            background-color: lightgray;
+        }
+
+        table tr td input[type=text]{
+        .input-style;
+
+        }
+
+        .bar {
+            background-image: -webkit-linear-gradient(top,#5cb85c 0,#449d44 100%);
+            background-image: -o-linear-gradient(top,#5cb85c 0,#449d44 100%);
+            background-image: -webkit-gradient(linear,left top,left bottom,from(#5cb85c),to(#449d44));
+            background-image: linear-gradient(to bottom,#5cb85c 0,#449d44 100%);
+            filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff5cb85c', endColorstr='#ff449d44', GradientType=0);
+            background-repeat: repeat-x;
+            height: 20px;
+            line-height: 20px;
+            -webkit-box-shadow: inset 0 -1px 0 rgba(0,0,0,.15);
+            box-shadow: inset 0 -1px 0 rgba(0,0,0,.15);
+            -webkit-transition: width .6s ease;
+            -o-transition: width .6s ease;
+            transition: width .6s ease;
+            position: fixed;
+            top:83%;
+            left: 15%;
+        }
+
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="div1" id="uploadManyWindow">
+        <div class="div2">
+            <div style="position:absolute;top: 1%;left: 14.9%;">
+                <table style="width: 850px;height: 600px;">
+                    <thead style="background-color: white">
+                    <tr colspan="4">
+                        <div class="row fileupload-buttonbar">
+                            <div class="col-lg-7 jquery-fileupload" style="float: right;margin: 3px" >
+                                <input type="file" id="uploadFiles" style="display: none" multiple>
+                                <span class="btn btn-success fileinput-button" id="addFile">
+                                    <i class="glyphicon glyphicon-plus"></i>
+                                    <span>添加文件</span>
+                                    <input type="button">
+                                </span>
+                                <button type="button" class="btn btn-primary start" id="StartUploadFile" disabled="disabled">
+                                    <i class="glyphicon glyphicon-upload"></i>
+                                    <span>开始上传</span>
+                                </button>
+                                <button type="button" class="btn btn-warning cancel"v id="cancelUpload" disabled="disabled">
+                                    <i class="glyphicon glyphicon-ban-circle"></i>
+                                    <span>取消上传</span>
+                                </button>
+                                <button type="button" class="btn btn-danger delete" id="deleteAll" disabled="disabled">
+                                    <i class="glyphicon glyphicon-trash"></i>
+                                    <span>重新选择文件</span>
+                                </button>
+                            </div>
+                        </div>
+                    </tr>
+                    </thead>
+                    <tbody id="tbody">
+                    <tr>
+                        <th width="212px">文件名</th>
+                        <th width="150px">文件大小</th>
+                        <th width="150px">文件格式</th>
+                        <th>操作</th>
+                    </tr>
+                    <tr id="0"></tr>
+                    <tr id="1"></tr>
+                    <tr id="2"></tr>
+                    <tr id="3"></tr>
+                    <tr id="4"></tr>
+                    <tr id="5"></tr>
+                    <tr id="6"></tr>
+                    <tr id="7"></tr>
+                    <tr id="8"></tr>
+                    <tr id="9"></tr>
+                    <tr id="10" style="border: none;">
+                        <td colspan="4">
+                            <div id="progress">
+                                <label style="position: absolute;left: 7%;top: 94%">进度</label>
+                                <div class="bar" style="width: 0px;display: none"></div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div style="width: 600px;height: 200px;position: absolute;top: 20%;left: 40%;">
+        <div style="position: absolute;top:1%;left: 10%">
+            <label>选择上传成绩方式</label>
+        </div>
+        <div style="position: absolute;top:27%;left: 2%">
+            <button type="button" class="btn btn-primary" onclick="showUploadManyWindow()">批量上传文件</button>
+            <button type="button" class="btn btn-primary" id="uploadOne" onclick="showUploadScoresWindow()">单条上传成绩</button>
+        </div>
+    </div>
+    <div class="div1" id="uploadWindow">
+        <div class="div2">
+            <div style="position:absolute;top: 1%;left: 14.9%;">
+                <table style="width: 850px;height: 600px;" id="studentsScore">
+                    <thead style="background-color: white">
+                    <tr colspan="4">
+                        <div class="row fileupload-buttonbar">
+                            <div class="col-lg-7" style="float: right;margin: 3px" >
+                                <span class="btn btn-success fileinput-button" id="addScores" onclick="showaddScoreWindow()">
+                                    <i class="glyphicon glyphicon-plus"></i>
+                                    <span>添加成绩</span>
+                                    <input type="button">
+                                </span>
+                                <button type="button" class="btn btn-primary start" id="StartUploadScores" disabled="disabled" onclick="uploadScores()">
+                                    <i class="glyphicon glyphicon-upload"></i>
+                                    <span>提交</span>
+                                </button>
+                                <button type="button" class="btn btn-danger delete" id="deleteAllScores" disabled="disabled" onclick="deleteScores()">
+                                    <i class="glyphicon glyphicon-trash"></i>
+                                    <span>重新添加成绩</span>
+                                </button>
+                            </div>
+                        </div>
+                    </tr>
+                    </thead>
+                    <tbody id="tbody1">
+                    <tr>
+                        <th>考试科目名</th>
+                        <th>学生学号</th>
+                        <th>平时成绩</th>
+                        <th>期末成绩</th>
+                        <th>学分</th>
+                        <th>学期年度</th>
+                        <th>操作</th>
+                    </tr>
+                    <tr id="11"></tr>
+                    <tr id="12"></tr>
+                    <tr id="13"></tr>
+                    <tr id="14"></tr>
+                    <tr id="15"></tr>
+                    <tr id="16"></tr>
+                    <tr id="17"></tr>
+                    <tr id="18"></tr>
+                    <tr id="19"></tr>
+                    <tr id="20"></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="div1" id="addScoreWindow">
+                <div class="div2" style="width: 1000px;height: 300px">
+                    <h2 style="float: right;margin-right: 20px;margin-top: 10px;cursor: default" onclick='$("#addScoreWindow").hide();'>&times;</h2>
+                    <table id="addScore" style="width: 850px;height:20px;margin-top: 80px;margin-left: 45px">
+                        <thead>
+                        <tr>
+                            <th>考试科目名</th>
+                            <th>学生学号</th>
+                            <th>平时成绩</th>
+                            <th>期末成绩</th>
+                            <th>学分</th>
+                            <th>学期年度</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td><input type="text" class="form-control input-style" placeholder="考试科目名" id="course"></td>
+                            <td><input type="text" class="form-control input-style" placeholder="学生学号" id="student_id"></td>
+                            <td><input type="text" class="form-control input-style" placeholder="平时成绩" id="usual_score"></td>
+                            <td><input type="text" class="form-control input-style" placeholder="期末成绩" id="exam_score"></td>
+                            <td><input type="text" class="form-control input-style" placeholder="学分" id="credit"></td>
+                            <td><input type="text" class="form-control input-style" placeholder="学期年度" id="term"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <button type="button" class="btn btn-primary" style="float: right;margin-top: 80px;margin-right: 50px" onclick="addScore()">确定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

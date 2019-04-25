@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="ViewPort" content="width=device-width,initial-scale=1">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <style>
+        table tbody td{
+            border: 1px solid silver;
+            text-align: center;
+            height: 20px;
+        }
+
+        table tbody tr{
+            border: 1px solid silver;
+        }
+
+        table th{
+            border-left: 1px solid silver;
+            border-right: 1px solid silver;
+            text-align: center;
+            height: 30px;
+            background-color: lightgray;
+        }
+    </style>
+    <script>
+
+        function getLogByPageNum(a) {
+            //移除所有点击效果
+            $("li").removeClass("active");
+            //点击页数后添加点击效果
+            $(a).parent("li").addClass("active");
+            //获取选择的页数
+            var pageNum=$(a).text();
+            $.ajax({
+                url:"",
+                dataType:"json",
+                type:"get",
+                data:"pageNum="+pageNum,
+                success:function (data) {
+                    getLog(data);
+                },
+                error:function () {
+                    alert("系统错误！请联系管理员");
+                }
+            })
+        }
+
+        function getLog(data) {
+            for(var size=1;size<21;size++){
+                $("#"+size).html("");
+            }
+            var size=data[1].length;
+            if(size==0){
+                alert("无查询结果！");
+                return false;
+            }
+            var totalPage=data[0].totalPage;
+            var temp=1;
+            var li="<li><a href=\"#\">&laquo;</a></li>";
+            for(var j=1;j<parseInt(totalPage)+1;j++){
+                var temp1="<li><a href=\"#\" onclick=\"getLogByPageNum(this)\">"+j+"</a></li>";
+                li=li+temp1;
+            }
+            $(".pagination").html(li+"<li><a href=\"#\">&raquo;</a></li>");
+            for(var i=0;i<data[1].length;i++){
+                var id=data[1][i].id;
+                var action=data[1][i].action;
+                var time=data[1][i].time;
+                var operator=data[1][i].operator;
+                var htmlStr="<td>"+id+"</td>"+"<td>"+operator+"</td>"+"<td>"+action+"</td>"+"<td>"+time+"</td>";
+                $("#"+temp).html(htmlStr);
+                temp=parseInt(temp)+1;
+            }
+        }
+
+        $().ready(function () {
+            $.ajax({
+                url:"/admin/getAllLog",
+                dataType:"json",
+                type:"get",
+                success:function (data) {
+                    getLog(data);
+                },
+                error:function () {
+                    alert("System error");
+                }
+            })
+        })
+    </script>
+</head>
+<body>
+<div class="container">
+    <div style="width: 100%;height: 50px;border-top: 1px black solid;border-left: 1px black solid;border-right: 1px black solid;margin-top: 10px">
+        <h1 style="margin-top: 3px;text-align: center">敏感操作日志</h1>
+    </div>
+    <table style="width: 100%;height: 540px;margin-top: 0px">
+        <thead style="width: 100%">
+        <th>序号</th>
+        <th>事件详情</th>
+        <th>操作时间</th>
+        <th>操作人</th>
+        </thead>
+        <tbody id="tbody1">
+        <tr id="1"></tr>
+        <tr id="2"></tr>
+        <tr id="3"></tr>
+        <tr id="4"></tr>
+        <tr id="5"></tr>
+        <tr id="6"></tr>
+        <tr id="7"></tr>
+        <tr id="8"></tr>
+        <tr id="9"></tr>
+        <tr id="10"></tr>
+        <tr id="11"></tr>
+        <tr id="12"></tr>
+        <tr id="13"></tr>
+        <tr id="14"></tr>
+        <tr id="15"></tr>
+        <tr id="16"></tr>
+        <tr id="17"></tr>
+        <tr id="18"></tr>
+        <tr id="19"></tr>
+        <tr id="20"></tr>
+        </tbody>
+        <tfoot>
+        <tr>
+            <td colspan="10">
+                <ul class="pagination" style="float: right;margin-bottom: 0px">
+                    <li><a href="#">&laquo;</a></li>
+                    <li class="active"><a href="#">1</a></li>
+                    <li><a href="#">2</a> </li>
+                    <li><a href=\"#\">&raquo;</a></li>
+                </ul>
+            </td>
+        </tr>
+        </tfoot>
+    </table>
+</div>
+</body>
+</html>

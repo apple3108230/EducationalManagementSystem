@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="ViewPort" content="width=device-width,initial-scale=1">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script>
+
+        function getTable(data) {
+            for(var size=1;size<21;size++){
+                $("#"+size).html("");
+            }
+            var htmlStr="<td>1<input type='radio' name='selectedRole' class='selectedRole' value='1'</td>";
+            var roleStr="";
+            var size=data[1].length;
+            if(size==0){
+                alert("无查询结果！");
+                return false;
+            }
+            var totalPage=data[0].totalPage;
+            var temp=1;
+            var li="<li><a href=\"#\">&laquo;</a></li>";
+            for(var j=1;j<parseInt(totalPage)+1;j++){
+                var temp1="<li><a href=\"#\" onclick=\"getAccountByPageNum(this)\">"+j+"</a></li>";
+                li=li+temp1;
+            }
+            $(".pagination").html(li+"<li><a href=\"#\">&raquo;</a></li>");
+            for(var i=0;i<data[1].length;i++){
+                var username=data[1][i].username;
+                var role=data[1][i].role;
+                if(role.search(",")!=-1){
+                    var roles=role.split(",");
+                    for(var i=0;i<roles.length;i++){
+                        if(roles[i]=="teacher"){
+                            roleStr=roleStr+"教师 ";
+                        }
+                        if(roles[i]=="teacherAdmin"){
+                            roleStr=roleStr+"教师管理员 ";
+                        }
+                        if(roles[i]=="admin"){
+                            roleStr=roleStr+"管理员 ";
+                        }
+                    }
+                }else{
+                    if(role=="teacher"){
+                        roleStr=roleStr+"教师 ";
+                    }
+                    if(role=="teacherAdmin"){
+                        roleStr=roleStr+"教师管理员 ";
+                    }
+                    if(role=="admin"){
+                        roleStr=roleStr+"管理员 ";
+                    }
+                }
+                htmlStr=htmlStr+"<td>"+username+"</td>"+"<td>"+roleStr+"</td>";
+                $("#"+htmlStr.charAt(4)).html(htmlStr.replace(htmlStr.charAt(4),""));
+                temp=parseInt(temp)+1;
+                htmlStr="<td>"+temp.toString()+"<input type='radio' name='selectedRole' class='selectedRole' value=\"+\"'\"+temp.toString()+\"'></td>";
+                roleStr="";
+            }
+        }
+
+        function getAccountByPageNum(a) {
+            //移除所有点击效果
+            $("li").removeClass("active");
+            //点击页数后添加点击效果
+            $(a).parent("li").addClass("active");
+            //获取选择的页数
+            var pageNum=$(a).text();
+            var username=$("#hiddenUsernameCondition").val();
+            var otherCondition=$("#hiddenOtherCondition").val();
+            var conditions={username:username,otherCondition:otherCondition,pageNum:pageNum};
+            $.ajax({
+                url:"",
+                dataType:"json",
+                type:"post",
+                contentType:"application/json",
+                data:JSON.stringify(conditions),
+                success:function (data) {
+                    getTable(data);
+                },
+                error:function () {
+                    alert("系统错误！请联系管理员");
+                }
+            })
+        }
+
+        function BeforeUpdateAccount() {
+            var row=$(".selectedRole:checked").val();
+            if(row==undefined||row==null||row==""){
+                alert("您还没有选择修改目标！");
+                return false;
+            }
+            $("#"+row).each(function () {
+                var username=$(this).children('td').eq(1).html();
+                var role=$(this).children('td').eq(2).html();
+                $("#hiddenRowInfo").html("<input type='hidden' id='hiddenRowNum' value='"+row+"'>"+"<input type='hidden' id='hiddenUsername' value='"+username+"'>"+"<input type='hidden' id='hiddenRole' value='"+role+"'>");
+                var checkBoxStr="<input type='checkbox' name='role' value='teacher'/>教师"+"<input type='checkbox' name='role' value='teacherAdmin'/>教师管理员"+"<input type='checkbox' name='role' value='admin'/>管理员";
+                $("#"+row).html(
+                    "<td><button type='button' class='btn btn-success btn-sm' onclick='updateAccount(this)'value="+row+">确定</button>" +
+                    "<button type='button' class='btn btn-info btn-sm' onclick='cancelUpdate()'>取消</button></td>" +
+                    "<td><input type='text' class='form-control input-style' id='username1' value='"+username+"' disabled='disabled'></td>"+
+                    "<td>"+checkBoxStr+"</td>");
+            })
+            $("#updateAccount").attr("disabled",true);
+            $("#conditionScreen").attr("disabled",true);
+            $("#searchAccount").attr("disabled",true);
+        }
+
+        function cancelUpdate() {
+            var row=$("#hiddenRowNum").val();
+            var username=$("#hiddenUsername").val();
+            var role=$("#hiddenRole").val();
+            $("#"+row).html("<td><input type='radio' name='selectedRole' class='selectedRole' value='"+row+"'></td>"+"<td>"+username+"</td>"+"<td>"+role+"</td>");
+            $("#updateAccount").attr("disabled",false);
+            $("#conditionScreen").attr("disabled",false);
+            $("#searchAccount").attr("disabled",false);
+        }
+
+        function updateAccount(button) {
+            if($("input[type='checkbox']:checked").val()==""||$("input[type='checkbox']:checked").val()==undefined){
+                alert("请选择角色类型！");
+                return false;
+            }
+            var row=$(button).val();
+            $("#"+row).each(function (){
+                var username=$(this).children('td').eq(1).find("#username1").val();
+                var length=$("input[type='checkbox']:checked").length;
+                var role="";
+                var roles=new Array(length);
+                $.each($("input[type='checkbox']:checked"),function () {
+                    var i=0;
+                    if($(this).val()!=null&&$(this).val()!=""){
+                        if(length==1){
+                            role=role+$(this).val();
+                        }else{
+                            role=role+$(this).val()+" ";
+                        }
+                    }
+                })
+                var info={username:username,role:role};
+                var checkBoxStr="";
+                if(role!=""&&role.search(" ")!=-1){
+                    var strArray=role.split(" ");
+                    for(var j=0;j<strArray.length;j++){
+                        if(strArray[j]=="teacher"){
+                            checkBoxStr=checkBoxStr+"教师 ";
+                        }
+                        if(strArray[j]=="teacherAdmin"){
+                            checkBoxStr=checkBoxStr+"教师管理员 ";
+                        }
+                        if(strArray[j]=="admin"){
+                            checkBoxStr=checkBoxStr+"管理员 ";
+                        }
+                    }
+                }
+                if(role!=""&&length==1){
+                    if(role=="teacher"){
+                        checkBoxStr=checkBoxStr+"教师 ";
+                    }
+                    if(role=="teacherAdmin"){
+                        checkBoxStr=checkBoxStr+"教师管理员 ";
+                    }
+                    if(role=="admin"){
+                        checkBoxStr=checkBoxStr+"管理员 ";
+                    }
+                }
+
+                $.ajax({
+                    url:"/admin/updateAccount",
+                    type:"post",
+                    dataType:"json",
+                    contentType: "application/json",
+                    data: JSON.stringify(info),
+                    success:function (data) {
+                        if(data.message=="修改成功！"){
+                            alert(data.message);
+                            $("#"+row).html(
+                                "<td><input type='radio' name='selectedRole' value="+row+"></td>" +
+                                "<td>"+username+"</td>"+
+                                "<td>"+checkBoxStr+"</td>");
+                        }else{
+                            alert("修改失败！请联系管理员！");
+                            return false;
+                        }
+                        $("#updateAccount").attr("disabled",false);
+                    },
+                    error:function () {
+                        alert("修改失败！请联系管理员！");
+                    }
+                })
+            })
+        }
+
+
+
+        function hasSelectCondition(){
+            var username=$("#username").val();
+            var otherCondition=$("input[name='condition']:checked").val();
+            if(username==""&&otherCondition==undefined){
+                alert("查询条件不能为空！");
+                return false;
+            }
+            return true;
+        }
+
+        function searchAccount(){
+            var username=$("#username").val();
+            var otherCondition=$("input[name='condition']:checked").val();
+            if(otherCondition==undefined){
+                otherCondition="";
+            }
+            if(username!=""&&otherCondition!=""){
+                username="";
+                $("#username").val("");
+            }
+            var conditions={username:username,otherCondition:otherCondition,pageNum:1};
+            $("#conditionDiv").html("<input type='hidden' id='hiddenUsernameCondition' value="+"'"+username+"'>"+
+                "<input type='hidden' id='hiddenOtherCondition' value="+"'"+otherCondition+"'>");
+            console.log(conditions);
+            if(hasSelectCondition()){
+                $.ajax({
+                    url:"/admin/queryRole",
+                    async:false,
+                    type:"post",
+                    contentType:"application/json",
+                    dataType:"json",
+                    data:JSON.stringify(conditions),
+                    success:function (data) {
+                        getTable(data);
+                        $("input[name='condition']:checked").checked=false;
+                        $("#updateAccount").attr("disabled",false);
+                    },
+                    error:function (errorThrown) {
+                        alert("查询失败！请联系管理员");
+                        console.log(errorThrown);
+                    }
+                })
+            }
+        }
+
+        function addAdminAccount() {
+            var creditAccount=confirm("是否创建一个管理员账号？");
+            if(creditAccount){
+                $.ajax({
+                    url:"/admin/creditAdminAccount",
+                    dataType:"json",
+                    type:"get",
+                    success:function (data) {
+                        if(data.message=="success"){
+                            alert("账号创建成功！账号名为："+data.account+".密码为默认密码");
+                        }else{
+                            alert(data.message);
+                        }
+                    }
+                })
+            }
+        }
+
+    </script>
+    <style>
+        .div1{
+            position: absolute;top: 0%;left: 0%;
+            height: 100%;width: 100%;
+            background-color:rgba(0,0,0,0.3);
+            z-index: 100;
+            display: none;
+        }
+        .div2{
+            width: 400px;height: 230px;
+            background-color: white;
+            position: absolute;top:17%;left: 30%;
+            z-index: 1000;
+            border-radius: 10px;
+        }
+
+        .input-style{
+            width:150px;
+            padding:10px 12px 10px 10px;
+            background-color: #fffde3;
+        }
+
+        table tbody td{
+            border: 1px solid silver;
+            text-align: center;
+            height: 20px;
+        }
+
+        table tbody tr{
+            border: 1px solid silver;
+        }
+
+        table th{
+            border-left: 1px solid silver;
+            border-right: 1px solid silver;
+            text-align: center;
+            height: 30px;
+            background-color: lightgray;
+        }
+
+
+    </style>
+</head>
+<body>
+<div class="container">
+    <div id="hiddenRowInfo" style="display: none;"></div>
+    <div class="div1" id="selectConditionWindow">
+        <div class="div2">
+            <div class="modal-header">
+                <button type="button" onclick="$('#selectConditionWindow').hide()" class="close">&times;</button>
+                <h4 class="modal-title">筛选条件</h4>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <input type="radio" name="condition" value="OnlyWatchRoleIsTeacher">
+                    <label>仅看角色为教师</label>
+                </div>
+                <div>
+                    <input type="radio" name="condition" value="OnlyWatchRoleIsTeacherAdmin">
+                    <label>仅看角色为教师管理员</label>
+                </div>
+                <div>
+                    <input type="radio" name="condition" value="OnlyWatchRoleIsAdmin">
+                    <label>仅看角色为管理员</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="$('#selectConditionWindow').hide()">确定</button>
+            </div>
+        </div>
+    </div>
+    <div style="position:absolute;top: 1%;left: 10%;width: 85%;height: 90%">
+        <div style="height: 50px;width: 100%;background-color:lightgray">
+            <div class="col-lg-7" style="float: left">
+                <div style="margin: 8px">
+                    <label style="float: left;margin: 8px">用户名</label>
+                    <input class="input-style form-control" placeholder="用户名" id="username">
+                </div>
+            </div>
+        </div>
+        <div style="width: 100%;height: 50px">
+            <div class="col-lg-7" style="float: left;margin: 8px" >
+                <button type="button" class="btn btn-secondary" id="conditionScreen" onclick="$('#selectConditionWindow').show()" style="margin-left: 8px">
+                    <i class="glyphicon glyphicon-plus"></i>
+                    <span>筛选</span>
+                </button>
+                <button type="button" class="btn btn-success" id="addAccount" onclick="addAdminAccount()" style="margin-left: 8px">
+                    <i class="glyphicon glyphicon-plus"></i>
+                    <span>新增</span>
+                </button>
+                <button type="button" class="btn btn-primary start" id="searchAccount" onclick="searchAccount()" style="margin-left: 8px">
+                    <i class="glyphicon glyphicon-search"></i>
+                    <span>查询</span>
+                </button>
+                <button type="button" class="btn btn-danger delete" id="updateAccount" onclick="BeforeUpdateAccount()" disabled="disabled" style="margin-left: 8px">
+                    <i class="glyphicon glyphicon-wrench "></i>
+                    <span>修改</span>
+                </button>
+            </div>
+        </div>
+        <table style="width: 100%;height: 540px;" id="roleTable">
+            <thead style="background-color: white">
+            <tr>
+                <th>&nbsp;&nbsp;</th>
+                <th>用户名</th>
+                <th>角色</th>
+            </tr>
+            <tbody id="tbody1">
+            <tr id="1"></tr>
+            <tr id="2"></tr>
+            <tr id="3"></tr>
+            <tr id="4"></tr>
+            <tr id="5"></tr>
+            <tr id="6"></tr>
+            <tr id="7"></tr>
+            <tr id="8"></tr>
+            <tr id="9"></tr>
+            <tr id="10"></tr>
+            <tr id="11"></tr>
+            <tr id="12"></tr>
+            <tr id="13"></tr>
+            <tr id="14"></tr>
+            <tr id="15"></tr>
+            <tr id="16"></tr>
+            <tr id="17"></tr>
+            <tr id="18"></tr>
+            <tr id="19"></tr>
+            <tr id="20"></tr>
+            </tbody>
+            <tfoot>
+            <tr>
+                <td colspan="10">
+                    <ul class="pagination" style="float: right;margin-bottom: 0px">
+                    </ul>
+                </td>
+            </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+</body>
+</html>

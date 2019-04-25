@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="ViewPort" content="width=device-width,initial-scale=1">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/templates/css/style.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <style>
+        .border{
+            margin: 0 2%;
+        }
+        .line{
+            font-size: 14px;
+            font-weight: bold;
+            border-bottom: 2px solid #005cbf;
+        }
+        .forgetPwd-container-title{
+            display: block;
+            height: 30px;
+            overflow: hidden;
+        }
+        .forgetPwd-container-nav{
+            position: fixed;
+            top: 9%;
+            left: 48%;
+        }
+        .input-style{
+            width:150px;
+            padding:10px 12px 10px 10px;
+            background-color: #fffde3;
+        }
+        .div1{
+            position: absolute;top: 0%;left: 0%;
+            height: 100%;width: 100%;
+            background-color:rgba(0,0,0,0.3);
+            z-index: 100;
+            display: none;
+        }
+        .div2{
+            width: 1000px;height: 650px;
+            background-color: white;
+            position: absolute;left: 10%;top: 3%;
+            z-index: 1000;
+            border-radius: 10px;
+        }
+        table tbody td{
+            border: 1px solid silver;
+            text-align: center;
+            height: 20px;
+        }
+        table tbody tr{
+            border: 1px solid silver;
+        }
+
+        table th{
+            border-left: 1px solid silver;
+            border-right: 1px solid silver;
+            text-align: center;
+            height: 30px;
+            background-color: lightgray;
+        }
+    </style>
+    <script>
+
+        function getTask(data){
+            for(var size=1;size<21;size++){
+                $("#"+size).html("");
+            }
+            var htmlStr="<td>1<input type='radio' name='selectedTask' class='selectedTask' value='1'</td>";
+            var size=data[1].length;
+            if(size==0){
+                alert("无查询结果！");
+                return false;
+            }
+            var totalPage=data[0].totalPage;
+            var temp=1;
+            var li="<li><a href=\"#\">&laquo;</a></li>";
+            for(var j=1;j<parseInt(totalPage)+1;j++){
+                var temp1="<li><a href=\"#\" onclick=\"getTaskByPageNum(this)\">"+j+"</a></li>";
+                li=li+temp1;
+            }
+            $(".pagination").html(li+"<li><a href=\"#\">&raquo;</a></li>");
+            for(var i=0;i<data[1].length;i++){
+                var taskName=data[1][i].scheduleTask;
+                var time='';
+                var cronExpression='';
+                if(data[1][i].time!=undefined||data[1][i].time!=""){
+                    time=data[1][i].time;
+                }
+                if(data[1][i].cronExpression!=undefined||data[1][i].cronExpression!=""){
+                    cronExpression=data[1][i].cronExpression;
+                }
+                htmlStr=htmlStr+"<td>"+taskName+"</td>"+"<td>"+time+"</td>"+"<td>"+cronExpression+"</td>";
+                $("#"+htmlStr.charAt(4)).html(htmlStr.replace(htmlStr.charAt(4),""));
+                temp=parseInt(temp)+1;
+                htmlStr="<td>"+temp.toString()+"<input type='radio' name='selectedRole' class='selectedRole' value=\"+\"'\"+temp.toString()+\"'></td>";
+            }
+        }
+
+        function getAllTask(){
+            $.ajax({
+                url:"/admin/getAllScheduleTask",
+                type:"get",
+                dataType:"json",
+                success:function (data) {
+                    getTask(data);
+                },
+                error:function () {
+                    alert("system error");
+                }
+            })
+        }
+
+        $(document).ready(function () {
+            getAllTask();
+        })
+
+        function toAddTaskInfoWindow() {
+            var taskType=$("input[name='taskType']:checked").val();
+            if(taskType!=undefined){
+                $('#taskTypeWindow').hide();
+                $('#addTaskInfoWindow').show();
+            }else{
+                alert("您还没选择任务类型！");
+                return false;
+            }
+
+        }
+
+        function radioClick() {
+            var clickValue=$("input[name='timeType']:checked").val();
+            if(clickValue=="complicatedTime"){
+                $("#complicatedTime").attr("disabled",false);
+                $("#simpleTime").val("");
+                $("#simpleTime").attr("disabled",true);
+            }
+            if(clickValue=='simpleTime'){
+                $("#simpleTime").attr("disabled",false);
+                $("#complicatedTime").val("");
+                $("#complicatedTime").attr("disabled",true)
+            }
+        }
+
+        var timeIsIllegal=false;
+        function toResultPage() {
+            var clickValue=$("input[name='timeType']:checked").val();
+            var dataStr="";
+            var time='';
+            if(clickValue==undefined){
+                alert("您还没填写时间！");
+                return false;
+            }
+            if(clickValue=="simpleTime"){
+                time=$("#simpleTime").val();
+                dataStr="time="+time;
+            }
+            if(clickValue=="complicatedTime"){
+                time=$("#complicatedTime").val();
+                dataStr="cronExpression="+time;
+            }
+            if(time!=""&&$("#scheduleTaskName").val()!=""){
+                $.ajax({
+                    url:"/checkTime",
+                    type:"get",
+                    data:"startTime="+""+"&endTime="+$("#simpleTime").val(),
+                    async:false,
+                    dataType:"json",
+                    success:function (data) {
+                        if(data.message!='success'){
+                            alert(data.message);
+                            timeIsIllegal=false;
+                        }else{
+                            var temp=$("input[name='taskType']:checked").val().split(",");
+                            var jobName=temp[0];
+                            var className=temp[1];
+                            $.ajax({
+                                url:"/admin/startScheduleJob",
+                                type:"get",
+                                data:dataStr+"&jobName="+jobName+"&scheduleTaskName="+$("#scheduleTaskName").val()+"&className="+className,
+                                dataType:"json",
+                                success:function (data) {
+                                    if(data.message=="任务启动成功！"){
+                                        $("#resultDiv").html(data.message);
+                                        $('#addTaskInfoWindow').hide();
+                                        $("#addTaskResultWindow").show();
+                                    }else{
+                                        $("#resultDiv").html(data.message);
+                                    }
+                                },
+                                error:function () {
+                                    $("#resultDiv").html("系统错误！无法添加任务！");
+                                }
+                            })
+                        }
+                    },
+                    error:function () {
+                        alert("您输入的格式有误！请检查格式是否正确！");
+                    }
+                })
+            }else{
+                alert("您还没填写任务名！");
+                return false;
+            }
+        }
+
+        function searchTask() {
+            var taskName=$("#taskName").val();
+            if(taskName!=""){
+                $.ajax({
+                    url:"/admin/queryTask",
+                    type:"get",
+                    data:"taskName="+taskName,
+                    dataType:"json",
+                    success:function (data) {
+                        if(data.message=="任务不存在！"){
+                            alert(data.message);
+                        }else{
+                           getTask(data);
+                        }
+                    }
+                })
+            }
+        }
+
+
+        function deleteTask() {
+            var num=$("input[name='selectedTask']:checked").val();
+            var scheduleTaskName=$(this).children('td').eq(1).html();
+            var time=$(this).children('td').eq(2).html();
+            var cronExpression=$(this).children('td').eq(2).html();
+            if(time==undefined||time==""){
+                $.ajax({
+                    url:"/admin/deleteScheduleJob",
+                    type:"get",
+                    async:false,
+                    data:"scheduleTaskName="+scheduleTaskName+"&time="+time+"&cronExpression="+cronExpression,
+                    dataType:"json",
+                    success:function (data) {
+                        if(data.message=="任务删除成功！"){
+                            alert(data.message);
+                            $.ajax({
+                                url:"/admin/getAllScheduleTask",
+                                type:"get",
+                                dataType:'json',
+                                success:function () {
+                                    getAllTask();
+                                }
+                            })
+                        }else{
+                            alert(data.message);
+                        }
+                    }
+                })
+            }
+        }
+
+    </script>
+</head>
+<body>
+<div class="container">
+    <div class="div1" id="addTaskWindow">
+        <div class="div2" id="taskTypeWindow">
+            <div class="modal-header">
+                <button type="button" onclick="$('#addTaskWindow').hide()" class="close">&times;</button>
+                <h4 class="modal-title">添加定时任务</h4>
+            </div>
+            <div class="modal-body">
+                <div style="width: 970px;height: 30px">
+                    <div class="forgetPwd-container-title">
+                        <div class="forgetPwd-container-nav">
+                            <ul class="nav nav-pills nav-justified step step-arrow">
+                                <li class="active">
+                                    <a>任务类型</a>
+                                </li>
+                                <li>
+                                    <a>填入参数</a>
+                                </li>
+                                <li>
+                                    <a>添加结果</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div style="width: 970px;height: 430px">
+                    <h1 style="text-align: center">请选择任务类型</h1>
+                    <div style="width: 100%;height: 400px;background-color: white" id="taskTypeDiv">
+                        <div style="position: relative;left: 270px">
+                            <div style="float: left;margin: 20px">
+                                <input type="radio" name="taskType" value="afterSelectCourse,com.example.school_system.demo.scheduleJob.AfterSelectCourse">预选信息导入数据库
+                            </div>
+                            <div style="float: left;margin: 20px">
+                                <input type="radio" name="taskType" value="" disabled>xxxxxxx
+                            </div>
+                            <div style="float: left;margin: 20px">
+                                <input type="radio" name="taskType" value="" disabled>xxxxxxx
+                            </div>
+                        </div>
+                        <div style="position: absolute;bottom: 20px;right: 40px">
+                            <button type="buuton" class="btn btn-success" onclick="toAddTaskInfoWindow()">下一步</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="div2" id="addTaskInfoWindow" style="display: none">
+            <div class="modal-header">
+                <button type="button" onclick="$('#addTaskWindow').hide()" class="close">&times;</button>
+                <h4 class="modal-title">添加定时任务</h4>
+            </div>
+            <div class="modal-body">
+                <div style="width: 970px;height: 30px">
+                    <div class="forgetPwd-container-title">
+                        <div class="forgetPwd-container-nav">
+                            <ul class="nav nav-pills nav-justified step step-arrow">
+                                <li>
+                                    <a>任务类型</a>
+                                </li>
+                                <li class="active">
+                                    <a>填入参数</a>
+                                </li>
+                                <li>
+                                    <a>添加结果</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div style="width: 970px;height: 430px">
+                    <div style="border: 1px silver solid;width: 100%;height: 50px">
+                        <h4 style="float: left;margin-top: 15px;margin-left: 10px">请选择时间类型:</h4>
+                        <div style="float: left;margin-top: 13px;margin-left: 20px">
+                            <input type="radio" name="timeType" value="simpleTime" onclick="radioClick()">简单时间类型（仅填写日期）
+                        </div>
+                        <div style="float: left;margin-top: 13px;margin-left: 20px">
+                            <input type="radio" name="timeType" value="complicatedTime" onclick="radioClick()">复杂时间类型（用于填写cron表达式，请找专业人员设置！）
+                        </div>
+                    </div>
+                    <div style="width: 100%;height: 360px;">
+                        <div style="width: 100%;height: 100px">
+                            <div class="border line">
+                                <h5 style="text-align: left;font-weight: bolder">简单时间类型</h5>
+                            </div>
+                            <div style="float: left;margin-left: 50px;margin-top: 20px">
+                                <label>请输入时间：</label>
+                                <input class="input-style form-control" style="position:absolute;top: 235px;left: 150px;width: 300px" placeholder="格式：yyyy-MM-dd HH:mm:SS" disabled="disabled" id="simpleTime">
+                            </div>
+                        </div>
+                        <div style="width: 100%;height: 100px">
+                            <div class="border line">
+                                <h5 style="text-align: left;font-weight: bolder">复杂时间类型</h5>
+                            </div>
+                            <div style="float: left;margin-left: 50px;margin-top: 20px">
+                                <label>请输入cron表达式：</label>
+                                <input class="input-style form-control" style="position:absolute;top: 345px;left: 200px;width: 300px" placeholder="cron表达式" disabled="disabled" id="complicatedTime">
+                            </div>
+                        </div>
+                        <div style="width: 100%;height: 100px">
+                            <div class="border line">
+                                <h5 style="text-align: left;font-weight: bolder">任务名</h5>
+                            </div>
+                            <div style="float: left;margin-left: 50px;margin-top: 20px">
+                                <label>请输入任务名：</label>
+                                <input class="input-style form-control" style="position:absolute;top: 455px;left: 170px;width: 300px" placeholder="任务名" id="scheduleTaskName">
+                            </div>
+                        </div>
+                        <div style="position: absolute;bottom: 20px;left: 40px">
+                            <button type="button" class="btn btn-danger" onclick="$('#taskTypeWindow').show();$('#addTaskInfoWindow').hide();">上一步</button>
+                        </div>
+                        <div style="position: absolute;bottom: 20px;right: 40px">
+                            <button type="button" class="btn btn-success" onclick="toResultPage()">下一步</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="div2" id="addTaskResultWindow" style="display: none">
+            <div class="modal-header">
+                <h4 class="modal-title">添加定时任务</h4>
+            </div>
+            <div class="modal-body">
+                <div style="width: 970px;height: 30px">
+                    <div class="forgetPwd-container-title">
+                        <div class="forgetPwd-container-nav">
+                            <ul class="nav nav-pills nav-justified step step-arrow">
+                                <li>
+                                    <a>任务类型</a>
+                                </li>
+                                <li>
+                                    <a>填入参数</a>
+                                </li>
+                                <li class="active">
+                                    <a>添加结果</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div style="width: 970px;height: 430px">
+                    <div id="resultDiv" style="text-align: center;font-weight: bolder;font-size: x-large;color: black"></div>
+                    <div style="text-align: center">
+                        <button type="button" class="btn btn-success" onclick="getAllTask();$('#addTaskWindow').hide();">返回系统页面</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div style="position:absolute;top: 1%;left: 10%;width: 85%;height: 90%">
+        <div style="height: 50px;width: 100%;background-color:lightgray">
+            <div class="col-lg-7" style="float: left">
+                <div style="margin: 8px">
+                    <label style="float: left;margin: 8px">任务名</label>
+                    <input type="text" class="input-style form-control" placeholder="任务名" id="taskName">
+                </div>
+            </div>
+        </div>
+        <div style="width: 100%;height: 50px">
+            <div class="col-lg-7" style="float: left;margin: 8px" >
+                <button type="button" class="btn btn-success" id="addTask" onclick="$('#addTaskWindow').show()" style="margin-left: 8px">
+                    <i class="glyphicon glyphicon-plus"></i>
+                    <span>新增</span>
+                </button>
+                <button type="button" class="btn btn-primary" id="searchTask" onclick="searchTask()" style="margin-left: 8px">
+                    <i class="glyphicon glyphicon-search"></i>
+                    <span>查询</span>
+                </button>
+                <button type="button" class="btn btn-danger delete" id="deleteTask" onclick="deleteTask()" style="margin-left: 8px">
+                    <i class="glyphicon glyphicon-wrench "></i>
+                    <span>删除</span>
+                </button>
+            </div>
+        </div>
+        <table style="width: 100%;height: 540px;" id="studentsScore">
+            <thead style="background-color: white">
+            <tr>
+                <th>&nbsp;&nbsp;</th>
+                <th>任务名</th>
+                <th>时间</th>
+                <th>cron表达式</th>
+            </tr>
+            <tbody id="tbody1">
+            <tr id="1">
+                <td><input type="radio" name="selectedAccount" value="1"></td>
+                <td>xxxx</td>
+                <td>xxxx</td>
+            </tr>
+            <tr id="2">
+                <td><input type="radio" name="selectedAccount" value="2"></td>
+                <td>xxxx</td>
+                <td>xxxx</td>
+            </tr>
+            <tr id="3"></tr>
+            <tr id="4"></tr>
+            <tr id="5"></tr>
+            <tr id="6"></tr>
+            <tr id="7"></tr>
+            <tr id="8"></tr>
+            <tr id="9"></tr>
+            <tr id="10"></tr>
+            <tr id="11"></tr>
+            <tr id="12"></tr>
+            <tr id="13"></tr>
+            <tr id="14"></tr>
+            <tr id="15"></tr>
+            <tr id="16"></tr>
+            <tr id="17"></tr>
+            <tr id="18"></tr>
+            <tr id="19"></tr>
+            <tr id="20"></tr>
+            </tbody>
+            <tfoot>
+            <tr>
+                <td colspan="10">
+                    <ul class="pagination" style="float: right;margin-bottom: 0px">
+                    </ul>
+                </td>
+            </tr>
+            </tfoot>
+        </table>
+    </div>
+    <div id="hiddenRowInfo"></div>
+</div>
+</body>
+</html>
