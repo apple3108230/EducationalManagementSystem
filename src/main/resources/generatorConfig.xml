@@ -39,12 +39,13 @@
             <!--<property name="enableSubPackages" value="true"></property>-->
         <!--</javaClientGenerator>-->
         <!--指定表-->
-        <table tableName="major"></table>
-        <table tableName="major_class"></table>
-        <table tableName="classroom"></table>
-        <table tableName="course"></table>
-        <table tableName="sensitive_operation"></table>
-        <table tableName="teacher_msg"></table>
-        <table tableName="timestable"></table>
+        <!--<table tableName="major"></table>-->
+        <!--<table tableName="major_class"></table>-->
+        <!--<table tableName="classroom"></table>-->
+        <!--<table tableName="course"></table>-->
+        <!--<table tableName="sensitive_operation"></table>-->
+        <!--<table tableName="teacher_msg"></table>-->
+        <!--<table tableName="timestable"></table>-->
+        <table tableName="schedule_task"></table>
     </context>
 </generatorConfiguration>

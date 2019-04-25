@@ -1,21 +1,41 @@
 package com.example.school_system.demo;
 
 
+import com.example.school_system.demo.PageCutter.PageInfo;
 import com.example.school_system.demo.controller.AdminController;
-import com.example.school_system.demo.service.CourseSelectionService;
+import com.example.school_system.demo.controller.TeacherController;
+import com.example.school_system.demo.dao.*;
+import com.example.school_system.demo.pojo.*;
+import com.example.school_system.demo.service.*;
+import com.example.school_system.demo.utils.TimeUtil;
+import com.github.pagehelper.PageHelper;
+import org.apache.commons.collections4.map.HashedMap;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.SimpleAuthorizationInfo;
+import org.apache.shiro.crypto.hash.SimpleHash;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ByteSource;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletResponse;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.net.URL;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.text.ParseException;
+import java.util.*;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -23,34 +43,26 @@ import java.util.Map;
 public class DemoApplicationTests {
 
     @Autowired
-    private CourseSelectionService courseSelectionService;
-    @Autowired
-    private AdminController adminController;
+    private TaskDao taskDao;
+    static public String packageName="com.example.school_system.demo.scheduleJob";
+
 
 
     @Test
     public void contextLoads() throws MessagingException {
     }
 
+    @Before
+    public void before(){
+
+    }
+
     @Test
-    public void test() throws SchedulerException, InterruptedException, ParseException {
-//        String endTime="2019-3-27 10:05:00";
-//        Map<String,String> timeMap=new HashMap<>();
-//        timeMap=TimeUtil.parseTimeString(endTime);
-//        JobDetail detail= JobBuilder.newJob(JobTest.class).withIdentity("test1","testGroup").build();
-//        CronScheduleBuilder cronScheduleBuilder=CronScheduleBuilder.cronSchedule("30 27 15 25 3 ? 2019");
-//        CronTrigger trigger=TriggerBuilder.newTrigger().withIdentity("test1","testGroup").withSchedule(cronScheduleBuilder).build();
-//        scheduler.scheduleJob(detail,trigger);
-//        scheduler.start();
-//        Thread.sleep(100000);
-//        String studentId="012345678";
-//        String courseId="081721401";
-//        System.out.println(courseSelectionService.selectCourse(courseId,studentId));
-//        adminController.startJob(endTime);
-//        Thread.sleep(100000);
-        JSONParser parser=new JSONParser();
-        JSONObject json= (JSONObject) parser.parse("{\"student0\":\"012345678\"}");
-        System.out.println(json.get("student0"));
+    public void test() throws IOException, IllegalAccessException, ParseException {
+        String startTime="";
+        String endTime="2019-04-24 22:00:00";
+        int result=TimeUtil.checkTime(startTime,endTime);
+        System.out.println(result);
     }
 }
 

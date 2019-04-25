@@ -3,23 +3,18 @@ package com.example.school_system.demo.controller;
 import com.example.school_system.demo.exception.UserException;
 import com.example.school_system.demo.pojo.*;
 import com.example.school_system.demo.utils.*;
-import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.crypto.hash.SimpleHash;
-import org.apache.shiro.session.SessionException;
-import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ByteSource;
 import org.json.simple.JSONObject;
 import org.springframework.mail.MailException;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.text.ParseException;
 
 @Controller
 public class BaseServiceController extends BaseController{
@@ -34,12 +29,12 @@ public class BaseServiceController extends BaseController{
      * @throws Exception
      */
     public User sendEmailMethod(String username,HttpServletRequest request) throws Exception {
-        if(baseService.getUserByName(username)==null){
+        if(baseService.getUserByUserName(username)==null){
             throw new UserException("用户不存在！");
         }else{
-            User user= baseService.getUserByName(username);
+            User user= baseService.getUserByUserName(username);
             if(user.getEmail().isEmpty()){
-                throw new UserException("您的账号没有绑定邮箱，无法重置密码!请联系管理员重置");
+                throw new UserException("您的账号没有绑定邮箱，无法重置密码!请绑定邮箱后再重置密码！");
             }
             String captchaCode=WebUtil.CreatRandomCode();
             try {
@@ -84,10 +79,24 @@ public class BaseServiceController extends BaseController{
         return toPage("home");
     }
 
-//    @GetMapping("/toForgetPassword")
-//    public String toForgetPassword(){
-//        return "forget_password";
-//    }
+    @GetMapping("/bindingEmail")
+    public void bindingEmail(String username1,String email,HttpServletResponse response,HttpServletRequest request){
+        JSONObject json=new JSONObject();
+        if(username1==null||username1.isEmpty()){
+            User user= (User) request.getSession().getAttribute("user");
+            if(user==null){
+                json.put("message","username is null");
+            }
+            username1=user.getUsername();
+        }
+        int effect=baseService.insertEmailByUserName(username1, email);
+        if(effect>=0){
+            json.put("message","绑定成功！");
+        }else{
+            json.put("message","绑定失败，请联系管理员！");
+        }
+        WebUtil.printJSON(json.toJSONString(),response);
+    }
 
     /**
      * 将username和email保存到HttpSession中，以便后面需要重新发送邮件时使用
@@ -159,13 +168,37 @@ public class BaseServiceController extends BaseController{
             int hashInterations=1024;
             String newPwd=(new SimpleHash("MD5",password,source,hashInterations)).toString();
             String salt=source.toString();
-            baseService.resetPwdByName(newPwd,salt,username);
+            int effect= baseService.resetPwdByUserName(newPwd,salt,username);
             JSONObject json=new JSONObject();
-            json.put("message","重置成功！");
+            if(effect>=0){
+                json.put("message","重置成功！");
+            } else{
+                json.put("message","重置失败，请联系管理员！");
+            }
             WebUtil.printJSON(json.toJSONString(),response);
         }
     }
 
-
+    @GetMapping("/checkTime")
+    public void checkTime(@RequestParam("startTime")String startTime,@RequestParam("endTime")String endTime,HttpServletResponse response) throws ParseException {
+        int result=TimeUtil.checkTime(startTime, endTime);
+        JSONObject json=new JSONObject();
+        if(result==TimeUtil.ENDTIME_LESS_THAN_NOWTIME){
+            json.put("message","您输入的结束时间小于当前时间！请重新输入！");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }
+        if(result==TimeUtil.STARTTIME_LESS_THAN_NOWTIME){
+            json.put("message","您输入的开始时间小于当前时间！请重新输入！");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }
+        if(result==TimeUtil.ENDTIME_LESS_THAN_STARTTIME){
+            json.put("message","您输入的结束时间小于开始时间！请重新输入！");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }
+        if(result==TimeUtil.OK){
+            json.put("message","success");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }
+    }
 
 }

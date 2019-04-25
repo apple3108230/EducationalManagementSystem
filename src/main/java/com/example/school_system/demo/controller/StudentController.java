@@ -75,7 +75,6 @@ public class StudentController extends BaseController {
         map.put("id",id);
         map.put("sex",sex);
         map.put("birthday",birthday);
-        map.put("age",age);
         map.put("tel",tel);
         map.put("addr",addr);
         studentService.updateInfoById(map);

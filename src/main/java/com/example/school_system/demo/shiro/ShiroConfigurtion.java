@@ -1,5 +1,6 @@
 package com.example.school_system.demo.shiro;
 
+import at.pollux.thymeleaf.shiro.dialect.ShiroDialect;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
@@ -166,10 +167,12 @@ public class ShiroConfigurtion {
         return fliter;
     }
 
-//    @Bean
-//    public LogoutFilter logoutFilter(){
-//        LogoutFilter logoutFilter=new LogoutFilter();
-//        logoutFilter.setRedirectUrl("/home");
-//        return logoutFilter;
-//      }
+    /**
+     * thymeleaf中使用shiro标签必须添加shiro的标签的bean
+     * @return
+     */
+    @Bean
+    public ShiroDialect shiroDialect(){
+        return new ShiroDialect();
+    }
 }

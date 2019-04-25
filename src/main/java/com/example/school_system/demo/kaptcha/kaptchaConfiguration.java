@@ -25,7 +25,7 @@ public class kaptchaConfiguration {
         //验证码长度
         properties.setProperty("kaptcha.textproduct.char.length","4");
         //验证码字符集
-        properties.setProperty("kaptcha.textproducer.char.string","0123456789ABCEFGHIJKLMNOPQRSTUVWXYZ");
+        properties.setProperty("kaptcha.textproducer.char.string","123456789ABCEFGHIJKLMNPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
         //验证码干扰颜色
         properties.setProperty("kaptcha.noise.color","black");
         //字符之间的间隙

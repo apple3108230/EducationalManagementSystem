@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.school_system.demo.dao.AdminDao">
+
+    <update id="updatePasswordByUsername" parameterType="java.util.Map">
+        update user set
+        <foreach collection="info" index="key" item="value" separator=",">
+            <if test="key=='salt'">
+                salt=#{value}
+            </if>
+            <if test="key=='resetBindEmail'">
+                email=""
+            </if>
+            <if test="key=='password'">
+                password=#{value}
+            </if>
+        </foreach>
+        where
+        <foreach collection="info" index="key" item="value">
+            <if test="key=='username'">
+                username=#{value }
+            </if>
+        </foreach>
+    </update>
+
+    <select id="selectUserRoleByCondition" parameterType="java.util.Map" resultType="role">
+        select username,role from user
+        <where>
+            <foreach collection="conditionMap" index="key" item="value">
+                <if test="key=='username'">
+                    username=#{value}
+                </if>
+                <if test="key=='role'">
+                    role like binary #{value}
+                </if>
+            </foreach>
+        </where>
+    </select>
+
+    <update id="updateUserRoleByUsername" parameterType="role">
+        update user set role=#{role} where username=#{username}
+    </update>
+
+
+    <resultMap id="preSelectCourse" type="com.example.school_system.demo.pojo.PreSelectCourseTask">
+        <result column="academy_name" property="academyName"></result>
+        <result column="major_name" property="majorName"></result>
+        <result column="class_name" property="className"></result>
+        <result column="course_id" property="courseId"></result>
+    </resultMap>
+
+    <select id="getAllMajorClassCourse" resultMap="preSelectCourse">
+        select academy_name,major.major_name,major_class.class_name,course.id as course_id from major,major_class,course
+				where course.major_name in(select major_class.major_name from major_class,major where major_class.major_name=major.major_name) and
+				 class_type="选修" and course.major_name=major_class.major_name and major_class.major_name=major.major_name
+    </select>
+
+    <insert id="insertBatchPreSelectCourseTask" parameterType="java.util.List">
+        replace into pre_select_course_task values
+        <foreach collection="list" item="preSelectCourseTask" index="index" separator=",">
+            (#{preSelectCourseTask.id},#{preSelectCourseTask.academyName},#{preSelectCourseTask.majorName},#{preSelectCourseTask.className},#{preSelectCourseTask.courseId},#{preSelectCourseTask.time})
+        </foreach>
+    </insert>
+
+    <select id="getTaskByCondition" parameterType="java.util.Map" resultType="preSelectCourseTask">
+        select * from pre_select_course_task where 1=1
+        <foreach collection="map" index="key" item="value" separator=",">
+            <if test="key=='academyNameCondition'">
+                <if test="value!=''">
+                   and academy_name=#{value}
+                </if>
+            </if>
+            <if test="key=='majorNameCondition'">
+                <if test="value!=''">
+                   and major_name=#{value}
+                </if>
+            </if>
+            <if test="key=='classIdCondition'">
+                <if test="value!=''">
+                    and class_name in(select class_name from major_class where id=#{value})
+                </if>
+            </if>
+        </foreach>
+    </select>
+
+    <insert id="insertTaskForCustomMode" parameterType="java.util.List">
+        replace into pre_select_course_task values
+        <foreach collection="list" item="preSelectCourseTask" index="index" separator=",">
+            (#{preSelectCourseTask.id},#{preSelectCourseTask.academyName},#{preSelectCourseTask.majorName},#{preSelectCourseTask.courseId},#{preSelectCourseTask.time})
+        </foreach>
+    </insert>
+
+
+    <select id="getMajorClassCourseByCondition" parameterType="java.util.Map" resultMap="preSelectCourse">
+        select academy_name,major.major_name,major_class.class_name,course_name from major,major_class,course
+        where course.major_name in(select major_class.major_name from major_class,major where major_class.major_name=major.major_name) and
+        class_type="选修" and course.major_name=major_class.major_name and major_class.major_name=major.major_name and
+        <foreach collection="map" separator="," index="key" item="value">
+            <if test="key=='major_name'">
+                class_name in(select class_name from  major_class where id like #{value})
+            </if>
+            <if test="key=='class_name'">
+                class_name in(select class_name from major_class where id=#{value})
+            </if>
+        </foreach>
+    </select>
+
+    <delete id="deleteTaskByClassName" parameterType="string">
+        delete * from pre_select_course_task where class_name=#{className}
+    </delete>
+
+    <select id="getLastAdminUsername" resultType="string">
+        select username from user where role='admin' ORDER BY username DESC LIMIT 1
+    </select>
+
+    <insert id="insertAdminAccount" parameterType="user" useGeneratedKeys="true" keyProperty="id">
+        insert into user(username,password,salt,role,permission,email) values(#{username},#{password},#{salt},#{role},#{permission},#{email})
+    </insert>
+
+    <select id="getAllLog" resultType="sensitiveOperation">
+        select * from sensitive_operation
+    </select>
+
+</mapper>

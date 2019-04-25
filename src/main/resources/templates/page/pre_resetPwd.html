@@ -98,7 +98,7 @@
                     url:"/checkCaptchaBeforeResetPwd",
                     success:function (data) {
                         var json=JSON.parse(data);
-                        if(data.message=="success"){
+                        if(json.message=="success"){
                             window.location.href="/to/reset_pwd";
                         }else{
                             alert(data.message);

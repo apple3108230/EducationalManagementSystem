@@ -14,6 +14,10 @@ public class TimeUtil {
 
     private static ThreadLocal<DateFormat> threadLocal=new ThreadLocal<DateFormat>();
     private static final String DATA_FORMAT="yyyy-MM-dd HH:mm:ss";
+    final public static int STARTTIME_LESS_THAN_NOWTIME=-1;
+    final public static int ENDTIME_LESS_THAN_STARTTIME=1;
+    final public static int ENDTIME_LESS_THAN_NOWTIME=0;
+    final public static int OK=2;
 
     /**
      *由于SimpleDataFormat和DateFormat存在线程安全的问题，所以在这里改变一下获取SimpleDataFormat的方式
@@ -77,7 +81,10 @@ public class TimeUtil {
             hour = timeStr[0];
         }
         String minute=null;
-        if(timeStr[1].startsWith("0")){
+        if(timeStr[1].startsWith("0")&&timeStr[1].endsWith("0")){
+            minute=timeStr[1];
+        }
+        if(timeStr[1].startsWith("0")&&!timeStr[1].endsWith("0")){
             minute=timeStr[1].replace("0","");
         }else{
             minute=timeStr[1];
@@ -99,6 +106,55 @@ public class TimeUtil {
         timeMap.put("minute",minute);
         timeMap.put("second",second);
         return timeMap;
+    }
+
+    public static int checkTime(String startTime,String endTime) throws ParseException {
+        SimpleDateFormat df= (SimpleDateFormat) TimeUtil.getDataFormat();
+        Date start=null;
+        Date end=df.parse(endTime);
+        Date now=df.parse(df.format(new Date()));
+        if(!startTime.isEmpty()){
+            start=df.parse(startTime);
+            if(start.getTime()<=now.getTime()){
+                return STARTTIME_LESS_THAN_NOWTIME;
+            }
+            if(end.getTime()<=start.getTime()){
+                return ENDTIME_LESS_THAN_STARTTIME;
+            }
+        }
+        if(end.getTime()<=now.getTime()){
+            return ENDTIME_LESS_THAN_NOWTIME;
+        }
+        return OK;
+    }
+
+    public static String ParseTimeMapToSimpleCronExpression(Map<String,String> timeMap){
+        Map<String,String> cronTimeMap=new HashMap<>();
+        timeMap.forEach((key,value)->{
+            if(key.equals("second")){
+                if(value.startsWith("0")&&value.endsWith("0")){
+                    String second="0";
+                    cronTimeMap.put("second",second);
+                }
+                if(value.startsWith("0")&&!value.endsWith("0")){
+                    String second=value.substring(1);
+                    cronTimeMap.put("second",second);
+                }
+            } else if(key.equals("minute")){
+                if(value.startsWith("0")&&value.endsWith("0")){
+                    String minute="0";
+                    cronTimeMap.put("minute",minute);
+                }
+                if(value.startsWith("0")&&!value.endsWith("0")){
+                    String minute=value.substring(1);
+                    cronTimeMap.put("minute",minute);
+                }
+            } else{
+                cronTimeMap.put(key,value);
+            }
+        });
+        String cronString=cronTimeMap.get("second")+" "+cronTimeMap.get("minute")+" "+cronTimeMap.get("hour")+" "+cronTimeMap.get("day")+" "+cronTimeMap.get("month")+" "+"?"+" "+cronTimeMap.get("year");
+        return cronString;
     }
 
 }

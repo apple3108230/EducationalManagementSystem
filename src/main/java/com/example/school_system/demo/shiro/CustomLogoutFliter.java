@@ -2,8 +2,11 @@ package com.example.school_system.demo.shiro;
 
 import com.example.school_system.demo.utils.WebUtil;
 import org.apache.shiro.session.SessionException;
+import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.filter.authc.LogoutFilter;
+import org.json.simple.JSONObject;
+
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;

@@ -4,10 +4,11 @@ import com.example.school_system.demo.exception.UserException;
 import com.example.school_system.demo.pojo.User;
 import com.example.school_system.demo.service.*;
 import com.google.code.kaptcha.impl.DefaultKaptcha;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-
 import javax.imageio.ImageIO;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -68,17 +69,16 @@ public class BaseController {
      */
     @GetMapping("to/home/{page}")
     public String toPrivatePage(@PathVariable("page") String page, HttpServletRequest request) throws UserException {
-        HttpSession session = request.getSession();
-        User user = (User) session.getAttribute("user");
-        if (user == null) {
-            throw new UserException("user is null");
+        Subject subject= SecurityUtils.getSubject();
+        if (subject == null) {
+            throw new UserException("subject is null");
         }
         //不同角色 访问页面的路径也不同
-        if (user.getRole().equals("student")) {
+        if (subject.hasRole("student")) {
             return "/page/studentPage/" + page;
-        } else if (user.getRole().equals("teacher")) {
+        } else if (subject.hasRole("teacher")) {
             return "/page/teacherPage/" + page;
-        } else if (user.getRole().equals("admin")) {
+        } else if (subject.hasRole("admin")) {
             return "/page/adminPage/" + page;
         } else {
             throw new UserException("非法用户！");

@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.school_system.demo.dao.BaseDao">
-    <select id="getUserByName" resultType="user" parameterType="String">
+    <select id="getUserByUserName" resultType="user" parameterType="string">
         select * from user where username=#{username}
     </select>
-    <insert id="resetPwdByName" parameterType="String">
+    <insert id="resetPwdByUserName" parameterType="string">
         update user set password=#{newPwd},salt=#{salt} where username=#{username}
+    </insert>
+    <insert id="insertEmailByUserName" parameterType="string">
+        update user set email=#{email} where username=#{username}
     </insert>
 </mapper>

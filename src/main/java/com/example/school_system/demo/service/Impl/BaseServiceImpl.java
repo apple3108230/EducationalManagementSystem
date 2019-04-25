@@ -13,12 +13,17 @@ public class BaseServiceImpl implements BaseService {
     private BaseDao baseDao;
 
     @Override
-    public User getUserByName(String username) {
-        return baseDao.getUserByName(username);
+    public User getUserByUserName(String username) {
+        return baseDao.getUserByUserName(username);
     }
 
     @Override
-    public void resetPwdByName(String newPwd, String salt,String username) {
-       baseDao.resetPwdByName(newPwd,salt,username);
+    public int resetPwdByUserName(String newPwd, String salt,String username) {
+        return baseDao.resetPwdByUserName(newPwd,salt,username);
+    }
+
+    @Override
+    public int insertEmailByUserName(String username, String email) {
+        return baseDao.insertEmailByUserName(username, email);
     }
 }

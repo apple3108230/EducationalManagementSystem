@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.school_system.demo.dao.TeacherDao">
+
+    <select id="getTeacherMsgById" parameterType="string" resultType="teacherMsg">
+        select * from teacher_msg where id=#{id}
+    </select>
+
+    <insert id="insertScoreByStudentId" parameterType="java.util.List" >
+        insert into student_score values
+        <foreach collection="scoreList" separator="," index="key" item="Score">
+            (#{Score.id},#{Score.course},#{Score.studentId},#{Score.usualScore},#{Score.examScore},#{Score.totalScore},#{Score.credit}
+            ,#{Score.gpa},#{Score.creditGpa},#{Score.term})
+        </foreach>
+    </insert>
+
+    <select id="checkScoreExist" parameterType="String" resultType="int">
+        select count(*) from student_score where student_id=#{studentId} and course=#{course} and term=#{term}
+    </select>
+
+    <select id="selectStudentScoresByCondition" parameterType="java.util.Map" resultType="studentScore">
+        select * from student_score where 1=1 and
+          <foreach collection="conditionMap" index="key" item="value" separator="and">
+              ${key} like #{value}
+          </foreach>
+    </select>
+
+    <update id="updateStudentScoreByCourseAndStudentId" parameterType="studentScore">
+        update student_score set usual_score=#{usualScore},exam_score=#{examScore},total_score=#{totalScore},credit=#{credit},gpa=#{gpa},
+                                  creditGpa=#{creditGpa},term=#{term} where course=#{course} and student_id=#{studentId}
+    </update>
+
+    <delete id="deleteStudentScoreByCourseAndStudentId" parameterType="deleteScoreInfo">
+        delete from student_score where course=#{course} and student_id=#{studentId}
+    </delete>
+
+</mapper>

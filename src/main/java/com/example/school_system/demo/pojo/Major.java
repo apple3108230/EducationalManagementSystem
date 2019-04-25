@@ -17,7 +17,7 @@ public class Major {
      *
      * @mbg.generated Tue Mar 19 16:34:36 CST 2019
      */
-    private Integer id;
+    private String id;
 
     /**
      *
@@ -69,7 +69,7 @@ public class Major {
      *
      * @mbg.generated Tue Mar 19 16:34:36 CST 2019
      */
-    public Integer getId() {
+    public String getId() {
         return id;
     }
 
@@ -81,7 +81,7 @@ public class Major {
      *
      * @mbg.generated Tue Mar 19 16:34:36 CST 2019
      */
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
     }
 

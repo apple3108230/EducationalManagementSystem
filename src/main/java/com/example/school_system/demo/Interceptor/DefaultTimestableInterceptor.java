@@ -13,7 +13,7 @@ import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 
 @Component
-public class StudentTimestableInterceptor implements HandlerInterceptor {
+public class DefaultTimestableInterceptor implements HandlerInterceptor {
 
     @Autowired
     private StudentService studentService;
@@ -28,11 +28,11 @@ public class StudentTimestableInterceptor implements HandlerInterceptor {
         HttpSession session=request.getSession();
         ArrayList<String> terms=new ArrayList<String>();
         terms.add("2018年-2019年第一学期");
-        terms.add("2018-2019年第二学期");
+        terms.add("2018年-2019年第二学期");
         session.setAttribute("terms",terms);
-        User user= (User) session.getAttribute("user");
-        Student student=studentService.getStudentById(user.getUsername());
-        session.setAttribute("studentClass",student.getStudentClass());
+//        User user= (User) session.getAttribute("user");
+//        Student student=studentService.getStudentById(user.getUsername());
+//        session.setAttribute("studentClass",student.getStudentClass());
     }
 
     @Override

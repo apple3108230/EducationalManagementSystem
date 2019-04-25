@@ -89,8 +89,8 @@
                     url:"/resetPwd",
                     success:function (data) {
                         var json=JSON.parse(data);
-                        alert(data.message);
-                        if(data.responesJSON.message=="重置成功！"){
+                        alert(json.message);
+                        if(json.message=="重置成功！"){
                             window.location.href="/home";
                         }
                     }

@@ -1,5 +1,10 @@
 package com.example.school_system.demo.utils;
 
+import com.example.school_system.demo.pojo.StudentStatusMsg;
+
+import java.util.Random;
+import java.util.UUID;
+
 public class StringUtil {
 
     /**
@@ -13,4 +18,17 @@ public class StringUtil {
         stringBuffer.append(id).insert(0,"0");
         return stringBuffer.toString();
     }
+
+    /**
+     * 生成自定义格式的UUID的字符串
+     * @return
+     */
+    public static String CustomUUID(){
+        Random random=new Random();
+        StringBuffer stringBuffer=new StringBuffer();
+        stringBuffer.append(UUID.randomUUID().toString().replace("-", "").toLowerCase());
+        return stringBuffer.toString();
+    }
+
+
 }
