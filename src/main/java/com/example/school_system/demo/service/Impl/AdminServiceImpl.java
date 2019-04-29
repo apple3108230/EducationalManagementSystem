@@ -11,6 +11,8 @@ import org.apache.shiro.crypto.hash.SimpleHash;
 import org.apache.shiro.util.ByteSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -34,10 +36,12 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public boolean insertBatchPreSelectCourseTask(List<PreSelectCourseTask> preSelectCourseTasks, String startTime, String endTime) {
+    @Transactional(propagation = Propagation.NESTED)
+    public boolean insertBatchPreSelectCourseTask(List<PreSelectCourseTask> preSelectCourseTasks, String startTime, String endTime,String mode) {
         preSelectCourseTasks.forEach(value->{
             value.setTime(startTime+"~"+endTime);
             value.setId(StringUtil.CustomUUID());
+            value.setMode(mode);
         });
         int result=adminDao.insertBatchPreSelectCourseTask(preSelectCourseTasks);
         if(result>=0){
@@ -57,10 +61,12 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public boolean insertTaskForCustomMode(List<PreSelectCourseTask> preSelectCourseTasks, String startTime, String endTime) {
+    @Transactional(propagation = Propagation.NESTED)
+    public boolean insertTaskForCustomMode(List<PreSelectCourseTask> preSelectCourseTasks, String startTime, String endTime,String mode) {
         preSelectCourseTasks.forEach(value->{
             value.setTime(startTime+"~"+endTime);
             value.setId(StringUtil.CustomUUID());
+            value.setMode(mode);
         });
         int result=adminDao.insertTaskForCustomMode(preSelectCourseTasks);
         if(result>=0){
@@ -72,6 +78,15 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public boolean deleteTaskByClassName(String className) {
         int result=adminDao.deleteTaskByClassName(className);
+        if(result>=0){
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean deleteAllSuperModeTask() {
+        int result=adminDao.deleteAllSuperModeTask();
         if(result>=0){
             return true;
         }
@@ -100,6 +115,36 @@ public class AdminServiceImpl implements AdminService {
             return user;
         }
         return null;
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.NESTED)
+    public List<PreSelectCourseTask> getAllMajorClassCourse() {
+        return adminDao.getAllMajorClassCourse();
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.NESTED)
+    public List<PreSelectCourseTask> getMajorClassCourseByCondition(Map<String, String> conditionMap) {
+        return adminDao.getMajorClassCourseByCondition(conditionMap);
+    }
+
+    @Override
+    public boolean insertAcademy(String academyName) {
+        int result=adminDao.insertAcademy(academyName);
+        if(result>0){
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean updateAcademy(String academyId, String academyName) {
+        int result=adminDao.updateAcademy(academyId, academyName);
+        if(result>0){
+            return true;
+        }
+        return false;
     }
 
 }

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.sql.Time;
 import java.text.ParseException;
 
 @Controller
@@ -193,6 +194,10 @@ public class BaseServiceController extends BaseController{
         }
         if(result==TimeUtil.ENDTIME_LESS_THAN_STARTTIME){
             json.put("message","您输入的结束时间小于开始时间！请重新输入！");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }
+        if(result== TimeUtil.TIME_IS_ILLEGAL){
+            json.put("message","您输入的时间不合法！请重新输入！");
             WebUtil.printJSON(json.toJSONString(),response);
         }
         if(result==TimeUtil.OK){

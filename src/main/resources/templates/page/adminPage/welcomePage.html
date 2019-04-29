@@ -1,11 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="ViewPort" content="width=device-width,initial-scale=1">
     <title>Title</title>
     <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
-    <link href="/templates/css/universal_style.css" rel="stylesheet">
     <link rel="stylesheet" href="/templates/css/nav.css">
     <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
     <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
@@ -63,7 +62,7 @@
     </div>
     <ul>
         <li class="nav-item">
-            <a href="#">
+            <a>
                 <span>账号管理</span>
                 <i class="my-icon nav-more"></i>
             </a>
@@ -75,7 +74,7 @@
             </ul>
         </li>
         <li class="nav-item">
-            <a href="#">
+            <a>
                 <span>教务管理</span>
                 <i class="my-icon nav-more"></i>
             </a>
@@ -87,7 +86,7 @@
             </ul>
         </li>
         <li class="nav-item">
-            <a href="#">
+            <a>
                 <span>系统管理</span>
                 <i class="my-icon nav-more"></i>
             </a>
@@ -99,12 +98,12 @@
             </ul>
         </li>
         <li class="nav-item">
-            <a href="#">
+            <a>
                 <span>其他</span>
                 <i class="my-icon nav-more"></i>
             </a>
             <ul>
-                <li><a th:href="@{/to/home/upload_score}" target="iframe">学院信息管理</a></li>
+                <li><a th:href="@{/to/home/academy}" target="iframe">学院信息管理</a></li>
             </ul>
             <ul>
                 <li><a th:href="@{/to/home/search_score}" target="iframe">专业信息管理</a></li>

@@ -53,7 +53,10 @@
     </style>
     <script>
 
-        $(document).ready(function () {
+        var useSuperModeButtonOpen='<div class="switch-animate switch-on"><input type="checkbox" name="useSuperMode" value="useSuperMode" onchange="checkUseSuperMode()"><span class="switch-left">ON</span><label>&nbsp;</label><span class="switch-right">OFF</span></div>';
+        var useSuperModeButtonClose='<div class="switch-animate switch-off"><input type="checkbox" name="useSuperMode" value="useSuperMode" onchange="checkUseSuperMode()"><span class="switch-left">ON</span><label>&nbsp;</label><span class="switch-right">OFF</span></div>';
+
+        function getAllTask(){
             $.ajax({
                 url:"/admin/getTasks",
                 type:"get",
@@ -63,6 +66,10 @@
                     getTasks(data);
                 }
             })
+        }
+
+        $(document).ready(function () {
+            getAllTask();
         })
 
         var timeIsIllegal=false;
@@ -78,8 +85,14 @@
                 return false;
             }
             var totalPage=data[0].totalPage;
+            console.log(data[0]);
+            console.log(data[0].useSuperMode);
             var useSuperMode=data[0].useSuperMode;
-            $("input[name='useSuperMode']").attr("checked",useSuperMode);
+            if(useSuperMode==true){
+                $("#checkBox").html(useSuperModeButtonOpen);
+            }else{
+                $("#checkBox").html(useSuperModeButtonClose);
+            }
             var temp=1;
             var li="<li><a href=\"#\">&laquo;</a></li>";
             for(var j=1;j<parseInt(totalPage)+1;j++){
@@ -154,6 +167,35 @@
             if($("input[name='useSuperMode']:checked").val()!=undefined){
                 alert("使用此功能则会默认启动所有专业的预选课程功能，预选课程为对应专业的所有选修课，仅需设置选课开始时间以及结束时间");
                 $("#superModeWindow").show();
+            }else{
+                $.ajax({
+                    url:'/admin/checkAfterSelectedCourseTaskExist',
+                    type:'get',
+                    dataType:"json",
+                    async:false,
+                    success:function (result) {
+                        console.log(result);
+                        if(result==true){
+                            var flag=confirm("是否关闭一键功能？");
+                            if(flag==true){
+                                $.ajax({
+                                    url:"/admin/deleteAllSuperModeTask",
+                                    type:'get',
+                                    dataType:'json',
+                                    success:function (data) {
+                                        if(data.message=="success"){
+                                            alert("功能关闭成功！已删除所有预选一键开启模式任务！");
+                                            $("#checkBox").html(useSuperModeButtonClose);
+                                        }else{
+                                            alert("功能关闭失败！");
+                                            $("#checkBox").html(useSuperModeButtonOpen);
+                                        }
+                                    }
+                                })
+                            }
+                        }
+                    }
+                })
             }
         }
 
@@ -187,7 +229,6 @@
                                     alert("system error");
                                 }
                             })
-                            $("#customMode").attr("disabled",true);
                         }
                     },
                     error:function () {
@@ -238,7 +279,6 @@
                                     alert("system error");
                                 }
                             })
-                            $("input[name='useSuperMode']").attr("disabled",true);
                         }else{
                             alert(data.message);
                         }
@@ -391,7 +431,7 @@
     <div class="div1" id="superModeWindow">
         <div class="div2" style="width: 600px;height: 250px">
             <div class="modal-header">
-                <button type="button" onclick="$('#superModeWindow').hide()" class="close">&times;</button>
+                <button type="button" onclick="$('#superModeWindow').hide();getAllTask();" class="close">&times;</button>
                 <h4 class="modal-title">设置时间</h4>
             </div>
             <div class="modal-body">
@@ -450,7 +490,7 @@
             <div class="col-lg-7" style="float: left">
                 <div style="margin: 8px">
                     <label style="float: left;margin: 8px" title="使用此功能则会默认启动所有专业的预选课程功能，预选课程为对应专业的所有选修课，仅需设置选课开始时间以及结束时间">一键开启预选课程功能</label>
-                    <div class="switch">
+                    <div class="switch" id="checkBox">
                         <input type="checkbox" name="useSuperMode" value="useSuperMode" onchange="checkUseSuperMode()">
                     </div>
                 </div>

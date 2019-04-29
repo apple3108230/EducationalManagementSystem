@@ -58,7 +58,7 @@
     <insert id="insertBatchPreSelectCourseTask" parameterType="java.util.List">
         replace into pre_select_course_task values
         <foreach collection="list" item="preSelectCourseTask" index="index" separator=",">
-            (#{preSelectCourseTask.id},#{preSelectCourseTask.academyName},#{preSelectCourseTask.majorName},#{preSelectCourseTask.className},#{preSelectCourseTask.courseId},#{preSelectCourseTask.time})
+            (#{preSelectCourseTask.id},#{preSelectCourseTask.academyName},#{preSelectCourseTask.majorName},#{preSelectCourseTask.className},#{preSelectCourseTask.courseId},#{preSelectCourseTask.time},#{preSelectCourseTask.mode})
         </foreach>
     </insert>
 
@@ -109,6 +109,10 @@
         delete * from pre_select_course_task where class_name=#{className}
     </delete>
 
+    <delete id="deleteAllSuperModeTask">
+        delete * from pre_select_course_task where mode="一键开启模式"
+    </delete>
+
     <select id="getLastAdminUsername" resultType="string">
         select username from user where role='admin' ORDER BY username DESC LIMIT 1
     </select>
@@ -120,5 +124,17 @@
     <select id="getAllLog" resultType="sensitiveOperation">
         select * from sensitive_operation
     </select>
+
+    <select id="getAllAcademy" resultType="academy">
+        select * from academy
+    </select>
+
+    <insert id="insertAcademy" parameterType="string" useGeneratedKeys="true" keyProperty="id">
+        insert into academy(academy_name) values (#academyName)
+    </insert>
+
+    <update id="updateAcademy" parameterType="string">
+        update academy set academy_name=#{academyName} where id=#{academyId}
+    </update>
 
 </mapper>

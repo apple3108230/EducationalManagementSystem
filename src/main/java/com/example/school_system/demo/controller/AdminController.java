@@ -4,6 +4,8 @@ import com.example.school_system.demo.dao.AdminDao;
 import com.example.school_system.demo.pojo.*;
 import com.example.school_system.demo.service.AdminService;
 import com.example.school_system.demo.service.BaseService;
+import com.example.school_system.demo.service.CourseSelectionService;
+import com.example.school_system.demo.service.Impl.CourseSelectionServiceImpl;
 import com.example.school_system.demo.service.Impl.TaskServiceImpl;
 import com.example.school_system.demo.service.TaskService;
 import com.example.school_system.demo.utils.TimeUtil;
@@ -38,12 +40,11 @@ public class AdminController {
     private AdminService adminService;
     @Autowired
     private TaskService taskService;
+    @Autowired
+    private CourseSelectionService courseSelectionService;
 
     final private static String ORIGINAL_PASSWORD="123456";
-    final private static String PRE_SELECT_COURSE_JOB_NAME_FOR_SUPER_MODE="afterSelectCourse";
-    final private static String PRE_SELECT_COURSE_JOB_NAME_FOR_CUSTOM_MODE="afterSelectCourseforCustomMode";
-    final private static String PRE_SELECT_COURSE_JOB_CLASS_NAME="com.example.school_system.demo.scheduleJob.AfterSelectCourse";
-    final private static String JOB_GROUP_NAME="group1";
+
 
     /**
      * 解析查询拥有此角色用户的条件
@@ -191,28 +192,8 @@ public class AdminController {
      * @throws Exception
      */
     @GetMapping("/uploadTaskForSuperMode")
-    public void uploadTaskForSuperMode(String startTime,String endTime,HttpServletResponse response) throws Exception {
-        List<PreSelectCourseTask> preSelectCourseTasks=adminDao.getAllMajorClassCourse();
-        boolean isInsert=adminService.insertBatchPreSelectCourseTask(preSelectCourseTasks,startTime,endTime);
-        JSONObject json=new JSONObject();
-        if(isInsert){
-            String jobName=PRE_SELECT_COURSE_JOB_NAME_FOR_SUPER_MODE;
-            String scheduleTaskName="预选信息导入数据库";
-            int state=setScheduleTaskForPreSelectCourse(endTime,scheduleTaskName,jobName);
-            if(state==TaskServiceImpl.SET_SCHEDULE_TASK_INTO_DATABASE_IS_SUCCESS){
-                json.put("message","success");
-                WebUtil.printJSON(json.toJSONString(),response);
-            }else if(state==TaskServiceImpl.SCHEDULE_TASK_IS_EXIST){
-                json.put("message","设置定时任务失败！原因：SCHEDULE_TASK_IS_EXIST");
-                WebUtil.printJSON(json.toJSONString(),response);
-            }else if(state==TaskServiceImpl.FAIL_TO_SET_SCHEDULE_TASK_INTO_DATABASE){
-                json.put("message","设置定时任务失败！原因：FAIL_TO_SET_SCHEDULE_TASK_INTO_DATABASE");
-                WebUtil.printJSON(json.toJSONString(),response);
-            }
-        }else{
-            json.put("message","添加预选课任务失败！");
-            WebUtil.printJSON(json.toJSONString(),response);
-        }
+    public void uploadTaskForSuperMode(String startTime,String endTime,HttpServletResponse response){
+        courseSelectionService.uploadTaskForSuperMode(startTime, endTime, response);
     }
 
     /**
@@ -226,44 +207,7 @@ public class AdminController {
      */
     @GetMapping("/uploadTaskForCustomMode")
     public void uploadTaskForCustomMode(String majorId,String classId,String startTime,String endTime,HttpServletResponse response) throws Exception {
-        Map<String,String> conditionMap=new HashMap<>();
-        if(classId==""){
-            conditionMap.put("major_name",majorId+"%");
-        }else{
-            conditionMap.put("class_name",classId);
-        }
-        List<PreSelectCourseTask> preSelectCourseTasks=adminDao.getMajorClassCourseByCondition(conditionMap);
-        JSONObject json=new JSONObject();
-        if(preSelectCourseTasks.size()==0){
-            if(majorId==null){
-                json.put("message","您输入的班级编号不存在！");
-                WebUtil.printJSON(json.toJSONString(),response);
-            }else{
-                json.put("message","您输入的专业编号不存在！");
-                WebUtil.printJSON(json.toJSONString(),response);
-            }
-        }else{
-            boolean isUpload=adminService.insertTaskForCustomMode(preSelectCourseTasks,startTime,endTime);
-            if(isUpload){
-                String jobName=PRE_SELECT_COURSE_JOB_NAME_FOR_CUSTOM_MODE;
-                String scheduleTaskName="预选信息导入数据库(自定义)";
-                int state=setScheduleTaskForPreSelectCourse(endTime,scheduleTaskName,jobName);
-                if(state==TaskServiceImpl.SET_SCHEDULE_TASK_INTO_DATABASE_IS_SUCCESS){
-                    json.put("message","success");
-                    WebUtil.printJSON(json.toJSONString(),response);
-                }else if(state==TaskServiceImpl.SCHEDULE_TASK_IS_EXIST){
-                    json.put("message","设置定时任务失败！原因：SCHEDULE_TASK_IS_EXIST");
-                    WebUtil.printJSON(json.toJSONString(),response);
-                }else if(state==TaskServiceImpl.FAIL_TO_SET_SCHEDULE_TASK_INTO_DATABASE){
-                    json.put("message","设置定时任务失败！原因：FAIL_TO_SET_SCHEDULE_TASK_INTO_DATABASE");
-                    WebUtil.printJSON(json.toJSONString(),response);
-                }
-            }else{
-                json.put("message","system error");
-                WebUtil.printJSON(json.toJSONString(),response);
-            }
-        }
-
+        courseSelectionService.uploadTaskForCustomMode(majorId, classId, startTime, endTime, response);
     }
 
     /**
@@ -299,8 +243,10 @@ public class AdminController {
      * @return
      * @throws SchedulerException
      */
+    @GetMapping("/checkAfterSelectedCourseTaskExist")
+    @ResponseBody
     public boolean checkAfterSelectedCourseTaskExist() throws SchedulerException {
-        return taskService.checkTaskExist(PRE_SELECT_COURSE_JOB_NAME_FOR_SUPER_MODE,JOB_GROUP_NAME);
+        return taskService.checkTaskExist(CourseSelectionServiceImpl.PRE_SELECT_COURSE_JOB_NAME_FOR_SUPER_MODE,CourseSelectionServiceImpl.JOB_GROUP_NAME);
     }
 
     /**
@@ -316,6 +262,19 @@ public class AdminController {
             WebUtil.printJSON(json.toJSONString(),response);
         }else{
             json.put("message","删除失败！");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }
+    }
+
+    @GetMapping("/deleteAllSuperModeTask")
+    public void deleteAllSuperModeTask(HttpServletResponse response){
+        boolean isDelete=adminService.deleteAllSuperModeTask();
+        JSONObject json=new JSONObject();
+        if(isDelete){
+            json.put("message","success");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }else {
+            json.put("message","fail");
             WebUtil.printJSON(json.toJSONString(),response);
         }
     }
@@ -358,7 +317,7 @@ public class AdminController {
         scheduleTask.setCronExpression(TimeUtil.ParseTimeMapToSimpleCronExpression(TimeUtil.parseTimeString(time)));
         scheduleTask.setScheduleTask(scheduleTaskName);
         scheduleTask.setJobName(jobName);
-        scheduleTask.setJobGroup(JOB_GROUP_NAME);
+        scheduleTask.setJobGroup(CourseSelectionServiceImpl.JOB_GROUP_NAME);
         scheduleTask.setClassName(className);
         taskService.addTask(scheduleTask);
         JSONObject json=new JSONObject();
@@ -456,86 +415,46 @@ public class AdminController {
          jsonList.add(totalPageMap);
          jsonList.add(scheduleTasks);
          return jsonList;
-
     }
 
-    /**
-     * 为预选任务新加数据导入定时任务
-     * @param time 定时任务开始时间
-     * @param scheduleTaskName 定时任务名字（数据库）
-     * @param jobName 定时任务名字（系统）
-     * @return
-     * @throws Exception
-     */
-    public int setScheduleTaskForPreSelectCourse(String time,String scheduleTaskName,String jobName) throws Exception {
-        Map<String,String> conditionMap=new HashMap<>();
-        conditionMap.put("schedule_task",scheduleTaskName);
-        conditionMap.put("time",time);
-        ScheduleTask scheduleTask=taskService.getScheduleTaskByCondition(conditionMap);
-        //判断定时任务是否已经存在数据库中和系统定时任务
-        if(scheduleTask==null){
-            ScheduleTask task=new ScheduleTask();
-            task.setScheduleTask(scheduleTaskName);
-            Map<String,String> timeMap=TimeUtil.parseTimeString(time);
-            //判断预选任务结束时间是否在02:：00后
-            if(Integer.parseInt(timeMap.get("hour"))>2){
-                String taskDay=String.valueOf(Integer.parseInt(timeMap.get("day"))+1);
-                String taskStartTime=timeMap.get("year")+"-"+timeMap.get("month")+"-"+taskDay+" "+"02:00:00";
-                task.setTime(taskStartTime);
-                task.setCronExpression(TimeUtil.ParseTimeMapToSimpleCronExpression(TimeUtil.parseTimeString(taskStartTime)));
-                task.setClassName(PRE_SELECT_COURSE_JOB_CLASS_NAME);
-                task.setScheduleTask(scheduleTaskName);
-                task.setJobName(jobName);
-                task.setJobGroup(JOB_GROUP_NAME);
-                return taskService.addTask(task);
-            }else {
-                Map<String,String> time1=TimeUtil.parseTimeString(time);
-                String taskTime=time1.get("year")+"-"+time1.get("month")+"-"+time1.get("day")+" "+"02:00:00";
-                task.setTime(taskTime);
-                task.setCronExpression(TimeUtil.ParseTimeMapToSimpleCronExpression(TimeUtil.parseTimeString(taskTime)));
-                task.setClassName(PRE_SELECT_COURSE_JOB_CLASS_NAME);
-                task.setScheduleTask(scheduleTaskName);
-                task.setJobName(jobName);
-                task.setJobGroup(JOB_GROUP_NAME);
-                return taskService.addTask(task);
-            }
-        }
-        //若是自定义定时任务
-        if(scheduleTask!=null&&taskService.checkTaskExist(scheduleTask.getJobName(),scheduleTask.getJobGroup())&&scheduleTask.getJobName().matches(PRE_SELECT_COURSE_JOB_NAME_FOR_CUSTOM_MODE)){
-            String lastNum=scheduleTask.getJobName().split(PRE_SELECT_COURSE_JOB_NAME_FOR_CUSTOM_MODE)[1];
-            String newTaskName;
-            if(lastNum==""){
-                newTaskName=scheduleTask.getJobName()+"1";
-            }else{
-                newTaskName=scheduleTask.getClassName()+String.valueOf(Integer.valueOf(lastNum+1));
-            }
-            ScheduleTask task=new ScheduleTask();
-            task.setScheduleTask(scheduleTaskName);
-            Map<String,String> timeMap=TimeUtil.parseTimeString(time);
-            //判断预选任务结束时间是否在02:：00后
-            if(Integer.parseInt(timeMap.get("hour"))>2){
-                String taskDay=String.valueOf(Integer.parseInt(timeMap.get("day"))+1);
-                String taskStartTime=timeMap.get("year")+"-"+timeMap.get("month")+"-"+taskDay+" "+"02:00:00";
-                task.setTime(taskStartTime);
-                task.setCronExpression(TimeUtil.ParseTimeMapToSimpleCronExpression(TimeUtil.parseTimeString(taskStartTime)));
-                task.setClassName(PRE_SELECT_COURSE_JOB_CLASS_NAME);
-                task.setScheduleTask(scheduleTaskName);
-                task.setJobName(newTaskName);
-                task.setJobGroup(JOB_GROUP_NAME);
-                return taskService.addTask(task);
-            }else {
-                Map<String,String> time1=TimeUtil.parseTimeString(time);
-                String taskTime=time1.get("year")+"-"+time1.get("month")+"-"+time1.get("day")+" "+"02:00:00";
-                task.setTime(taskTime);
-                task.setCronExpression(TimeUtil.ParseTimeMapToSimpleCronExpression(TimeUtil.parseTimeString(taskTime)));
-                task.setClassName(PRE_SELECT_COURSE_JOB_CLASS_NAME);
-                task.setScheduleTask(scheduleTaskName);
-                task.setJobName(newTaskName);
-                task.setJobGroup(JOB_GROUP_NAME);
-                return taskService.addTask(task);
-            }
-        }
-        //以上情况都不符合则直接抛出异常
-        throw new Exception("unknown error");
+    @GetMapping("/getAllAcademy")
+    @ResponseBody
+    public List getAllAcademy(String pageNum){
+        PageHelper.startPage(Integer.parseInt(pageNum),20);
+        List<Academy> academies=adminDao.getAllAcademy();
+        PageInfo<Academy> info=new PageInfo<>(academies);
+        Map map=new HashedMap();
+        map.put("totalPage",info.getPages());
+        List jsonList=new ArrayList();
+        jsonList.add(map);
+        jsonList.add(academies);
+        return jsonList;
     }
+
+    @GetMapping("/addAcademy")
+    public void addAcademy(String academyName,HttpServletResponse response){
+        boolean isInsert=adminService.insertAcademy(academyName);
+        JSONObject json=new JSONObject();
+        if(isInsert){
+            json.put("message","success");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }else{
+            json.put("message","新增失败！");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }
+    }
+
+    @GetMapping("/updateAcademy")
+    public void updateAcademy(String academyId,String academyName,HttpServletResponse response){
+        boolean isUpdate=adminService.updateAcademy(academyId, academyName);
+        JSONObject json=new JSONObject();
+        if(isUpdate){
+            json.put("message","修改成功！");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }else{
+            json.put("message","修改失败！");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }
+    }
+
 }

@@ -9,6 +9,8 @@ import org.apache.commons.collections4.map.HashedMap;
 import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.SQLException;
 import java.util.HashSet;
@@ -93,6 +95,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @Transactional(propagation = Propagation.NESTED)
     public ScheduleTask getScheduleTaskByCondition(Map<String, String> condition) throws SchedulerException {
        ScheduleTask scheduleTask= taskDao.getScheduleTaskByCondition(condition);
        if(scheduleTask!=null){
@@ -139,7 +142,8 @@ public class TaskServiceImpl implements TaskService {
         return scheduleTasksMap;
     }
 
-    private boolean insertTaskToDataBase(ScheduleTask scheduleTask){
+    @Transactional(propagation = Propagation.NESTED)
+    public boolean insertTaskToDataBase(ScheduleTask scheduleTask){
         int result=taskDao.insertScheduleTask(scheduleTask);
         if(result>=0){
             return true;
@@ -155,7 +159,7 @@ public class TaskServiceImpl implements TaskService {
         return false;
     }
 
-    private boolean deleteTaskInDataBase(String scheduleTask){
+    public boolean deleteTaskInDataBase(String scheduleTask){
         int result=taskDao.deleteScheduleTask(scheduleTask);
         if(result>=0){
             return true;

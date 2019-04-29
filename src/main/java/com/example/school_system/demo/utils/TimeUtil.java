@@ -2,6 +2,7 @@ package com.example.school_system.demo.utils;
 
 import com.example.school_system.demo.pojo.Times;
 
+import java.sql.Time;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -14,6 +15,7 @@ public class TimeUtil {
 
     private static ThreadLocal<DateFormat> threadLocal=new ThreadLocal<DateFormat>();
     private static final String DATA_FORMAT="yyyy-MM-dd HH:mm:ss";
+    final public static int TIME_IS_ILLEGAL=-2;
     final public static int STARTTIME_LESS_THAN_NOWTIME=-1;
     final public static int ENDTIME_LESS_THAN_STARTTIME=1;
     final public static int ENDTIME_LESS_THAN_NOWTIME=0;
@@ -70,9 +72,19 @@ public class TimeUtil {
     public static Map<String,String> parseTimeString(String time){
         String[] strs=time.split(" ");
         String[] date=strs[0].split("-");
-        String day=date[2].replace("0","");
-        String month=date[1].replace("0","");
+        String day;
+        String month;
         String year=date[0];
+        if(date[2].startsWith("0")){
+            day=date[2].replace("0","");
+        }else{
+            day=date[2];
+        }
+        if(date[1].startsWith("0")){
+            month=date[1].replace("0","");
+        }else{
+            month=date[1];
+        }
         String[] timeStr=strs[1].split(":");
         String hour=null;
         if(timeStr[0].startsWith("0")){
@@ -109,7 +121,12 @@ public class TimeUtil {
     }
 
     public static int checkTime(String startTime,String endTime) throws ParseException {
-        SimpleDateFormat df= (SimpleDateFormat) TimeUtil.getDataFormat();
+        Map<String,String> startTimeMap= parseTimeString(startTime);
+        Map<String,String> endTimeMap= parseTimeString(endTime);
+        if(!checkMonthAndDayIslegal(startTimeMap.get("year"),startTimeMap.get("month"),startTimeMap.get("day"))&&!checkMonthAndDayIslegal(endTimeMap.get("year"),endTimeMap.get("month"),endTimeMap.get("day"))){
+            return TIME_IS_ILLEGAL;
+        }
+        SimpleDateFormat df= (SimpleDateFormat) getDataFormat();
         Date start=null;
         Date end=df.parse(endTime);
         Date now=df.parse(df.format(new Date()));
@@ -155,6 +172,39 @@ public class TimeUtil {
         });
         String cronString=cronTimeMap.get("second")+" "+cronTimeMap.get("minute")+" "+cronTimeMap.get("hour")+" "+cronTimeMap.get("day")+" "+cronTimeMap.get("month")+" "+"?"+" "+cronTimeMap.get("year");
         return cronString;
+    }
+
+    public static boolean checkMonthAndDayIslegal(String year,String month,String day){
+        String illegalDay=new String();
+        switch (month){
+            case "1":
+            case "3":
+            case "5":
+            case "7":
+            case "8":
+            case "10":
+            case "12":
+                illegalDay="31";
+                break;
+            case "4":
+            case "6":
+            case "9":
+            case "11":
+                illegalDay="30";
+                break;
+            case "2":
+                if(Integer.parseInt(year)%4==0){
+                    illegalDay="29";
+                    break;
+                }else{
+                    illegalDay="28";
+                    break;
+                }
+        }
+        if(day.equals(illegalDay)){
+            return true;
+        }
+        return false;
     }
 
 }

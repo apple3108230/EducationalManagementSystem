@@ -18,7 +18,11 @@ public interface AdminDao {
     public int insertTaskForCustomMode(List<PreSelectCourseTask> preSelectCourseTasks);
     public List<PreSelectCourseTask> getMajorClassCourseByCondition(@Param("map")Map<String,String> conditionMap);
     public int deleteTaskByClassName(String className);
+    public int deleteAllSuperModeTask();
     public String getLastAdminUsername();
     public int insertAdminAccount(User user);
     public List<SensitiveOperation> getAllLog();
+    public List<Academy> getAllAcademy();
+    public int insertAcademy(String academyName);
+    public int updateAcademy(@Param("academyId") String academyId,@Param("academyName") String academyName);
 }

@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.URL;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.ParseException;
 import java.util.*;
@@ -43,8 +44,7 @@ import java.util.*;
 public class DemoApplicationTests {
 
     @Autowired
-    private TaskDao taskDao;
-    static public String packageName="com.example.school_system.demo.scheduleJob";
+    private CourseSelectionService courseSelectionService;
 
 
 
@@ -59,10 +59,6 @@ public class DemoApplicationTests {
 
     @Test
     public void test() throws IOException, IllegalAccessException, ParseException {
-        String startTime="";
-        String endTime="2019-04-24 22:00:00";
-        int result=TimeUtil.checkTime(startTime,endTime);
-        System.out.println(result);
     }
 }
 
