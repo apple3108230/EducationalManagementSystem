@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.school_system.demo.dao.CourseDao">
+
+    <select id="getCourseByCondition" parameterType="java.util.Map" resultType="course">
+        select * from course where 1=1
+        <foreach collection="conditionMap" index="key" item="value" separator="and" open="and">
+            <if test="key=='majorName'">
+                <if test="value!='' and value!=null">
+                    major_name=#{value}
+                </if>
+            </if>
+            <if test="key=='teacherName'">
+                <if test="value!='' and value!=null">
+                    teacher_name=#{value}
+                </if>
+            </if>
+            <if test="key=='classType'">
+                <if test="value!='' and value!=null">
+                    class_type=#{value}
+                </if>
+            </if>
+            <if test="key=='courseName'">
+                <if test="value!='' and value!=null">
+                    course_name=#{value}
+                </if>
+            </if>
+        </foreach>
+    </select>
+
+    <insert id="insertCourse" parameterType="course">
+        insert into course(id,course_name,teacher_name,class_hour,teach_class_hour,computer_class_hour,class_type,major_name,credit,course_id)
+        values(#{id},#{courseName},#{teacherName},#{classHour},#{teachClassHour},#{computerClassHour},#{classType},#{majorName},#{credit},#{courseId})
+    </insert>
+
+    <update id="updateCourse" parameterType="course">
+        update course set teacher_name=#{teacherName},class_hour=#{classHour},teach_class_hour=#{teachClassHour},computer_class_hour=#{computerClassHour},class_type=#{classType},major_name=#{majorName},credit=#{credit}
+        where id=#{id}
+    </update>
+
+    <delete id="deleteCourse" parameterType="string">
+        delete * from course where id=#{id}
+    </delete>
+
+    <select id="getLastCourseIdByMajorName" parameterType="string" resultType="string">
+        select course_id from course where major_name=#{majorName} ORDER BY course_id DESC LIMIT 1
+    </select>
+
+</mapper>

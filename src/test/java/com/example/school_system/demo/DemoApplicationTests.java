@@ -44,9 +44,7 @@ import java.util.*;
 public class DemoApplicationTests {
 
     @Autowired
-    private CourseSelectionService courseSelectionService;
-
-
+    private CourseDao courseDao;
 
     @Test
     public void contextLoads() throws MessagingException {
@@ -59,6 +57,16 @@ public class DemoApplicationTests {
 
     @Test
     public void test() throws IOException, IllegalAccessException, ParseException {
+        String lastCourseId="100";
+        String newLastCourseId=String.valueOf(Integer.parseInt(lastCourseId)+1);
+        if(newLastCourseId.length()<3){
+            String tempStr="0";
+            for(int temp=newLastCourseId.length();temp<2;temp++){
+                tempStr=tempStr+tempStr;
+            }
+            newLastCourseId=tempStr+newLastCourseId;
+        }
+        System.out.println(newLastCourseId);
     }
 }
 

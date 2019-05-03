@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.school_system.demo.dao.MajorDao">
+
+    <select id="getAllMajor" resultType="major">
+        select * from major
+    </select>
+
+    <select id="getMajorByCondition" parameterType="java.util.Map" resultType="major">
+        select * from major where 1=1
+        <foreach collection="conditionMap" index="key" item="value" separator="and" open="and">
+            <if test="key=='majorName'">
+                <if test="value!=''">
+                    major_name=#{value}
+                </if>
+            </if>
+            <if test="key=='academyName'">
+                <if test="value!=''">
+                    academy_name=#{key}
+                </if>
+            </if>
+        </foreach>
+    </select>
+
+    <select id="getLastIdAndMajorIdByAcademy" parameterType="string" resultType="java.util.Map">
+        select major_id,id from major where academy_name=#{academyName} ORDER BY major_id DESC LIMIT 1
+    </select>
+
+    <insert id="insertMajor" parameterType="major">
+        insert into major(id,major_name,people_num,academy_name,major_id) values (#{id},#{majorName},#{peopleNum},#{academyName},#{majorId})
+    </insert>
+
+    <update id="updateMajor" parameterType="string">
+        update major set major_name=#{majorName} where id=#{id}
+    </update>
+
+    <delete id="deleteMajor" parameterType="string">
+        delete * from major where id=#{majorId}
+    </delete>
+
+</mapper>

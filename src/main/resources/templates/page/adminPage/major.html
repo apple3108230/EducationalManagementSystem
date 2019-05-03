@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="ViewPort" content="width=device-width,initial-scale=1">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script>
+
+        $(document).ready(function () {
+            getAllMajor();
+        })
+
+        function getTable(data) {
+            for(var size=1;size<21;size++){
+                $("#"+size).html("");
+            }
+            var size=data[1].length;
+            if(size==0){
+                alert("无查询结果！");
+                return false;
+            }
+            var htmlStr="<td>1<input type='radio' name='selectedMajor' class='selectedMajor' value='1'</td>";
+            var totalPage=data[0].totalPage;
+            var temp=1;
+            var li="<li><a href=\"#\">&laquo;</a></li>";
+            for(var j=1;j<parseInt(totalPage)+1;j++){
+                var temp1="<li><a href=\"#\" onclick=\"getMajorByPageNum(this)\">"+j+"</a></li>";
+                li=li+temp1;
+            }
+            $(".pagination").html(li+"<li><a href=\"#\">&raquo;</a></li>");
+            for(var i=0;i<data[1].length;i++){
+                var id=data[1][i].id;
+                var majorName=data[1][i].majorName;
+                var peopleNum=data[1][i].peopleNum;
+                var academyName=data[1][i].academyName;
+                htmlStr=htmlStr+"<td>"+id+"</td>"+"<td>"+majorName+"</td>"+"<td>"+peopleNum+"</td>"+"<td>"+academyName+"</td>";
+                $("#"+htmlStr.charAt(4)).html(htmlStr.replace(htmlStr.charAt(4),""));
+                temp=parseInt(temp)+1;
+                htmlStr="<td>"+temp.toString()+"<input type='radio' name='selectedAcademy' class='selectedAcademy' value=\"+\"'\"+temp.toString()+\"'></td>";
+            }
+        }
+
+        function getMajorByPageNum(a) {
+            //移除所有点击效果
+            $("li").removeClass("active");
+            //点击页数后添加点击效果
+            $(a).parent("li").addClass("active");
+            //获取选择的页数
+            var pageNum=$(a).text();
+            var academyName=$("#hiddenAcademyName").val();
+            var majorName=$("#hiddenMajorName").val();
+            if(academyName==undefined&&majorName==undefined){
+                $.ajax({
+                    url:"/admin/getAllMajor",
+                    data:"pageNum="+pageNum,
+                    dataType:"json",
+                    type:"get",
+                    success:function (data) {
+                        getTable(data);
+                    },
+                    error:function () {
+                        alert("系统错误！请联系管理员");
+                    }
+                })
+            }else{
+                $.ajax({
+                    url:"/admin/searchMajor",
+                    data:"pageNum="+pageNum+"&academyName="+academyName+"&majorName="+majorName,
+                    dataType:"json",
+                    type:"get",
+                    success:function (data) {
+                        getTable(data);
+                    },
+                    error:function () {
+                        alert("系统错误！请联系管理员");
+                    }
+                })
+            }
+        }
+
+        function getAllMajor() {
+            $.ajax({
+                url:"/admin/getAllMajor",
+                type:'get',
+                data:"pageNum=1",
+                dataType:"json",
+                success:function (data) {
+                    getTable(data);
+                    $("#deleteMajor").attr("disabled",false);
+                    $("#updateMajor").attr("disabled",false);
+                    $("#hiddenData").html("");
+                },
+                error:function () {
+                    alert("system error");
+                }
+            })
+        }
+
+        function addMajor() {
+            var academyName=$("#academyName").val();
+            var majorName=$("#majorName").val();
+            var xuezhi=$("#xuezhi").val();
+            if(academyName!=""&&majorName!=""){
+                $.ajax({
+                    url:"/admin/insertMajor",
+                    type:"get",
+                    data:"academyName="+academyName+"&majorName="+majorName+"&xuezhi="+xuezhi,
+                    dataType:"json",
+                    success:function (data) {
+                        if(data.message=="添加成功！"){
+                            alert(data.message);
+                            $("#addMajorWindow").hide();
+                            getAllAcademy();
+                        }else{
+                            alert(data.message);
+                        }
+                    }
+                })
+            }else{
+                alert("学院名和专业名不能为空！");
+                return false;
+            }
+        }
+
+        function BeforeUpdateMajor() {
+            var row=$(".selectedMajor:checked").val();
+            if(row==undefined||row==null||row==""){
+                alert("您还没有选择修改目标！");
+                return false;
+            }
+            $("#"+row).each(function () {
+                var majorId=$(this).children('td').eq(1).html();
+                var majorName=$(this).children('td').eq(2).html();
+                var peopleNum=$(this).children('td').eq(3).html();
+                var academyName=$(this).children('td').eq(4).html();
+                $("#hiddenData").html("<input type='hidden' id='hiddenRowNum' value='"+row+"'><input type='hidden' id='hiddenMajorId' value='"+majorId+"'><input type='hidden' id='hiddenMajorName' value='"+majorName+"'><input type='hidden' id='hiddenPeopleNum' value='"+peopleNum+"'><input type='hidden' id='hiddenAcademyName' value='"+academyName+"'>");
+                $("#"+row).html(
+                    "<td><button type='button' class='btn btn-success btn-sm' onclick='updateMajor(this)'value="+row+">确定</button>" +
+                    "<button type='button' class='btn btn-info btn-sm' onclick='cancelUpdate()'>取消</button></td>" +
+                    "<td><input type='text' class='form-control input-style' id='majorId' value='"+majorId+"' disabled='disabled'></td>"+
+                    "<td><input type='text' class='form-control input-style' id='beforeUpdateMajorName' value='"+academyName+"'></td>"+
+                    "<td><input type='text' class='form-control input-style' id='peopleNum' value='"+peopleNum+"' disabled='disabled'></td>"+
+                    "<td><input type='text' class='form-control input-style' id='beforeUpdateAcademyName' value='"+academyName+"' disabled='disabled'></td>");
+            })
+            $("#updateMajor").attr("disabled",true);
+            $("#addMajor").attr("disabled",true);
+            $("#deleteMajor").attr("disabled",true);
+        }
+
+        function cancelUpdate() {
+            var row=$("#hiddenRowNum").val();
+            var majorId=$("#hiddenMajorId").val();
+            var majorName=$("#hiddenMajorName").val();
+            var peopleNum=$("#hiddenPeopleNum").val();
+            var academyName=$("#hiddenAcademyName").val();
+            $("#"+row).html("<td><input type='radio' name='selectedMajor' class='selectedMajor' value='"+row+"'></td>"+"<td>"+majorId+"</td>"+"<td>"+majorName+"</td>"+"<td>"+peopleNum+"</td>"+"<td>"+academyName+"</td>");
+            $("#updateMajor").attr("disabled",false);
+            $("#addMajor").attr("disabled",false);
+            $("#deleteMajor").attr("disabled",false);
+        }
+
+        function updateMajor(button) {
+            if($("#beforeUpdateMajorName").val()==""||$("#beforeUpdateAcademyName").val()==""){
+                alert("所属学院或专业名不能为空！");
+                return false;
+            }
+            var row=$(button).val();
+            $("#"+row).each(function (){
+                var id=$(this).children('td').eq(1).find("#academyId").val();
+                var majorName=$(this).children('td').eq(1).find("#beforeUpdateMajorName").val();
+                var peopleNum=$(this).children('td').eq(1).find("#peopleNum").val();
+                $.ajax({
+                    url:"/admin/updateAcademy",
+                    type:"get",
+                    dataType:"json",
+                    data: "id="+id+"&majorName="+majorName,
+                    success:function (data) {
+                        if(data.message=="修改成功！"){
+                            alert(data.message);
+                            $("#"+row).html(
+                                "<td><input type='radio' name='selectedAcademy' value="+row+"></td>" +
+                                "<td>"+id+"</td>"+
+                                "<td>"+academyName+"</td>"+
+                                "<td>"+peopleNum+"</td>");
+                        }else{
+                            alert("修改失败！请联系管理员！");
+                            return false;
+                        }
+                        $("#updateMajor").attr("disabled",false);
+                    },
+                    error:function () {
+                        alert("修改失败！请联系管理员！");
+                    }
+                })
+            })
+        }
+
+        function deleteMajor() {
+            var row=$(".selectedMajor:checked").val();
+            if(row==undefined){
+                alert("您还没选中需要删除的专业！");
+                return false;
+            }
+            var majorId=$(this).children('td').eq(1).html();
+            $.ajax({
+                url:"/admin/deleteAcademy",
+                type:"get",
+                data:"id="+majorId,
+                dataType:"json",
+                success:function (data) {
+                    if(data.message=="删除成功！"){
+                        alert(data.message);
+                        getAllAcademy();
+                    }else{
+                        alert("删除失败！");
+                    }
+                },
+                error:function () {
+                    alert("system error");
+                }
+            })
+        }
+
+        function searchMajor() {
+            var academyName=$("#academyNameForSearch").val();
+            var majorName=$("#majorNameForSearch").val();
+            if(majorName==""||academyName==""){
+                alert("学院名或专业名不能为空！");
+            }else{
+                $("#hiddenData").html("<input type='hidden' id='hiddenMajorName' value='"+majorName+"'><input type='hidden' id='hiddenAcademyName' value='"+academyName+"'>");
+                $.ajax({
+                    url:"/admin/searchMajor",
+                    type:"get",
+                    data:"majorName="+majorName+"&academyName="+academyName+"&pageNum=1",
+                    dataType:"json",
+                    success:function (data) {
+                        if(data.message=="success"){
+                            getTable(data)
+                        }else{
+                            alert(data.message);
+                        }
+                    },
+                    error:function () {
+                        alert("system error");
+                    }
+                })
+            }
+        }
+
+    </script>
+    <style>
+
+        .div1{
+            position: absolute;top: 0%;left: 0%;
+            height: 100%;width: 100%;
+            background-color:rgba(0,0,0,0.3);
+            z-index: 100;
+            display: none;
+        }
+
+        .div2{
+            width: 400px;height: 230px;
+            background-color: white;
+            position: absolute;top:17%;left: 30%;
+            z-index: 1000;
+            border-radius: 10px;
+        }
+
+        .input-style{
+            width:150px;
+            padding:10px 12px 10px 10px;
+            background-color: #fffde3;
+        }
+
+        table tbody td{
+            border: 1px solid silver;
+            text-align: center;
+            height: 20px;
+        }
+
+        table tbody tr{
+            border: 1px solid silver;
+        }
+
+        table th{
+            border-left: 1px solid silver;
+            border-right: 1px solid silver;
+            text-align: center;
+            height: 30px;
+            background-color: lightgray;
+        }
+
+    </style>
+</head>
+<body>
+<div class="container">
+    <div style="display: none" id="hiddenData"></div>
+    <div class="div1" id="addMajorWindow">
+        <div class="div2" style="width:400px;height: 350px">
+            <div class="modal-header">
+                <button type="button" onclick="$('#addMajorWindow').hide()" class="close">&times;</button>
+                <h4 class="modal-title">添加专业</h4>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <label>所属学院</label>
+                    <input type="text" class="input-style form-control" placeholder="学院名字" id="academyName">
+                </div>
+                <div>
+                    <label>专业名称</label>
+                    <input type="text" class="input-style form-control" placeholder="专业名字" id="majorName">
+                </div>
+                <div>
+                    <label>学制</label>
+                    <div class="input-group">
+                        <input type="text" class="input-style form-control" placeholder="学制（阿拉伯数字）" id="xuezhi">
+                        <span class="input-group-addon">年</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="addMajor()">确定</button>
+            </div>
+        </div>
+    </div>
+    <div style="position:absolute;top: 1%;left: 10%;width: 85%;height: 90%">
+        <div style="height: 50px;width: 100%;background-color:lightgray">
+            <div class="col-lg-7" style="float: left">
+                <div style="margin: 8px">
+                    <label style="float: left;margin: 8px">专业名</label>
+                    <input class="input-style form-control" placeholder="专业名" id="majorNameForSearch">
+                </div>
+                <div style="position:absolute;top: 8px;left: 270px">
+                    <label style="float: left;margin: 8px">学院名</label>
+                    <input class="input-style form-control" placeholder="学院名" id="academyNameForSearch">
+                </div>
+            </div>
+        </div>
+        <div style="width: 100%;height: 50px">
+            <div class="col-lg-7" style="float: left;margin: 8px" >
+                <button type="button" class="btn btn-primary" id="searchMajor" onclick="searchMajor()" style="margin-left: 8px">
+                    <i class="glyphicon glyphicon-plus"></i>
+                    <span>查询</span>
+                </button>
+                <button type="button" class="btn btn-success" id="addMajor" onclick="addMajor()" style="margin-left: 8px">
+                    <i class="glyphicon glyphicon-plus"></i>
+                    <span>新增</span>
+                </button>
+                <button type="button" class="btn btn-warning delete" id="updateMajor" onclick="BeforeUpdateMajor()" disabled="disabled" style="margin-left: 8px">
+                    <i class="glyphicon glyphicon-wrench "></i>
+                    <span>修改</span>
+                </button>
+                <button type="button" class="btn btn-danger delete" id="deleteMajor" onclick="deleteMajor()" disabled="disabled" style="margin-left: 8px">
+                    <i class="glyphicon glyphicon-trash"></i>
+                    <span>删除</span>
+                </button>
+                <button type="button" class="btn btn-secondary" id="resetTable" onclick="getAllMajor()" disabled="disabled" style="margin-left: 8px">
+                    <i class="glyphicon glyphicon-trash"></i>
+                    <span>重置</span>
+                </button>
+            </div>
+        </div>
+        <table style="width: 100%;height: 540px;" id="academyTable">
+            <thead style="background-color: white">
+            <tr>
+                <th>&nbsp;&nbsp;</th>
+                <th>专业编号</th>
+                <th>专业名</th>
+                <th>人数</th>
+                <th>所属学院</th>
+            </tr>
+            <tbody id="tbody1">
+            <tr id="1"></tr>
+            <tr id="2"></tr>
+            <tr id="3"></tr>
+            <tr id="4"></tr>
+            <tr id="5"></tr>
+            <tr id="6"></tr>
+            <tr id="7"></tr>
+            <tr id="8"></tr>
+            <tr id="9"></tr>
+            <tr id="10"></tr>
+            <tr id="11"></tr>
+            <tr id="12"></tr>
+            <tr id="13"></tr>
+            <tr id="14"></tr>
+            <tr id="15"></tr>
+            <tr id="16"></tr>
+            <tr id="17"></tr>
+            <tr id="18"></tr>
+            <tr id="19"></tr>
+            <tr id="20"></tr>
+            </tbody>
+            <tfoot>
+            <tr>
+                <td colspan="10">
+                    <ul class="pagination" style="float: right;margin-bottom: 0px">
+                    </ul>
+                </td>
+            </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+</body>
+</html>

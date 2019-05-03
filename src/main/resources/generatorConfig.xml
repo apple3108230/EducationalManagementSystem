@@ -46,6 +46,6 @@
         <!--<table tableName="sensitive_operation"></table>-->
         <!--<table tableName="teacher_msg"></table>-->
         <!--<table tableName="timestable"></table>-->
-        <table tableName="schedule_task"></table>
+        <table tableName="major"></table>
     </context>
 </generatorConfiguration>

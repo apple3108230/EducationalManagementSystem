@@ -17,6 +17,7 @@ public class Course {
     private Major major;
     private String credit;
     private String majorClass;
+    private String courseId;
 
     public CourseVo toCourseVo(){
         CourseVo courseVo=new CourseVo();

@@ -23,6 +23,7 @@ public interface AdminDao {
     public int insertAdminAccount(User user);
     public List<SensitiveOperation> getAllLog();
     public List<Academy> getAllAcademy();
+    public String getAcademyIdByName(String academyName);
     public int insertAcademy(String academyName);
     public int updateAcademy(@Param("academyId") String academyId,@Param("academyName") String academyName);
 }

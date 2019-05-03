@@ -129,6 +129,10 @@
         select * from academy
     </select>
 
+    <select id="getAcademyIdByName" resultType="string" parameterType="string">
+        select id from academy where academy_name=#{academyName}
+    </select>
+
     <insert id="insertAcademy" parameterType="string" useGeneratedKeys="true" keyProperty="id">
         insert into academy(academy_name) values (#academyName)
     </insert>

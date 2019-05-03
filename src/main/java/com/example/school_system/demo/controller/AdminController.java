@@ -2,12 +2,9 @@ package com.example.school_system.demo.controller;
 
 import com.example.school_system.demo.dao.AdminDao;
 import com.example.school_system.demo.pojo.*;
-import com.example.school_system.demo.service.AdminService;
-import com.example.school_system.demo.service.BaseService;
-import com.example.school_system.demo.service.CourseSelectionService;
+import com.example.school_system.demo.service.*;
 import com.example.school_system.demo.service.Impl.CourseSelectionServiceImpl;
 import com.example.school_system.demo.service.Impl.TaskServiceImpl;
-import com.example.school_system.demo.service.TaskService;
 import com.example.school_system.demo.utils.TimeUtil;
 import com.example.school_system.demo.utils.WebUtil;
 import com.github.pagehelper.PageHelper;
@@ -42,6 +39,10 @@ public class AdminController {
     private TaskService taskService;
     @Autowired
     private CourseSelectionService courseSelectionService;
+    @Autowired
+    private MajorService majorService;
+    @Autowired
+    private CourseService courseService;
 
     final private static String ORIGINAL_PASSWORD="123456";
 
@@ -453,6 +454,132 @@ public class AdminController {
             WebUtil.printJSON(json.toJSONString(),response);
         }else{
             json.put("message","修改失败！");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }
+    }
+
+    @GetMapping("/getAllMajor")
+    @ResponseBody
+    public List getAllMajor(int pageNum){
+        PageHelper.startPage(pageNum,20);
+        List<Major> majors=majorService.getAllMajor();
+        PageInfo<Major> info=new PageInfo<>(majors);
+        Map<String,Object> map=new HashedMap<>();
+        map.put("totalPage",info.getPages());
+        List jsonList=new ArrayList();
+        jsonList.add(map);
+        jsonList.add(majors);
+        return jsonList;
+    }
+
+    @GetMapping("/searchMajor")
+    @ResponseBody
+    public List searchMajor(String academyName,String majorName,int pageNum){
+        Map<String,String> conditionMap=new HashedMap<>();
+        conditionMap.put("academyName",academyName);
+        conditionMap.put("majorName",majorName);
+        PageHelper.startPage(pageNum,20);
+        List<Major> majors=majorService.getMajorByCondition(conditionMap);
+        PageInfo<Major> info=new PageInfo<>(majors);
+        Map<String,Object> infoMap=new HashedMap<>();
+        infoMap.put("totoalPage",info.getPages());
+        List jsonList=new ArrayList();
+        jsonList.add(infoMap);
+        jsonList.add(majors);
+        return jsonList;
+    }
+
+    @GetMapping("/insertMajor")
+    public void insertMajor(String academyName,String majorName,String xuezhi,HttpServletResponse response){
+        Major major=new Major();
+        major.setAcademyName(academyName);
+        major.setMajorName(majorName);
+        boolean isInsert=majorService.insertMajor(major,xuezhi);
+        JSONObject json=new JSONObject();
+        if(isInsert){
+            json.put("message","添加成功！");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }else{
+            json.put("message","添加失败！");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }
+    }
+
+    @GetMapping("/updateMajor")
+    public void updateMajor(String id,String majorName,HttpServletResponse response){
+        boolean isUpdate=majorService.updateMajor(majorName, id);
+        JSONObject json=new JSONObject();
+        if(isUpdate){
+            json.put("message","修改成功！");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }else{
+            json.put("message","修改失败！");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }
+    }
+
+    @GetMapping("/deleteMajor")
+    public void deleteMajor(String id,HttpServletResponse response){
+        boolean isDelete=majorService.deleteMajor(id);
+        JSONObject json=new JSONObject();
+        if(isDelete){
+            json.put("message","删除成功！");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }else{
+            json.put("message","删除失败！");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }
+    }
+
+    @GetMapping("/queryCourseByCondition")
+    @ResponseBody
+    public List queryCourseByCondition(String teacherName,String majorName,String classType,String courseName,int pageNum){
+        PageHelper.startPage(pageNum,20);
+        List<Course> courseList=courseService.getCourseByCondition(majorName, courseName, classType, teacherName);
+        PageInfo<Course> info=new PageInfo<>(courseList);
+        Map<String,Object> infoMap=new HashedMap<>();
+        infoMap.put("totalPage",info.getPages());
+        List jsonList=new ArrayList();
+        jsonList.add(infoMap);
+        jsonList.add(courseList);
+        return jsonList;
+    }
+
+    @PostMapping("/updateCourse")
+    public void updateCourse(@RequestBody Course course,HttpServletResponse response){
+        boolean isUpdate=courseService.updateCourse(course);
+        JSONObject json=new JSONObject();
+        if(isUpdate){
+            json.put("message","修改成功！");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }else{
+            json.put("message","修改失败！");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }
+    }
+
+    @PostMapping("/insertCourse")
+    public void insertCourse(@RequestBody Course course,HttpServletResponse response){
+        boolean isInsert=courseService.insertCourse(course);
+        JSONObject json=new JSONObject();
+        if(isInsert){
+            json.put("message","添加成功！");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }else{
+            json.put("message","添加失败！");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }
+    }
+
+    @GetMapping("/deleteCourse")
+    public void deleteCourse(String courseId,HttpServletResponse response){
+        boolean isDelete=courseService.deleteCourse(courseId);
+        JSONObject json=new JSONObject();
+        if(isDelete){
+            json.put("message","删除成功！");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }else{
+            json.put("message","删除失败！");
             WebUtil.printJSON(json.toJSONString(),response);
         }
     }
