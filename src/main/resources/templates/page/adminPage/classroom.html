@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="ViewPort" content="width=device-width,initial-scale=1">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script>
+
+        function getTable(data) {
+            for(var size=1;size<21;size++){
+                $("#"+size).html("");
+            }
+            var size=data[1].length;
+            if(size==0){
+                alert("无查询结果！");
+                return false;
+            }
+            var htmlStr="<td>1<input type='radio' name='selectedClassRoom' class='selectedClassRoom' value='1'</td>";
+            var totalPage=data[0].totalPage;
+            var temp=1;
+            var li="<li><a href=\"#\">&laquo;</a></li>";
+            for(var j=1;j<parseInt(totalPage)+1;j++){
+                var temp1="<li><a href=\"#\" onclick=\"getClassRoomByPageNum(this)\">"+j+"</a></li>";
+                li=li+temp1;
+            }
+            $(".pagination").html(li+"<li><a href=\"#\">&raquo;</a></li>");
+            for(var i=0;i<data[1].length;i++){
+                var classroomName=data[1][i].classroomName;
+                var classroomType=data[1][i].classroomType;
+                var peopleNum=data[1][i].peopleNum;
+                var academyName=data[1][i].academyName;
+                htmlStr=htmlStr+"<td>"+classroomName+"</td>"+"<td>"+classroomType+"</td>"+"<td>"+peopleNum+"</td>"+"<td>"+academyName+"</td>";
+                $("#"+htmlStr.charAt(4)).html(htmlStr.replace(htmlStr.charAt(4),""));
+                temp=parseInt(temp)+1;
+                htmlStr="<td>"+temp.toString()+"<input type='radio' name='selectedClassRoom' class='selectedClassRoom' value="+"'"+temp.toString()+"'></td>";
+            }
+        }
+
+        function getClassRoomByPageNum(a) {
+            //移除所有点击效果
+            $("li").removeClass("active");
+            //点击页数后添加点击效果
+            $(a).parent("li").addClass("active");
+            //获取选择的页数
+            var pageNum=$(a).text();
+            var academyName=$("#hiddenAcademyName").val();
+            var classroomType=$("#hiddenClassroomType").val();
+            $.ajax({
+                url:"/admin/queryCourseByCondition",
+                data:"academyName="+academyName+"&classroomType="+classroomType+"&pageNum="+pageNum,
+                dataType:"json",
+                type:"get",
+                success:function (data) {
+                    getTable(data);
+                },
+                error:function () {
+                    alert("系统错误！请联系管理员");
+                }
+            })
+        }
+
+        function cleanAddClassRoomWindowInput() {
+            $("#classRoomName").val("");
+            $("input[name='classType']").removeAttr("checked");
+            $("#academyName").val("");
+        }
+
+        function addClassRoom() {
+            var classRoomName=$("#classRoomName").val();
+            var classType=$("input[name='classType']:checked").val();
+            var academyName=$("#academyName").val();
+            if(classRoomName!=""&&academyName!=""&&classType!=undefined){
+                var info={classRoomName:classRoomName,academyName:academyName,classType:classType};
+                $.ajax({
+                    url:"/admin/insertClassRoom",
+                    type:"post",
+                    contentType:"application/json",
+                    data:JSON.stringify(info),
+                    dataType:"json",
+                    success:function (data) {
+                        if(data.message=="添加成功！"){
+                            alert(data.message);
+                            cleanAddClassRoomWindowInput();
+                            $("#addClassRoomWindow").hide();
+                        }else{
+                            alert(data.message);
+                        }
+                    }
+                })
+            }else{
+                alert("所有信息必须填写！");
+                return false;
+            }
+        }
+
+        function BeforeUpdateClassRoom() {
+            var row=$(".selectedClassRoom:checked").val();
+            if(row==undefined||row==null||row==""){
+                alert("您还没有选择修改目标！");
+                return false;
+            }
+            $("#"+row).each(function () {
+                var classRoomName=$(this).children('td').eq(1).html();
+                var classType=$(this).children('td').eq(2).html();
+                var peopleNum=$(this).children('td').eq(3).html();
+                var academyName=$(this).children('td').eq(4).html();
+                var radioHtml="<td><input type='radio' name='beforeUpdateClassType' id='beforeUpdateClassType1' value='小型教室' checked>小型教室<input type='radio' name='beforeUpdateClassType' id='beforeUpdateClassType2' value='大型教室'>大型教室" +
+                    "<input type='radio' name='beforeUpdateClassType' id='beforeUpdateClassType3' value='阶梯教室'>阶梯教室<input type='radio' name='beforeUpdateClassType' id='beforeUpdateClassType4' value='电脑教室'>电脑教室";
+                $("#hiddenData").html("<input type='hidden' id='hiddenRowNum' value='"+row+"'>" +
+                    "<input type='hidden' id='hiddenClassRoomName' value='"+classRoomName+"'>" +
+                    "<input type='hidden' id='hiddenClassType' value='"+classType+"'>" +
+                    "<input type='hidden' id='hiddenPeopleNum' value='"+peopleNum+"'>" +
+                    "<input type='hidden' id='hiddenAcademyName' value='"+academyName+"'>");
+                $("#"+row).html(
+                    "<td><button type='button' class='btn btn-success btn-sm' onclick='updateClassRoom(this)'value="+row+">确定</button>" +
+                    "<button type='button' class='btn btn-info btn-sm' onclick='cancelUpdate()'>取消</button></td>" +
+                    "<td><input type='text' class='form-control input-style' id='beforeUpdateClassRoomName' value='"+classRoomName+"'></td>"+
+                    radioHtml+
+                    "<td><input type='text' class='form-control input-style' id='peopleName' value='"+peopleName+"' disabled='disabled'></td>"+
+                    "<td><input type='text' class='form-control input-style' id='beforeUpdateAcademyName' value='"+academyName+"'></td>");
+                for(var i=1;i<5;i++){
+                    var radioButton=$("#beforeUpdateClassType"+i);
+                    if(radioButton.val()==classType){
+                        radioButton.attr("checked",true);
+                    }
+                }
+            })
+            $("#updateMajor").attr("disabled",true);
+            $("#addClassRoom").attr("disabled",true);
+            $("#deleteMajor").attr("disabled",true);
+        }
+
+        function cancelUpdate() {
+            var row=$("#hiddenRowNum").val();
+            var classRoomName=$("#hiddenClassRoomName").val();
+            var classType=$("#hiddenClassType").val();
+            var peopleNum=$("#hiddenPeopleNum").val();
+            var academyName=$("#hiddenAcademyName").val();
+            $("#"+row).html("<td><input type='radio' name='selectedClassRoom' class='selectedClassRoom' value='"+row+"'></td>"+"<td>"+classRoomName+"</td>"+"<td>"+classType+"</td>"+"<td>"+peopleNum+"</td>"+"<td>"+academyName+"</td>");
+            $("#updateMajor").attr("disabled",false);
+            $("#addClassRoom").attr("disabled",false);
+            $("#deleteMajor").attr("disabled",false);
+        }
+
+        function updateClassRoom(button) {
+            if($("#beforeUpdateClassRoomName").val()==""||$("#beforeUpdateAcademyName").val()==""||$("input[name='beforeUpdateClassType']:checked").val()==undefined){
+                alert("部分内容为空！");
+                return false;
+            }
+            var row=$(button).val();
+            $("#"+row).each(function (){
+                var classroomName=$(this).children('td').eq(1).find("#beforeUpdateClassRoomName").val();
+                var academyName=$(this).children('td').eq(1).find("#beforeUpdateAcademyName").val();
+                var classroomType=$(this).children('td').eq(1).find("input[name='beforeUpdateClassType']:checked").val();
+                var info={classroomName:classroomName,academyName:academyName,classroomType:classroomType};
+                var peopleNum;
+                if(classroomType=="小型教室"){
+                    peopleNum=90;
+                }else if(classroomType=="大型教室"){
+                    peopleNum=150;
+                }else if(classroomType=="阶梯教室"){
+                    peopleNum=300;
+                }else{
+                    peopleNum=90;
+                }
+                $.ajax({
+                    url:"/admin/updateClassRoom",
+                    type:"post",
+                    contentType:"application/json",
+                    dataType:"json",
+                    data: JSON.stringify(info),
+                    success:function (data) {
+                        if(data.message=="修改成功！"){
+                            alert(data.message);
+                            $("#"+row).html("<td><input type='radio' name='selectedClassRoom' class='selectedClassRoom' value='"+row+"'></td>"+"<td>"+id+"</td>"+"<td>"+classroomName+"</td>"+"<td>"+classroomType+"</td>"+"<td>"+peopleNum+"</td>"+ +"<td>"+academyName+"</td>");
+                        }else{
+                            alert("修改失败！请联系管理员！");
+                            return false;
+                        }
+                        $("#updateMajor").attr("disabled",false);
+                    },
+                    error:function () {
+                        alert("修改失败！请联系管理员！");
+                    }
+                })
+            })
+        }
+
+        function deleteClassRoom() {
+            var row=$(".selectedClassRoom:checked").val();
+            if(row==undefined){
+                alert("您还没选中需要删除的课程！");
+                return false;
+            }
+            var classroomName=$(this).children('td').eq(1).html();
+            $.ajax({
+                url:"/admin/deleteClassRoom",
+                type:"get",
+                data:"classroomName="+classroomName,
+                dataType:"json",
+                success:function (data) {
+                    if(data.message=="删除成功！"){
+                        alert(data.message);
+                        searchClassRoomByCondition();
+                    }else{
+                        alert("删除失败！");
+                    }
+                },
+                error:function () {
+                    alert("system error");
+                }
+            })
+        }
+
+        function searchClassRoom() {
+            var classroomName=$("#classRoomNameForSearch").val();
+            if(classroomName==''){
+                alert("课程名不能为空！");
+            }else{
+                $.ajax({
+                    url:"/admin/queryClassRoomByCondition",
+                    type:"get",
+                    data:"classroomName="+classroomName+"&pageNum=1",
+                    dataType:"json",
+                    success:function (data) {
+                        getTable(data);
+                        $("#hiddenData").html("");
+                        $("#updateClassRoom").attr("disabled",false);
+                        $("#deleteClassRoom").attr("disabled",false);
+                    },
+                    error:function () {
+                        alert("system error");
+                    }
+                })
+            }
+        }
+
+        function searchClassRoomByCondition(){
+            var academyName=$("#academyNameForSearch").val();
+            var classroomType=$("input[name='classTypeForSearch']:checked").val();
+            if(classroomType==undefined){
+                classroomType="";
+            }
+            var htmlStr="<input type='hidden' id='hiddenAcademyName' value='"+academyName+"'><input type='hidden' id='hiddenClassroomType' value='"+classroomType+"'>";
+            $("#hiddenData").html(htmlStr);
+            if(academyName!=''||classroomType!=undefined){
+                $.ajax({
+                    url:"/admin/queryClassRoomByCondition",
+                    type:"get",
+                    data:"academyName="+academyName+"&classroomType="+classroomType+"&pageNum=1",
+                    dataType:"json",
+                    success:function (data) {
+                        getTable(data);
+                        cleanScreenConditionWindow();
+                        $("#screenConditionWindow").hide();
+                        $("#updateClassRoom").attr("disabled",false);
+                        $("#deleteClassRoom").attr("disabled",false);
+                    },
+                    error:function () {
+                        alert("system error");
+                    }
+                })
+            }else{
+                alert("您还没选择筛选条件");
+                return false;
+            }
+        }
+
+        function cleanScreenConditionWindow(){
+            $("#majorNameForSearch").val("");
+            $("#teacherNameForSearch").val("");
+            $("input[name='classTypeForSearch']").removeAttr("checked");
+        }
+
+    </script>
+    <style>
+
+        .div1{
+            position: absolute;top: 0%;left: 0%;
+            height: 100%;width: 100%;
+            background-color:rgba(0,0,0,0.3);
+            z-index: 100;
+            display: none;
+        }
+
+        .div2{
+            width: 400px;height: 230px;
+            background-color: white;
+            position: absolute;top:17%;left: 30%;
+            z-index: 1000;
+            border-radius: 10px;
+        }
+
+        .input-style{
+            width:150px;
+            padding:10px 12px 10px 10px;
+            background-color: #fffde3;
+        }
+
+        table tbody td{
+            border: 1px solid silver;
+            text-align: center;
+            height: 20px;
+        }
+
+        table tbody tr{
+            border: 1px solid silver;
+        }
+
+        table th{
+            border-left: 1px solid silver;
+            border-right: 1px solid silver;
+            text-align: center;
+            height: 30px;
+            background-color: lightgray;
+        }
+
+    </style>
+</head>
+<body>
+<div class="container">
+    <div style="display: none" id="hiddenData"></div>
+    <div class="div1" id="addClassRoomWindow">
+        <div class="div2" style="height: 300px;width: 500px">
+            <div class="modal-header">
+                <button type="button" onclick="$('#addClassRoomWindow').hide();cleanAddClassRoomWindowInput()" class="close">&times;</button>
+                <h4 class="modal-title">添加教室</h4>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <label>教师名</label>
+                    <input type="text" class="input-style form-control" placeholder="教师名" id="classRoomName">
+                </div>
+                <div>
+                    <label>教室类型</label>
+                    <input type="radio" name="classType" value="小型教室">小型教室
+                    <input type="radio" name="classType" value="大型教室">大型教室
+                    <input type="radio" name="classType" value="阶梯教室">阶级教室
+                    <input type="radio" name="classType" value="电脑教室">电脑教室
+                </div>
+                <div>
+                    <label>所属学院</label>
+                    <input type="text" class="input-style form-control" placeholder="学院名" id="academyName">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="addClassRoom()">确定</button>
+            </div>
+        </div>
+    </div>
+    <div class="div1" id="screenConditionWindow">
+        <div class="div2" style="height: 230px;width: 400px;">
+            <div class="modal-header">
+                <button type="button" onclick="$('#screenConditionWindow').hide();cleanScreenConditionWindow();" class="close">&times;</button>
+                <h4 class="modal-title">筛选</h4>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <label>教室类型</label>
+                    <input type="radio" name="classTypeForSearch" value="小型教室">小型教室
+                    <input type="radio" name="classTypeForSearch" value="大型教室">大型教室
+                    <input type="radio" name="classTypeForSearch" value="阶梯教室">阶级教室
+                    <input type="radio" name="classTypeForSearch" value="电脑教室">电脑教室
+                </div>
+                <div>
+                    <label>所属学院</label>
+                    <input class="input-style form-control" placeholder="学院名" id="academyNameForSearch">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="searchClassRoomByCondition()">确定</button>
+            </div>
+        </div>
+    </div>
+    <div style="position:absolute;top: 1%;left: 10%;width: 85%;height: 90%">
+        <div style="height: 50px;width: 100%;background-color:lightgray">
+            <div class="col-lg-7" style="float: left">
+                <div style="margin: 8px">
+                    <label style="float: left;margin: 8px">教室名</label>
+                    <input class="input-style form-control" placeholder="课程名" id="classRoomNameForSearch">
+                </div>
+            </div>
+        </div>
+        <div style="width: 100%;height: 50px">
+            <div class="col-lg-7" style="float: left;margin: 8px" >
+                <button type="button" class="btn btn-secondary"  onclick="$('#screenConditionWindow').show()" style="margin-left: 8px">
+                    <i class="glyphicon glyphicon-plus"></i>
+                    <span>筛选</span>
+                </button>
+                <button type="button" class="btn btn-primary" id="searchClassRoom" onclick="searchClassRoom()" style="margin-left: 8px">
+                    <i class="glyphicon glyphicon-plus"></i>
+                    <span>查询</span>
+                </button>
+                <button type="button" class="btn btn-success" id="addClassRoom" onclick="$('#addClassRoomWindow').show()" style="margin-left: 8px">
+                    <i class="glyphicon glyphicon-plus"></i>
+                    <span>新增</span>
+                </button>
+                <button type="button" class="btn btn-warning delete" id="updateClassRoom" onclick="BeforeUpdateClassRoom()" disabled="disabled" style="margin-left: 8px">
+                    <i class="glyphicon glyphicon-wrench "></i>
+                    <span>修改</span>
+                </button>
+                <button type="button" class="btn btn-danger delete" id="deleteClassRoom" onclick="deleteClassRoom()" disabled="disabled" style="margin-left: 8px">
+                    <i class="glyphicon glyphicon-trash"></i>
+                    <span>删除</span>
+                </button>
+            </div>
+        </div>
+        <table style="width: 100%;height: 540px;" id="ClassRoomTable">
+            <thead style="background-color: white">
+            <tr>
+                <th>&nbsp;&nbsp;</th>
+                <th>教室名</th>
+                <th>教室类型</th>
+                <th>人数</th>
+                <th>所属学院</th>
+            </tr>
+            <tbody id="tbody1">
+            <tr id="1"></tr>
+            <tr id="2"></tr>
+            <tr id="3"></tr>
+            <tr id="4"></tr>
+            <tr id="5"></tr>
+            <tr id="6"></tr>
+            <tr id="7"></tr>
+            <tr id="8"></tr>
+            <tr id="9"></tr>
+            <tr id="10"></tr>
+            <tr id="11"></tr>
+            <tr id="12"></tr>
+            <tr id="13"></tr>
+            <tr id="14"></tr>
+            <tr id="15"></tr>
+            <tr id="16"></tr>
+            <tr id="17"></tr>
+            <tr id="18"></tr>
+            <tr id="19"></tr>
+            <tr id="20"></tr>
+            </tbody>
+            <tfoot>
+            <tr>
+                <td colspan="10">
+                    <ul class="pagination" style="float: right;margin-bottom: 0px">
+                    </ul>
+                </td>
+            </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.school_system.demo.dao.ClassroomDao">
+
+    <select id="getClassroomByCondition" parameterType="java.util.Map" resultType="classroom">
+        select * from classroom where 1=1
+        <foreach collection="conditionMap" open="and" separator="and" index="key" item="value">
+            <if test="key=='academyName'">
+                <if test="value!='' and value!=null">
+                    academy_name=#{value}
+                </if>
+            </if>
+            <if test="key=='classroomType'">
+                <if test="value!='' and value!=null">
+                    classroom_type=#{value}
+                </if>
+            </if>
+            <if test="key=='classroomName'">
+                <if test="value!='' and value!=null">
+                    classroom_name=#{value}
+                </if>
+            </if>
+        </foreach>
+    </select>
+
+    <insert id="insertClassroom" useGeneratedKeys="true" keyProperty="id">
+        insert into classroom(classroom_name,classroom_type,people_num,academy_name) values(#{classroomName},#{classroomType},#{peopleNum},#{academyName})
+    </insert>
+
+    <update id="updateClassroom" parameterType="classroom">
+        update classroom set classroom_name=#{classroomName},classroom_type=#{classroomType},people_num=#{peopleNum},academy_name=#{academyName}
+    </update>
+
+    <delete id="deleteClassroom" parameterType="string">
+        delete * from classrooom where classroom_name=#{classroomName}
+    </delete>
+
+</mapper>

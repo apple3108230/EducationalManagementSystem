@@ -4,7 +4,6 @@ import com.example.school_system.demo.dao.AdminDao;
 import com.example.school_system.demo.pojo.*;
 import com.example.school_system.demo.service.*;
 import com.example.school_system.demo.service.Impl.CourseSelectionServiceImpl;
-import com.example.school_system.demo.service.Impl.TaskServiceImpl;
 import com.example.school_system.demo.utils.TimeUtil;
 import com.example.school_system.demo.utils.WebUtil;
 import com.github.pagehelper.PageHelper;
@@ -43,6 +42,8 @@ public class AdminController {
     private MajorService majorService;
     @Autowired
     private CourseService courseService;
+    @Autowired
+    private ClassroomService classroomService;
 
     final private static String ORIGINAL_PASSWORD="123456";
 
@@ -584,4 +585,56 @@ public class AdminController {
         }
     }
 
+    @GetMapping("/queryClassRoomByCondition")
+    @ResponseBody
+    public List queryClassRoomByCondition(String academyName,String classroomType,String classroomName,int pageNum){
+        PageHelper.startPage(pageNum,20);
+        List<Classroom> classroomList=classroomService.getClassroomByCondition(classroomName, classroomType, academyName);
+        PageInfo<Classroom> info=new PageInfo<>(classroomList);
+        Map<String,Object> infoMap=new HashedMap<>();
+        infoMap.put("totalMap",info.getPages());
+        List jsonList=new ArrayList();
+        jsonList.add(infoMap);
+        jsonList.add(classroomList);
+        return jsonList;
+    }
+
+    @PostMapping("/insertClassRoom")
+    public void insertClassRoom(@RequestBody Classroom classroom,HttpServletResponse response){
+        boolean isInsert=classroomService.insertClassroom(classroom);
+        JSONObject json=new JSONObject();
+        if(isInsert){
+            json.put("message","添加成功！");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }else{
+            json.put("message","添加失败！");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }
+    }
+
+    @PostMapping("/updateClassRoom")
+    public void updateClassRoom(@RequestBody Classroom classroom,HttpServletResponse response){
+        boolean isUpdate=classroomService.updateClassroom(classroom);
+        JSONObject json=new JSONObject();
+        if(isUpdate){
+            json.put("message","修改成功！");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }else{
+            json.put("message","修改失败！");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }
+    }
+
+    @GetMapping("/deleteClassRoom")
+    public void deleteClassRoom(String classroomName,HttpServletResponse response){
+        boolean isDelete=classroomService.deleteClassroom(classroomName);
+        JSONObject json=new JSONObject();
+        if(isDelete){
+            json.put("message","删除成功！");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }else{
+            json.put("message","删除失败！");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }
+    }
 }
