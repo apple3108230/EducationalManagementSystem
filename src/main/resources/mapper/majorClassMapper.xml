@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.school_system.demo.dao.MajorClassDao">
+
+    <select id="getMajorClassByCondition" parameterType="java.util.Map" resultType="majorClass">
+        select * from major_class where 1=1
+        <foreach collection="conditionMap" open="and" index="key" item="value" separator="and">
+            <if test="key=='majorName'">
+                <if test="value!='' and value!=null">
+                    major_name=#{value}
+                </if>
+            </if>
+            <if test="key=='className'">
+                <if test="value!='' and value!=null">
+                    class_name=#{value}
+                </if>
+            </if>
+        </foreach>
+    </select>
+
+    <insert id="insertMajorClass" parameterType="java.util.List">
+        insert into majorClass values
+        <foreach collection="majorClassList" item="majorClass" index="index" separator=",">
+            (#{majorClass.id},#{majorClass.className},#{majorClass.peopleNum},#{majorClass.majorName},#{majorClass.xuezhi},#{majorClass.classId})
+        </foreach>
+    </insert>
+
+    <delete id="deleteMajorClass" parameterType="string">
+        delete * from major_class where class_name=#{className}
+    </delete>
+
+</mapper>

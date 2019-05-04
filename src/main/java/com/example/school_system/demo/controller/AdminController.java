@@ -44,6 +44,9 @@ public class AdminController {
     private CourseService courseService;
     @Autowired
     private ClassroomService classroomService;
+    @Autowired
+    private MajorClassService majorClassService;
+
 
     final private static String ORIGINAL_PASSWORD="123456";
 
@@ -637,4 +640,45 @@ public class AdminController {
             WebUtil.printJSON(json.toJSONString(),response);
         }
     }
+
+    @GetMapping("/queryMajorClassByCondition")
+    @ResponseBody
+    public List queryMajorClassByCondition(String majorName,String className,int pageNum){
+        PageHelper.startPage(pageNum,20);
+        List<MajorClass> majorClassList=majorClassService.getMajorClassByCondition(majorName, className);
+        PageInfo<MajorClass> info=new PageInfo<>(majorClassList);
+        Map<String,Object> infoMap=new HashedMap<>();
+        infoMap.put("totalPage",info.getPages());
+        List jsonList=new ArrayList();
+        jsonList.add(infoMap);
+        jsonList.add(majorClassList);
+        return jsonList;
+    }
+
+    @GetMapping("/insertMajorClass")
+    public void insertMajorClass(String majorName,int majorClassNum,HttpServletResponse response){
+        boolean isInsert=majorClassService.insertMajorClass(majorName, majorClassNum);
+        JSONObject json=new JSONObject();
+        if(isInsert){
+            json.put("messgae","添加成功！");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }else{
+            json.put("message","添加失败！");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }
+    }
+
+    @GetMapping("/deleteMajorClass")
+    public void deleteMajorClass(String classNum,HttpServletResponse response){
+        boolean isDelete=majorClassService.deleteMajorClass(classNum);
+        JSONObject json=new JSONObject();
+        if(isDelete){
+            json.put("messgae","删除成功！");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }else{
+            json.put("message","删除失败！");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }
+    }
+
 }
