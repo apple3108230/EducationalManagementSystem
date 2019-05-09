@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="ViewPort" content="width=device-width,initial-scale=1">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="source/css/jquery.fileupload.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="source/js/jquery.ui.widget.js"></script>
+    <script src="source/js/jquery.iframe-transport.js"></script>
+    <script src="source/js/jquery.fileupload.js"></script>
+    <script src="source/js/jquery.fileupload-process.js"></script>
+    <script src="source/js/jquery.fileupload-validate.js"></script>
+    <script>
+
+        var states="StudentStatusMsg";
+
+        function showUploadStuStatusMsgWindow() {
+            alert("使用批量上传文件时，最多只能一次性上传10个！");
+            $("#uploadFileWindow").show();
+        }
+
+        function showUploadTeacherMsgWindow(){
+            alert("使用批量上传文件时，最多只能一次性上传10个！");
+            states="TeacherMsg";
+            for(var i=0;i<10;i++){
+                $("#"+i).html("");
+            }
+        }
+
+        function showUploadStudentMsgWindow() {
+            alert("使用批量上传文件时，最多只能一次性上传10个！");
+            states="StudentMsg";
+            for(var i=0;i<10;i++){
+                $("#"+i).html("");
+            }
+        }
+
+        function backToChoosePage(){
+            $("#uploadFileWindow").hide();
+        }
+
+        $(function() {
+
+            $(document).on("click","#addFile",function () {
+                $("#uploadFiles").click();
+            });
+
+            function validateData(file){
+                var temp=file.name.split(".")
+                var fileName = temp[1];
+                //获取文件大小
+                var fileSize = file.size;
+                if(/(xls|xlsx)$/.test(fileName)&&fileSize <= 1024 * 1024 * 3){
+                    return true;
+                }else if(!/(xls|xlsx)$/.test(fileName)){
+                    //alert("文件名为："+file.name+"格式不正确");
+                    return false;
+                }else if(fileSize > 1024 * 1024 * 3){
+                    //alert("文件名为："+file.name+"超过3m！")
+                    return false;
+                }else{
+                    return false;
+                }
+
+            }
+
+
+            $('#uploadFiles').fileupload({
+                url : '/admin/upload'+states+"File",
+                Type : 'POST',
+                sequentialUploads:true,//使用队列上传
+                dataType:"json",
+                autoUpload : false
+            })
+            //图片添加完成后触发的事件
+                .on("fileuploadadd", function(e, data) {
+                    $("#addFile").attr("disabled",true);
+                    $("#deleteAll").attr("disabled",false);
+                    $("#StartUploadFile").attr("disabled",false);
+                    if(data.originalFiles.length>10){
+                        alert("超过最大上传数量！");
+                        return false;
+                    }
+                    for(var i=0;i<data.originalFiles.length;i++){
+                        //if(data.originalFiles[i].name!=''&&data.originalFiles[i].name!=null){
+                        //validate(data.files[0]);
+                        if(validateData(data.originalFiles[i])){
+                            var temp1=data.originalFiles[i].name.split(".");
+                            $("#"+i).html("<td>"+data.originalFiles[i].name+"</td><td>"+data.originalFiles[i].size+"</td><td>"+"."+temp1[1]+"</td><td>\n" +
+                                "                                <button type=\"button\" class=\"btn btn-danger delete\">\n" +
+                                "                                    <i class=\"glyphicon glyphicon-trash\"></i>\n" +
+                                "                                    <span>删除文件</span>\n" +
+                                "                                </button>\n" +
+                                "                            </td>");
+
+                        }
+                        //}
+                    }
+                    //隐藏或显示页面元素
+                    $('#progress .bar').css(
+                        'width', '0%'
+                    );
+
+                    //绑定开始上传事件
+                    $('#StartUploadFile').click(function() {
+                        jqXHR = data.submit();
+                        //解绑，防止重复执行
+                        $("#StartUploadFile").off("click");
+                        $("#cancelUpload").attr("disabled",false);
+                        $("#addFile").attr("disabled",true);
+                        $("#deleteAll").attr("disabled",true);
+                        $("#StartUploadFile").attr("disabled",false);
+                    })
+
+                    //绑定点击重选事件
+                    $("#deleteAll").click(function(){
+                        for(var i=0;i<10;i++){
+                            $("#"+i).html("");
+                        }
+                        //解绑，防止重复执行
+                        $("#rechooseFile").off("click");
+                        $("#addFile").attr("disabled",false);
+                    })
+                })
+                //当一个单独的文件处理队列结束触发(验证文件格式和大小)
+                .on("fileuploadprocessalways", function(e, data) {
+                    for(var i=0;i<data.files.length;i++){
+                        file = data.files[i];
+                        if (file.error) {
+                            alert(file.error);
+                        }
+                    }
+                })
+                //显示上传进度条
+                .on("fileuploadprogressall", function(e, data) {
+                    $('#progress .bar').show();
+                    var progress = parseInt(data.loaded / data.total * 100, 10);
+                    $('#progress').css(
+                        'width','100px'
+                    );
+                    $('#progress .bar').css(
+                        'width',progress + '%'
+                    );
+                })
+                //上传请求失败时触发的回调函数
+                .on("fileuploadfail", function(e, data) {
+                    alert(data.errorThrown);
+                })
+                //上传请求成功时触发的回调函数
+                .on("fileuploaddone", function(e, data) {
+                    alert(data.result);
+                    $("#addFile").attr("disabled",false);
+                    $("#deleteAll").attr("disabled",true);
+                    $("#StartUploadFile").attr("disabled",true);
+                    $("#cancelUpload").attr("disabled",true);
+
+                })
+                //上传请求结束后，不管成功，错误或者中止都会被触发
+                .on("fileuploadalways", function(e, data) {
+
+                })
+
+        });
+
+    </script>
+    <style>
+        .div1{
+            position: absolute;top: 0%;left: 0%;
+            height: 100%;width: 100%;
+            background-color:rgba(0,0,0,0.3);
+            z-index: 100;
+            display: none;
+        }
+        .div2{
+            width: 1200px;height: 670px;
+            background-color: white;
+            position: absolute;top:2%;left: 5%;
+            z-index: 1000;
+            border-radius: 10px;
+        }
+
+        .input-style{
+            width:150px;
+            padding:10px 12px 10px 10px;
+            background-color: #fffde3;
+        }
+
+        table tbody td{
+            border: 1px solid silver;
+            text-align: center;
+            height: 50px;
+        }
+
+        table tbody tr{
+            border: 1px solid silver;
+        }
+
+        table th{
+            border-left: 1px solid silver;
+            border-right: 1px solid silver;
+            text-align: center;
+            height: 30px;
+            background-color: lightgray;
+        }
+
+        table tr td input[type=text]{
+        .input-style;
+
+        }
+
+        .bar {
+            background-image: -webkit-linear-gradient(top,#5cb85c 0,#449d44 100%);
+            background-image: -o-linear-gradient(top,#5cb85c 0,#449d44 100%);
+            background-image: -webkit-gradient(linear,left top,left bottom,from(#5cb85c),to(#449d44));
+            background-image: linear-gradient(to bottom,#5cb85c 0,#449d44 100%);
+            filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff5cb85c', endColorstr='#ff449d44', GradientType=0);
+            background-repeat: repeat-x;
+            height: 20px;
+            line-height: 20px;
+            -webkit-box-shadow: inset 0 -1px 0 rgba(0,0,0,.15);
+            box-shadow: inset 0 -1px 0 rgba(0,0,0,.15);
+            -webkit-transition: width .6s ease;
+            -o-transition: width .6s ease;
+            transition: width .6s ease;
+            position: fixed;
+            top:83%;
+            left: 15%;
+        }
+
+    </style>
+    <link rel="stylesheet" href="source/css/swiper-3.3.1.min.css">
+</head>
+<body>
+<div class="container">
+    <div class="div1" id="uploadFileWindow">
+        <div class="div2">
+            <div style="position:absolute;top: 1%;left: 14.9%;">
+                <table style="width: 850px;height: 600px;">
+                    <thead style="background-color: white">
+                    <tr colspan="4">
+                        <div class="row fileupload-buttonbar">
+                            <div class="col-lg-12 jquery-fileupload" style="float: right;margin: 3px" >
+                                <input type="file" id="uploadFiles" style="display: none" multiple>
+                                <span class="btn btn-success fileinput-button" id="addFile">
+                                    <i class="glyphicon glyphicon-plus"></i>
+                                    <span>添加文件</span>
+                                    <input type="button">
+                                </span>
+                                <button type="button" class="btn btn-primary start" id="StartUploadFile" disabled="disabled">
+                                    <i class="glyphicon glyphicon-upload"></i>
+                                    <span>开始上传</span>
+                                </button>
+                                <button type="button" class="btn btn-warning cancel"v id="cancelUpload" disabled="disabled">
+                                    <i class="glyphicon glyphicon-ban-circle"></i>
+                                    <span>取消上传</span>
+                                </button>
+                                <button type="button" class="btn btn-danger delete" id="deleteAll" disabled="disabled">
+                                    <i class="glyphicon glyphicon-trash"></i>
+                                    <span>重新选择文件</span>
+                                </button>
+                                <button type="button" class="btn btn-danger delete" id="back" onclick="backToChoosePage()">
+                                    <i class="	glyphicon glyphicon-arrow-left"></i>
+                                    <span>返回选择页面</span>
+                                </button>
+                            </div>
+                        </div>
+                    </tr>
+                    </thead>
+                    <tbody id="tbody">
+                    <tr>
+                        <th width="212px">文件名</th>
+                        <th width="150px">文件大小</th>
+                        <th width="150px">文件格式</th>
+                        <th>操作</th>
+                    </tr>
+                    <tr id="0"></tr>
+                    <tr id="1"></tr>
+                    <tr id="2"></tr>
+                    <tr id="3"></tr>
+                    <tr id="4"></tr>
+                    <tr id="5"></tr>
+                    <tr id="6"></tr>
+                    <tr id="7"></tr>
+                    <tr id="8"></tr>
+                    <tr id="9"></tr>
+                    <tr id="10" style="border: none;">
+                        <td colspan="4">
+                            <div id="progress">
+                                <label style="position: absolute;left: 7%;top: 94%">进度</label>
+                                <div class="bar" style="width: 0px;display: none"></div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div style="width: 600px;height: 200px;position: absolute;top: 20%;left: 40%;">
+        <div style="position: absolute;top:1%;left: 10%">
+            <label>选择上传成绩方式</label>
+        </div>
+        <div style="position: absolute;top:27%;left: 2%">
+            <button type="button" class="btn btn-primary" onclick="showUploadStuStatusMsgWindow()">批量上传学生学籍</button>
+            <button type="button" class="btn btn-primary" id="uploadOne" onclick="showUploadTeacherMsgWindow()">批量上传教师信息</button>
+            <button type="button" class="btn btn-primary" onclick="showUploadStudentMsgWindow()">批量上传新生信息</button>
+        </div>
+    </div>
+</div>
+</body>
+</html>

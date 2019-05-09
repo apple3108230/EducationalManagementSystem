@@ -20,7 +20,7 @@ import java.util.*;
 
 @Controller
 @RequestMapping("/student")
-public class StudentController extends BaseController {
+public class StudentController{
 
     @Autowired
     private StudentService studentService;

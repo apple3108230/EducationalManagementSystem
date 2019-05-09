@@ -10,4 +10,7 @@
     <insert id="insertEmailByUserName" parameterType="string">
         update user set email=#{email} where username=#{username}
     </insert>
+    <insert id="insertUser" parameterType="user">
+        insert into user values(#{user.id},#{user.username},#{user.password},#{user.salt},#{user.role},#{user.permission},#{email})
+    </insert>
 </mapper>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.school_system.demo.dao.StudentPersonalMessageDao">
+
+    <insert id="insertBatchStudentPersonalMessage" parameterType="java.util.List">
+        insert into stu_personal_message values
+        <foreach collection="list" separator="," item="msg">
+            (#{msg.id},#{msg.name},#{msg.sex},#{msg.birthday},#{msg.addr},#{msg.tel},#{msg.academy},#{msg.studentClass})
+        </foreach>
+    </insert>
+
+    <select id="getLastStudentIdByClassId" parameterType="string" resultType="string">
+        SELECT id FROM stu_personal_msg where id like #{classId} ORDER BY id DESC
+    </select>
+
+</mapper>

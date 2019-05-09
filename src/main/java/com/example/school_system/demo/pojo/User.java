@@ -7,7 +7,7 @@ import java.io.Serializable;
 @Data
 @Alias("user")
 public class User implements Serializable {
-    private int id;
+    private String id;
     private String username;
     private String password;
     private String role;
@@ -21,7 +21,7 @@ public class User implements Serializable {
         this.password=password;
     }
 
-    public User(int id, String username, String password, String role, String permission, String email,String salt) {
+    public User(String id, String username, String password, String role, String permission, String email,String salt) {
         this.id = id;
         this.username = username;
         this.password = password;

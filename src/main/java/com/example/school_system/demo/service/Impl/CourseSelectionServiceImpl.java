@@ -3,10 +3,7 @@ package com.example.school_system.demo.service.Impl;
 import com.example.school_system.demo.dao.CourseSelectionDao;
 import com.example.school_system.demo.dao.StudentDao;
 import com.example.school_system.demo.pojo.*;
-import com.example.school_system.demo.service.AdminService;
-import com.example.school_system.demo.service.CourseSelectionService;
-import com.example.school_system.demo.service.StudentService;
-import com.example.school_system.demo.service.TaskService;
+import com.example.school_system.demo.service.*;
 import com.example.school_system.demo.utils.StringUtil;
 import com.example.school_system.demo.utils.TimeUtil;
 import com.example.school_system.demo.utils.WebUtil;
@@ -19,7 +16,9 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import redis.clients.jedis.Jedis;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.sql.Time;
 import java.util.*;
 
 @Service
@@ -33,6 +32,8 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
     private CourseSelectionDao courseSelectionDao;
     @Autowired
     private TaskService taskService;
+    @Autowired
+    private LogService logService;
 
     private static final String HASH_PREFIX="course:";
     private static final String COURSE_SET_PREFIX="course:select:";
@@ -136,7 +137,7 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public void uploadTaskForSuperMode(String startTime, String endTime, HttpServletResponse response) {
+    public void uploadTaskForSuperMode(String startTime, String endTime, HttpServletResponse response, HttpServletRequest request) {
         String mode="一键开启模式";
         List<PreSelectCourseTask> preSelectCourseTasks=adminService.getAllMajorClassCourse();
         boolean isInsert=adminService.insertBatchPreSelectCourseTask(preSelectCourseTasks,startTime,endTime,mode);
@@ -151,6 +152,12 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
                 e.printStackTrace();
             }
             if(state==TaskServiceImpl.SET_SCHEDULE_TASK_INTO_DATABASE_IS_SUCCESS){
+                User user= (User) request.getSession().getAttribute("user");
+                SensitiveOperation sensitiveOperation=new SensitiveOperation();
+                sensitiveOperation.setAction("开启一键预选课功能");
+                sensitiveOperation.setTime(TimeUtil.getNowTime());
+                sensitiveOperation.setOperator(user.getUsername());
+                logService.insertSensitiveOperationLog(sensitiveOperation);
                 json.put("message","success");
                 WebUtil.printJSON(json.toJSONString(),response);
             }else if(state==TaskServiceImpl.SCHEDULE_TASK_IS_EXIST){
@@ -256,7 +263,7 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public void uploadTaskForCustomMode(String majorId, String classId, String startTime, String endTime, HttpServletResponse response) throws Exception {
+    public void uploadTaskForCustomMode(String majorId, String classId, String startTime, String endTime, HttpServletResponse response,HttpServletRequest request) throws Exception {
         String mode="自定义模式";
         Map<String,String> conditionMap=new HashMap<>();
         if(classId==""){
@@ -281,6 +288,18 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
                 String scheduleTaskName="预选信息导入数据库(自定义)";
                 int state=setScheduleTaskForPreSelectCourse(endTime,scheduleTaskName,jobName);
                 if(state==TaskServiceImpl.SET_SCHEDULE_TASK_INTO_DATABASE_IS_SUCCESS){
+                    User user= (User) request.getSession().getAttribute("user");
+                    StringBuffer context=new StringBuffer();
+                    preSelectCourseTasks.forEach(preSelectCourseTask -> {
+                        context.append("班级：").append(preSelectCourseTask.getClassName()).append(" ");
+                        context.append("预选课程：").append(preSelectCourseTask.getCourseId()).append(" ");
+                        context.append("时间：").append(preSelectCourseTask.getTime());
+                    });
+                    SensitiveOperation sensitiveOperation=new SensitiveOperation();
+                    sensitiveOperation.setAction("使用自定义预选课程："+context.toString());
+                    sensitiveOperation.setTime(TimeUtil.getNowTime());
+                    sensitiveOperation.setOperator(user.getUsername());
+                    logService.insertSensitiveOperationLog(sensitiveOperation);
                     json.put("message","success");
                     WebUtil.printJSON(json.toJSONString(),response);
                 }else if(state==TaskServiceImpl.SCHEDULE_TASK_IS_EXIST){

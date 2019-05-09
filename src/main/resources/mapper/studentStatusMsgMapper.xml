@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.school_system.demo.dao.StudentStatusMsgDao">
+
+    <insert id="insertBatchStudentStatusMsg" parameterType="java.util.List">
+        insert into student_status_msg values
+        <foreach collection="studentStatusMsgList" item="msg" separator=",">
+            (#{msg.id},#{msg.name},#{msg.sex},#{msg.idNum},#{msg.birthday},#{msg.nation},#{msg.jiguan},
+            #{msg.zzFace},#{msg.joinPartyTime},#{msg.birthPlace},#{msg.postalCode},#{msg.homeAddr},#{msg.tel},
+            #{msg.email},#{msg.studentExamId},#{msg.studentType},#{msg.syProvince},#{msg.academy},#{msg.major},
+            #{msg.stuClass},#{msg.xuezhi},#{msg.cengci},#{msg.studentImgUrl})
+        </foreach>
+    </insert>
+
+</mapper>

@@ -7,7 +7,12 @@ import com.example.school_system.demo.controller.TeacherController;
 import com.example.school_system.demo.dao.*;
 import com.example.school_system.demo.pojo.*;
 import com.example.school_system.demo.service.*;
+import com.example.school_system.demo.utils.RarUtil;
 import com.example.school_system.demo.utils.TimeUtil;
+import com.example.school_system.demo.utils.ZipUtil;
+import com.github.junrar.Archive;
+import com.github.junrar.exception.RarException;
+import com.github.junrar.rarfile.FileHeader;
 import com.github.pagehelper.PageHelper;
 import org.apache.commons.collections4.map.HashedMap;
 import org.apache.shiro.SecurityUtils;
@@ -22,6 +27,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -29,22 +35,22 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.ParseException;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest
 public class DemoApplicationTests {
-
-    @Autowired
-    private CourseDao courseDao;
 
     @Test
     public void contextLoads() throws MessagingException {
@@ -56,17 +62,7 @@ public class DemoApplicationTests {
     }
 
     @Test
-    public void test() throws IOException, IllegalAccessException, ParseException {
-        String lastCourseId="100";
-        String newLastCourseId=String.valueOf(Integer.parseInt(lastCourseId)+1);
-        if(newLastCourseId.length()<3){
-            String tempStr="0";
-            for(int temp=newLastCourseId.length();temp<2;temp++){
-                tempStr=tempStr+tempStr;
-            }
-            newLastCourseId=tempStr+newLastCourseId;
-        }
-        System.out.println(newLastCourseId);
+    public void test() throws Exception {
     }
 }
 

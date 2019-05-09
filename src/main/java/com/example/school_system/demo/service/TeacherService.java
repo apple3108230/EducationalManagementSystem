@@ -12,8 +12,7 @@ import java.util.List;
 
 public interface TeacherService {
     public TeacherMsg getTeacherMsgById(String id);
-    public int insertScoreByStudentId(@Param("scoreBatch") List<StudentScore> scoreMap);
-    public void resolveExcelAndInsertScore(HttpServletResponse response, List<String> fileNames) throws IOException;
+    public boolean insertScoreByStudentId(@Param("scoreBatch") List<StudentScore> scoreMap);
     public boolean updateStudentScoreByCourseAndStudentId(StudentScore studentScore);
     public boolean deleteStudentScoreByCourseAndStudentId(DeleteScoreInfo deleteScoreInfo);
 }

@@ -2,30 +2,29 @@ package com.example.school_system.demo.controller;
 
 import com.example.school_system.demo.dao.TeacherDao;
 import com.example.school_system.demo.pojo.*;
+import com.example.school_system.demo.service.ExcelService;
+import com.example.school_system.demo.service.LogService;
 import com.example.school_system.demo.service.TeacherService;
 import com.example.school_system.demo.service.TimestableService;
 import com.example.school_system.demo.utils.ScoreUtil;
 import com.example.school_system.demo.utils.StringUtil;
+import com.example.school_system.demo.utils.TimeUtil;
 import com.example.school_system.demo.utils.WebUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.sql.Time;
+import java.util.*;
 
 @Controller
 @RequestMapping("/teacher")
@@ -36,13 +35,14 @@ public class TeacherController {
     @Autowired
     private TimestableService timestableService;
     @Autowired
+    private ExcelService excelService;
+    @Autowired
     private TeacherDao teacherDao;
+    @Autowired
+    private LogService logService;
 
-    final private static String SAVE_FILE_PATH="C:\\Users\\Administrator\\Desktop\\schoolSys\\src\\main\\resources\\templates\\excel";
-
-    public String getSaveFilePath(){
-        return SAVE_FILE_PATH;
-    }
+    @Value("${excel.save-path}")
+    private String excelSavePath;
 
     public Map<String,String> parseQueryScoreCondition(User user,QueryScoreCondition queryScoreCondition) throws IllegalAccessException {
         Map<String,String> conditionMap=new HashMap<>();
@@ -96,7 +96,7 @@ public class TeacherController {
 
     @RequestMapping("/info")
     @ResponseBody
-    public TeacherMsg getTeacherMsgById(HttpServletResponse response, HttpServletRequest request){
+    public TeacherMsg getTeacherMsgById(HttpServletRequest request){
         User user= (User) request.getSession().getAttribute("user");
         TeacherMsg msg=teacherService.getTeacherMsgById(user.getUsername());
         return msg;
@@ -152,7 +152,7 @@ public class TeacherController {
             fileNames.add(fileName);
             if(fileName!=null&&!fileName.isEmpty()){
                 try {
-                    part.write(SAVE_FILE_PATH+"/"+fileName);
+                    part.write(excelSavePath+"/"+fileName);
                 } catch (IOException e) {
                     JSONObject json=new JSONObject();
                     json.put("message","上传失败！原因："+e.getMessage());
@@ -160,7 +160,7 @@ public class TeacherController {
                 }
             }
         });
-        teacherService.resolveExcelAndInsertScore(response,fileNames);
+        excelService.resolveExcelAndInsertScore(response,request,fileNames);
     }
 
     @PostMapping("/checkScoreExist")
@@ -181,7 +181,7 @@ public class TeacherController {
 
 
     @PostMapping("/uploadScores")
-    public void uploadScores(HttpServletResponse response, @RequestBody List<StudentScorePo> scores){
+    public void uploadScores(HttpServletResponse response, @RequestBody List<StudentScorePo> scores,HttpServletRequest request){
         List<StudentScore> studentScores=new ArrayList<>();
         scores.forEach(score->{
             String totalScore=ScoreUtil.countTotalScore(score.getUsualScore(),score.getExamScore());
@@ -191,9 +191,20 @@ public class TeacherController {
             studentScore.setId(StringUtil.CustomUUID());
             studentScores.add(studentScore);
         });
-        int i=teacherService.insertScoreByStudentId(studentScores);
+        boolean i=teacherService.insertScoreByStudentId(studentScores);
         JSONObject json=new JSONObject();
-        if(i>=0){
+        if(i){
+            //上传至操作日志
+            User user= (User) request.getSession().getAttribute("user");
+            SensitiveOperation sensitiveOperation=new SensitiveOperation();
+            StringBuffer allStudentId=new StringBuffer();
+            scores.forEach(score->{
+                allStudentId.append(score.getStudentId()).append(" ");
+            });
+            sensitiveOperation.setAction("上传成绩：学号："+allStudentId);
+            sensitiveOperation.setTime(TimeUtil.getNowTime());
+            sensitiveOperation.setOperator(user.getUsername());
+            logService.insertSensitiveOperationLog(sensitiveOperation);
             json.put("message","上传成功！");
             WebUtil.printJSON(json.toJSONString(),response);
         }else{
@@ -219,10 +230,16 @@ public class TeacherController {
     }
 
     @PostMapping("/updateScore")
-    public void updateScore(@RequestBody StudentScore studentScore,HttpServletResponse response){
+    public void updateScore(@RequestBody StudentScore studentScore,HttpServletResponse response,HttpServletRequest request){
         boolean isUpdate=teacherService.updateStudentScoreByCourseAndStudentId(studentScore);
         JSONObject json=new JSONObject();
         if(isUpdate){
+            User user= (User) request.getSession().getAttribute("user");
+            SensitiveOperation sensitiveOperation=new SensitiveOperation();
+            sensitiveOperation.setAction("上传成绩：学号："+studentScore.getStudentId());
+            sensitiveOperation.setTime(TimeUtil.getNowTime());
+            sensitiveOperation.setOperator(user.getUsername());
+            logService.insertSensitiveOperationLog(sensitiveOperation);
             json.put("message","修改成功！");
             WebUtil.printJSON(json.toJSONString(),response);
         }else{
@@ -233,10 +250,16 @@ public class TeacherController {
 
     @PostMapping("/deleteScore")
     //由于参数中不可以使用多个@RequestBody来解析json中的每个键值对 所以只能解析成pojo类
-    public void deleteScore(@RequestBody DeleteScoreInfo deleteScoreInfo, HttpServletResponse response){
+    public void deleteScore(@RequestBody DeleteScoreInfo deleteScoreInfo, HttpServletResponse response,HttpServletRequest request){
         boolean isDelete=teacherService.deleteStudentScoreByCourseAndStudentId(deleteScoreInfo);
         JSONObject json=new JSONObject();
         if(isDelete){
+            User user= (User) request.getSession().getAttribute("user");
+            SensitiveOperation sensitiveOperation=new SensitiveOperation();
+            sensitiveOperation.setAction("删除成绩：学号："+deleteScoreInfo.getStudentId());
+            sensitiveOperation.setTime(TimeUtil.getNowTime());
+            sensitiveOperation.setOperator(user.getUsername());
+            logService.insertSensitiveOperationLog(sensitiveOperation);
             json.put("message","删除成功！");
             WebUtil.printJSON(json.toJSONString(),response);
         }else{

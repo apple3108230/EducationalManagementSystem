@@ -207,4 +207,12 @@ public class TimeUtil {
         return false;
     }
 
+    /**
+     * 获取当前时间
+     * @return
+     */
+    public static String getNowTime(){
+        return formatData(new Date());
+    }
+
 }

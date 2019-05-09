@@ -26,4 +26,13 @@ public class BaseServiceImpl implements BaseService {
     public int insertEmailByUserName(String username, String email) {
         return baseDao.insertEmailByUserName(username, email);
     }
+
+    @Override
+    public boolean insertUser(User user) {
+        int result=baseDao.insertUser(user);
+        if(result>0){
+            return true;
+        }
+        return false;
+    }
 }

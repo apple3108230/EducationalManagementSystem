@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.school_system.demo.dao.LogDao">
+
+    <insert id="insertSensitiveOperationLog" parameterType="sensitiveOperation" useGeneratedKeys="true" keyProperty="id">
+        insert into sensitive_operation(action,time,operator) values(#{action},#{time},#{operator})
+    </insert>
+
+    <insert id="insertSystemErrorLog" parameterType="systemError" useGeneratedKeys="true" keyProperty="id">
+        insert into system_error(class_name,method_name,message,time) values(#{className},#{methodName},#{message},#{time})
+    </insert>
+
+</mapper>
