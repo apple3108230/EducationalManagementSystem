@@ -1,5 +1,6 @@
 package com.example.school_system.demo.dao;
 
+import com.example.school_system.demo.pojo.Academy;
 import com.example.school_system.demo.pojo.Student;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
@@ -10,4 +11,6 @@ import java.util.List;
 public interface StudentPersonalMessageDao {
     public int insertBatchStudentPersonalMessage(@Param("list") List<Student> studentList);
     public String getLastStudentIdByClassId(String classId);
+    public int countAcademyPeopleNum(String academyName);
+    public int countMajorPeopleNum(String majorName);
 }

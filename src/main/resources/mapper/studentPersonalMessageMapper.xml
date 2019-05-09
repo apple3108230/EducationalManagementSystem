@@ -13,4 +13,12 @@
         SELECT id FROM stu_personal_msg where id like #{classId} ORDER BY id DESC
     </select>
 
+    <select id="countAcademyPeopleNum" resultType="int" parameterType="string">
+          select count(*) from stu_personal_msg where academy=#{academyName}
+    </select>
+
+   <select id="countMajorPeopleNum" resultType="int" parameterType="string">
+          select count(*) from stu_personal_msg where studentClass like "${majorName}%"
+   </select>
+
 </mapper>

@@ -4,9 +4,12 @@ import com.example.school_system.demo.dao.AdminDao;
 import com.example.school_system.demo.dao.MajorDao;
 import com.example.school_system.demo.pojo.Major;
 import com.example.school_system.demo.service.MajorService;
+import com.example.school_system.demo.service.StudentPersonalMsgService;
 import org.apache.commons.collections4.map.HashedMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -16,6 +19,8 @@ public class MajorServiceImpl implements MajorService {
 
     @Autowired
     private MajorDao majorDao;
+    @Autowired
+    private StudentPersonalMsgService studentPersonalMsgService;
 
     @Override
     public List<Major> getAllMajor() {
@@ -84,6 +89,19 @@ public class MajorServiceImpl implements MajorService {
         newIdsMap.put("newId",newId.toString());
         newIdsMap.put("newMajorId",newMajorId);
         return newIdsMap;
+    }
+
+    @Transactional(propagation = Propagation.NESTED)
+    @Override
+    public boolean updateMajorPeopleNum(List<Major> majors) {
+        int result=0;
+        for(Major major:majors){
+            result=result+majorDao.updateMajorPeopleNum(major);
+        }
+        if(result==majors.size()){
+            return true;
+        }
+        return false;
     }
 
 }

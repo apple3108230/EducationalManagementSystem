@@ -45,6 +45,8 @@ public class ExcelServiceImpl implements ExcelService {
     private AcademyService academyService;
     @Autowired
     private LogService logService;
+    @Autowired
+    private MajorService majorService;
 
     @Value("${excel.save-path}")
     private String excelSavePath;
@@ -301,7 +303,7 @@ public class ExcelServiceImpl implements ExcelService {
     }
 
     @Override
-    public void resolveExcelAndInsertStudentMsg(HttpServletResponse response, List<String> fileNames,HttpServletRequest request){
+    public void resolveExcelAndInsertStudentMsg(HttpServletResponse response, List<String> fileNames,HttpServletRequest request) throws Exception {
         List<Student> studentList=new ArrayList<>();
         fileNames.forEach(fileName->{
             Workbook workbook=null;
@@ -367,6 +369,10 @@ public class ExcelServiceImpl implements ExcelService {
             sensitiveOperation.setTime(TimeUtil.getNowTime());
             sensitiveOperation.setOperator(user.getUsername());
             logService.insertSensitiveOperationLog(sensitiveOperation);
+            //更新学院人数
+            updateAcademyPeopleNum();
+            //更新专业人数
+            updateMajorPeopleNum();
             json.put("message","上传成功！");
             WebUtil.printJSON(json.toJSONString(),response);
         }else{
@@ -453,5 +459,29 @@ public class ExcelServiceImpl implements ExcelService {
         if(!isInsert){
             throw new Exception("创建账号失败！");
         }
+    }
+
+    /**
+     * 更新学院人数
+     * @throws Exception
+     */
+    private void updateAcademyPeopleNum() throws Exception {
+       List<Academy> academyList=studentPersonalMsgService.countAcademyPeopleNum();
+       boolean isUpdate=academyService.updateAcademyPeopleNum(academyList);
+       if(!isUpdate){
+           throw new Exception("更新学院人数失败！");
+       }
+    }
+
+    /**
+     * 更新专业人数
+     * @throws Exception
+     */
+    private void updateMajorPeopleNum() throws Exception {
+       List<Major> majorList=studentPersonalMsgService.countMajorPeopleNum();
+       boolean isUpdate=majorService.updateMajorPeopleNum(majorList);
+       if(!isUpdate){
+           throw new Exception("更新专业人数失败！");
+       }
     }
 }

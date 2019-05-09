@@ -38,4 +38,8 @@
         delete * from major where id=#{majorId}
     </delete>
 
+    <update id="updateMajorPeopleNum" parameterType="major">
+        update major set people_num=#{peopleNum} where major_name=#{majorName}
+    </update>
+
 </mapper>

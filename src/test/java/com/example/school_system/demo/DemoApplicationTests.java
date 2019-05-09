@@ -52,6 +52,11 @@ import java.util.zip.ZipFile;
 @SpringBootTest
 public class DemoApplicationTests {
 
+    @Autowired
+    private StudentPersonalMessageDao studentPersonalMessageDao;
+    @Autowired
+    private AcademyDao academyDao;
+
     @Test
     public void contextLoads() throws MessagingException {
     }

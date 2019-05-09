@@ -12,4 +12,5 @@ public interface MajorService {
     public boolean updateMajor(String majorName,String id);
     public boolean deleteMajor(String majorId);
     public Map<String,String> getNewIdAndMajorId(Map<String,String> info);
+    public boolean updateMajorPeopleNum(List<Major> majors);
 }

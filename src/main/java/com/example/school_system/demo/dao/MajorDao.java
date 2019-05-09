@@ -15,5 +15,5 @@ public interface MajorDao {
     public int insertMajor(Major major);
     public int updateMajor(@Param("majorName") String majorName,@Param("id") String id);
     public int deleteMajor(String majorId);
-
+    public int updateMajorPeopleNum(Major major);
 }

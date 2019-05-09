@@ -4,4 +4,10 @@
     <select id="getAcademyByName" parameterType="string" resultType="academy">
         select * from academy where academy_name=#{academyName}
     </select>
+    <select id="getAllAcademyName" resultType="string">
+        select academy_name from academy
+    </select>
+    <update id="updateAcademyPeopleNum" parameterType="academy">
+        update academy set people_num=#{peopleNum} where academy_name=#{academyName}
+    </update>
 </mapper>
