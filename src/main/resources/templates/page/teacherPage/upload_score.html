@@ -136,15 +136,15 @@
                     $('#progress .bar').show();
                     var progress = parseInt(data.loaded / data.total * 100, 10);
                     $('#progress').css(
-                        'width','100px'
+                        'width','300px'
                     );
                     $('#progress .bar').css(
-                        'width',progress + '%'
+                        'width',progress*3 + 'px'
                     );
                 })
                 //上传请求失败时触发的回调函数
                 .on("fileuploadfail", function(e, data) {
-                    alert(data.errorThrown);
+                    alert(data.message);
                 })
                 //上传请求成功时触发的回调函数
                 .on("fileuploaddone", function(e, data) {
@@ -385,8 +385,8 @@
             -o-transition: width .6s ease;
             transition: width .6s ease;
             position: fixed;
-            top:83%;
-            left: 15%;
+            top:91%;
+            left: 27%;
         }
 
     </style>

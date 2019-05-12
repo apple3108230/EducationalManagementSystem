@@ -28,4 +28,13 @@ public class TimestableServiceImpl implements TimestableService {
     public List<Timestable> getTimestableByTeacherNameAndTerm(String teacherName,String term) {
         return timestableDao.getTimestableByTeacherNameAndTerm(teacherName, term);
     }
+
+    @Override
+    public boolean insertBatchTimestable(List<Timestable> timestableList) {
+        int result=timestableDao.insertBatchTimestable(timestableList);
+        if(result>0){
+            return true;
+        }
+        return false;
+    }
 }

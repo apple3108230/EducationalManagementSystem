@@ -50,4 +50,12 @@
 					where timestable.course_id=course.id and
 					timestable.course_id in (select course.id from course where teacher_name=#{teacherName}) and term=#{term}
     </select>
+
+    <insert id="insertBatchTimestable" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id">
+        insert into timestable(class_name,course_id,time,classroom_name,weeks,term,notice) values
+        <foreach collection="timestableList" item="timestable" separator=",">
+            (#{timestable.className},#{timestable.courseId},#{timestable.time},#{timestable.classroomName},#{timestable.weeks},#{timestable.term},#{timestable.notice})
+        </foreach>
+    </insert>
+
 </mapper>

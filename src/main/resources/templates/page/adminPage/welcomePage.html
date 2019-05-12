@@ -82,7 +82,7 @@
                 <li><a th:href="@{/to/home/pre_select_course_task}" target="iframe">预选课程管理</a> </li>
             </ul>
             <ul>
-                <li><a th:href="@{/to/home/classroom_timestable}" target="iframe">课程表管理</a> </li>
+                <li><a th:href="@{/to/home/upload_timestable}" target="iframe">上传课程表</a> </li>
             </ul>
         </li>
         <li class="nav-item">
@@ -91,7 +91,10 @@
                 <i class="my-icon nav-more"></i>
             </a>
             <ul>
-                <li><a th:href="@{/to/home/sensitive_operation}" target="iframe">敏感操作日志</a></li>
+                <li><a th:href="@{/to/home/sensitive_operation_log}" target="iframe">敏感操作日志</a></li>
+            </ul>
+            <ul>
+                <li><a th:href="@{/to/home/system_error_log}" target="iframe">系统异常日志</a></li>
             </ul>
             <ul>
                 <li><a th:href="@{/to/home/quartz_task}" target="iframe">定时任务管理</a></li>

@@ -9,7 +9,7 @@
     <insert id="insertScoreByStudentId" parameterType="java.util.List" >
         insert into student_score values
         <foreach collection="scoreList" separator="," index="key" item="Score">
-            (#{Score.id},#{Score.course},#{Score.studentId},#{Score.usualScore},#{Score.examScore},#{Score.totalScore},#{Score.credit}
+            (#{Score.id},#{Score.course},#{Score.courseType},#{Score.studentId},#{Score.usualScore},#{Score.examScore},#{Score.totalScore},#{Score.credit}
             ,#{Score.gpa},#{Score.creditGpa},#{Score.term})
         </foreach>
     </insert>

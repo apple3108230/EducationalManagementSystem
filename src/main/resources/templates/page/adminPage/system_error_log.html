@@ -79,7 +79,7 @@
 
         $().ready(function () {
             $.ajax({
-                url:"/admin/getAllLog",
+                url:"/admin/getSystemErrorLog",
                 dataType:"json",
                 type:"get",
                 success:function (data) {
@@ -94,51 +94,50 @@
 </head>
 <body>
 <div class="container">
-    <div style="width: 100%;height: 50px;border-top: 1px black solid;border-left: 1px black solid;border-right: 1px black solid;margin-top: 10px">
-        <h1 style="margin-top: 3px;text-align: center">敏感操作日志</h1>
+    <div>
+        <div style="width: 100%;height: 50px;border-top: 1px black solid;border-left: 1px black solid;border-right: 1px black solid;margin-top: 10px">
+            <h1 style="margin-top: 3px;text-align: center" id="title">系统异常日志</h1>
+        </div>
+        <table style="width: 100%;height: 540px;margin-top: 0px">
+            <thead style="width: 100%">
+            <th>序号</th>
+            <th>类名</th>
+            <th>方法名</th>
+            <th>错误信息</th>
+            <th>时间</th>
+            </thead>
+            <tbody id="tbody1">
+            <tr id="1"></tr>
+            <tr id="2"></tr>
+            <tr id="3"></tr>
+            <tr id="4"></tr>
+            <tr id="5"></tr>
+            <tr id="6"></tr>
+            <tr id="7"></tr>
+            <tr id="8"></tr>
+            <tr id="9"></tr>
+            <tr id="10"></tr>
+            <tr id="11"></tr>
+            <tr id="12"></tr>
+            <tr id="13"></tr>
+            <tr id="14"></tr>
+            <tr id="15"></tr>
+            <tr id="16"></tr>
+            <tr id="17"></tr>
+            <tr id="18"></tr>
+            <tr id="19"></tr>
+            <tr id="20"></tr>
+            </tbody>
+            <tfoot>
+            <tr>
+                <td colspan="10">
+                    <ul class="pagination" style="float: right;margin-bottom: 0px">
+                    </ul>
+                </td>
+            </tr>
+            </tfoot>
+        </table>
     </div>
-    <table style="width: 100%;height: 540px;margin-top: 0px">
-        <thead style="width: 100%">
-        <th>序号</th>
-        <th>事件详情</th>
-        <th>操作时间</th>
-        <th>操作人</th>
-        </thead>
-        <tbody id="tbody1">
-        <tr id="1"></tr>
-        <tr id="2"></tr>
-        <tr id="3"></tr>
-        <tr id="4"></tr>
-        <tr id="5"></tr>
-        <tr id="6"></tr>
-        <tr id="7"></tr>
-        <tr id="8"></tr>
-        <tr id="9"></tr>
-        <tr id="10"></tr>
-        <tr id="11"></tr>
-        <tr id="12"></tr>
-        <tr id="13"></tr>
-        <tr id="14"></tr>
-        <tr id="15"></tr>
-        <tr id="16"></tr>
-        <tr id="17"></tr>
-        <tr id="18"></tr>
-        <tr id="19"></tr>
-        <tr id="20"></tr>
-        </tbody>
-        <tfoot>
-        <tr>
-            <td colspan="10">
-                <ul class="pagination" style="float: right;margin-bottom: 0px">
-                    <li><a href="#">&laquo;</a></li>
-                    <li class="active"><a href="#">1</a></li>
-                    <li><a href="#">2</a> </li>
-                    <li><a href=\"#\">&raquo;</a></li>
-                </ul>
-            </td>
-        </tr>
-        </tfoot>
-    </table>
 </div>
 </body>
 </html>

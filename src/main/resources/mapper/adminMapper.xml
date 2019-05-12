@@ -121,10 +121,6 @@
         insert into user(username,password,salt,role,permission,email) values(#{username},#{password},#{salt},#{role},#{permission},#{email})
     </insert>
 
-    <select id="getAllLog" resultType="sensitiveOperation">
-        select * from sensitive_operation
-    </select>
-
     <select id="getAllAcademy" resultType="academy">
         select * from academy
     </select>

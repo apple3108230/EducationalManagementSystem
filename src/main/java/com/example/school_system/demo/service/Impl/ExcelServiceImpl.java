@@ -1,5 +1,7 @@
 package com.example.school_system.demo.service.Impl;
 
+import com.example.school_system.demo.exception.OtherException;
+import com.example.school_system.demo.exception.ResolveExcelException;
 import com.example.school_system.demo.pojo.*;
 import com.example.school_system.demo.service.*;
 import com.example.school_system.demo.utils.ScoreUtil;
@@ -47,6 +49,10 @@ public class ExcelServiceImpl implements ExcelService {
     private LogService logService;
     @Autowired
     private MajorService majorService;
+    @Autowired
+    private CourseService courseService;
+    @Autowired
+    private TimestableService timestableService;
 
     @Value("${excel.save-path}")
     private String excelSavePath;
@@ -128,6 +134,15 @@ public class ExcelServiceImpl implements ExcelService {
                             //学分绩点
                             score.setCreditGpa(ScoreUtil.countCreditGpa(score.getCredit(),score.getGpa()));
                             score.setId(StringUtil.CustomUUID());
+                            List<Course> courses=courseService.getCourseByCondition("",score.getCourse(),"","");
+                            if(courses.size()==0){
+                                try {
+                                    throw new ResolveExcelException("找不到考试科目！");
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            score.setCourseType(courses.get(0).getClassType());
                         }
                         //学期学年
                         if(row.getCell(5)!=null){
@@ -381,6 +396,69 @@ public class ExcelServiceImpl implements ExcelService {
         }
     }
 
+    @Override
+    public void resolveExcelAndInsertTimestable(HttpServletResponse response, List<String> fileNames, HttpServletRequest request) {
+        List<Timestable> timestableList=new ArrayList<>();
+        fileNames.forEach(fileName->{
+            Workbook workbook=null;
+            //不同版本的excel文件需要的生成的workbook不一样，所以需要进行判断
+            try{
+                if(isXls(fileName)){
+                    workbook=new HSSFWorkbook(new FileInputStream(excelSavePath+"/"+fileName));
+                }else{
+                    workbook=new XSSFWorkbook(new FileInputStream(excelSavePath+"/"+fileName));
+                }
+            }catch (IOException e){
+                JSONObject json=new JSONObject();
+                json.put("message","上传失败！原因："+e.getMessage());
+                WebUtil.printJSON(json.toJSONString(),response);
+            }
+            if(workbook==null){
+                throw new NullPointerException("WorkBook is null");
+            }else{
+                //获取工作表的数量
+                int numOfSheet=workbook.getNumberOfSheets();
+                for(int i=0;i<numOfSheet;i++){
+                    Sheet sheet=workbook.getSheetAt(i);
+                    int lastRowNum=sheet.getLastRowNum();
+                    //第一行是标题，所以跳过第一行直接从第二行获取
+                    for(int j=1;j<=lastRowNum;j++){
+                        Row row=sheet.getRow(j);
+                        Timestable timestable=new Timestable();
+                        Class clz=timestable.getClass();
+                        Field[] fields=clz.getDeclaredFields();
+                        for(int k=1;k<fields.length;k++){
+                            Field field=fields[k];
+                            field.setAccessible(true);
+                            row.getCell(k).setCellType(Cell.CELL_TYPE_STRING);
+                            try {
+                                field.set(timestable,row.getCell(k-1).getStringCellValue());
+                            } catch (IllegalAccessException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        timestableList.add(timestable);
+                    }
+                }
+            }
+        });
+        boolean isInsert=timestableService.insertBatchTimestable(timestableList);
+        JSONObject json=new JSONObject();
+        if(isInsert){
+            json.put("message","上传成功！");
+            WebUtil.printJSON(json.toJSONString(),response);
+            SensitiveOperation sensitiveOperation=new SensitiveOperation();
+            User user= (User) request.getSession().getAttribute("user");
+            sensitiveOperation.setAction("上传课程表");
+            sensitiveOperation.setTime(TimeUtil.getNowTime());
+            sensitiveOperation.setOperator(user.getUsername());
+            logService.insertSensitiveOperationLog(sensitiveOperation);
+        }else{
+            json.put("message","上传失败！");
+            WebUtil.printJSON(json.toJSONString(),response);
+        }
+    }
+
     /**
      * 生成学生的班级，生成新的学生id
      * @param classId
@@ -469,7 +547,7 @@ public class ExcelServiceImpl implements ExcelService {
        List<Academy> academyList=studentPersonalMsgService.countAcademyPeopleNum();
        boolean isUpdate=academyService.updateAcademyPeopleNum(academyList);
        if(!isUpdate){
-           throw new Exception("更新学院人数失败！");
+           throw new OtherException("更新学院人数失败！");
        }
     }
 
@@ -481,7 +559,7 @@ public class ExcelServiceImpl implements ExcelService {
        List<Major> majorList=studentPersonalMsgService.countMajorPeopleNum();
        boolean isUpdate=majorService.updateMajorPeopleNum(majorList);
        if(!isUpdate){
-           throw new Exception("更新专业人数失败！");
+           throw new OtherException("更新专业人数失败！");
        }
     }
 }

@@ -343,20 +343,43 @@ public class AdminController {
      * 获取敏感操作日志
      * @return
      */
-    @GetMapping("/getAllLog")
+    @GetMapping("/getSensitiveOperationLog")
     @ResponseBody
-    public List getAllLog(@RequestParam(value = "pageNum",required = false) String pageNum){
+    public List getSensitiveOperationLog(@RequestParam(value = "pageNum",required = false) String pageNum){
         if(pageNum!=""){
             PageHelper.startPage(Integer.parseInt(pageNum),20);
+        }else{
+            PageHelper.startPage(1,20);
         }
-        PageHelper.startPage(1,20);
-        List<SensitiveOperation> sensitiveOperations=adminDao.getAllLog();
+        List<SensitiveOperation> sensitiveOperations=logService.getSensitiveOperationLog();
         PageInfo info=new PageInfo<>(sensitiveOperations);
         Map map=new HashMap();
         map.put("totalPage",info.getPages());
         List jsonList=new ArrayList();
         jsonList.add(map);
         jsonList.add(sensitiveOperations);
+        return jsonList;
+    }
+
+    /**
+     * 获取系统异常日志
+     * @return
+     */
+    @GetMapping("/getSystemErrorLog")
+    @ResponseBody
+    public List getSystemErrorLog(@RequestParam(value = "pageNum",required = false) String pageNum){
+        if(pageNum!=""){
+            PageHelper.startPage(Integer.parseInt(pageNum),20);
+        }else{
+            PageHelper.startPage(1,20);
+        }
+        List<SystemError> systemErrorList=logService.getSystemError();
+        PageInfo info=new PageInfo<>(systemErrorList);
+        Map map=new HashMap();
+        map.put("totalPage",info.getPages());
+        List jsonList=new ArrayList();
+        jsonList.add(map);
+        jsonList.add(systemErrorList);
         return jsonList;
     }
 
@@ -796,6 +819,13 @@ public class AdminController {
         return jsonList;
     }
 
+    /**
+     * 添加班级
+     * @param majorName
+     * @param majorClassNum
+     * @param response
+     * @param request
+     */
     @GetMapping("/insertMajorClass")
     public void insertMajorClass(String majorName,int majorClassNum,HttpServletResponse response,HttpServletRequest request){
         boolean isInsert=majorClassService.insertMajorClass(majorName, majorClassNum);
@@ -815,6 +845,12 @@ public class AdminController {
         }
     }
 
+    /**
+     * 删除班级
+     * @param className
+     * @param response
+     * @param request
+     */
     @GetMapping("/deleteMajorClass")
     public void deleteMajorClass(String className,HttpServletResponse response,HttpServletRequest request){
         boolean isDelete=majorClassService.deleteMajorClass(className);
@@ -834,6 +870,13 @@ public class AdminController {
         }
     }
 
+    /**
+     * 上传学生学籍信息
+     * @param response
+     * @param request
+     * @throws IOException
+     * @throws ServletException
+     */
     @PostMapping("/uploadStudentStatusMsgFile")
     public void uploadStudentStatusMsgFile(HttpServletResponse response, HttpServletRequest request) throws IOException, ServletException {
         List<Part> parts= (List<Part>) request.getParts();
@@ -857,6 +900,13 @@ public class AdminController {
         excelService.resolveExcelAndInsertStudentStatusMsg(response,fileNames,request);
     }
 
+    /**
+     * 上传新职工信息并为其注册新账号
+     * @param request
+     * @param response
+     * @throws IOException
+     * @throws ServletException
+     */
     @PostMapping("/uploadTeacherMsgFile")
     public void uploadTeacherMsgFile(HttpServletRequest request,HttpServletResponse response) throws IOException, ServletException {
         List<Part> parts= (List<Part>) request.getParts();
@@ -880,8 +930,14 @@ public class AdminController {
         excelService.resolveExcelAndInsertTeacherMsg(response,fileNames,request);
     }
 
+    /**
+     * 上传新生信息并为其注册新的账号
+     * @param response
+     * @param request
+     * @throws Exception
+     */
     @PostMapping("/uploadStudentMsgFile")
-    public void uploadStudentMsgFile(HttpServletResponse response,HttpServletRequest request) throws IOException, ServletException {
+    public void uploadStudentMsgFile(HttpServletResponse response,HttpServletRequest request) throws Exception {
         List<Part> parts= (List<Part>) request.getParts();
         List<String> fileNames=new ArrayList<>();
         parts.forEach(part->{
@@ -901,6 +957,36 @@ public class AdminController {
             }
         });
         excelService.resolveExcelAndInsertStudentMsg(response,fileNames,request);
+    }
+
+    /**
+     * 上传并解析课程表excel
+     * @param response
+     * @param request
+     * @throws IOException
+     * @throws ServletException
+     */
+    @PostMapping("/uploadTimestableFile")
+    public void uploadTimestableFile(HttpServletResponse response,HttpServletRequest request) throws IOException, ServletException {
+        List<Part> parts= (List<Part>) request.getParts();
+        List<String> fileNames=new ArrayList<>();
+        parts.forEach(part->{
+            String header=part.getHeader("Content-Disposition");
+            int start = header.lastIndexOf("=");
+            String fileName = header.substring(start + 1)
+                    .replace("\"", "");
+            fileNames.add(fileName);
+            if(fileName!=null&&!fileName.isEmpty()){
+                try {
+                    part.write(excelSavePath+"/"+fileName);
+                } catch (IOException e) {
+                    JSONObject json=new JSONObject();
+                    json.put("message","上传失败！原因："+e.getMessage());
+                    WebUtil.printJSON(json.toJSONString(),response);
+                }
+            }
+        });
+        excelService.resolveExcelAndInsertTimestable(response,fileNames,request);
     }
 
 }

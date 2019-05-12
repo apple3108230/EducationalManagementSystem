@@ -15,34 +15,10 @@
     <script src="source/js/jquery.fileupload-validate.js"></script>
     <script>
 
-        var states="StudentStatusMsg";
+        $(function() {
 
-        function showUploadStuStatusMsgWindow() {
             alert("使用批量上传文件时，最多只能一次性上传10个！");
             $("#uploadFileWindow").show();
-        }
-
-        function showUploadTeacherMsgWindow(){
-            alert("使用批量上传文件时，最多只能一次性上传10个！");
-            states="TeacherMsg";
-            for(var i=0;i<10;i++){
-                $("#"+i).html("");
-            }
-        }
-
-        function showUploadStudentMsgWindow() {
-            alert("使用批量上传文件时，最多只能一次性上传10个！");
-            states="StudentMsg";
-            for(var i=0;i<10;i++){
-                $("#"+i).html("");
-            }
-        }
-
-        function backToChoosePage(){
-            $("#uploadFileWindow").hide();
-        }
-
-        $(function() {
 
             $(document).on("click","#addFile",function () {
                 $("#uploadFiles").click();
@@ -69,7 +45,7 @@
 
 
             $('#uploadFiles').fileupload({
-                url : '/admin/upload'+states+"File",
+                url : '/admin/uploadTimestableFile',
                 Type : 'POST',
                 sequentialUploads:true,//使用队列上传
                 dataType:"json",
@@ -261,10 +237,6 @@
                                     <i class="glyphicon glyphicon-trash"></i>
                                     <span>重新选择文件</span>
                                 </button>
-                                <button type="button" class="btn btn-danger delete" id="back" onclick="backToChoosePage()">
-                                    <i class="	glyphicon glyphicon-arrow-left"></i>
-                                    <span>返回选择页面</span>
-                                </button>
                             </div>
                         </div>
                     </tr>
@@ -297,16 +269,6 @@
                     </tbody>
                 </table>
             </div>
-        </div>
-    </div>
-    <div style="width: 600px;height: 200px;position: absolute;top: 20%;left: 40%;">
-        <div style="position: absolute;top:1%;left: 10%">
-            <label>选择上传成绩方式</label>
-        </div>
-        <div style="position: absolute;top:27%;left: 2%">
-            <button type="button" class="btn btn-primary" onclick="showUploadStuStatusMsgWindow()">批量上传学生学籍</button>
-            <button type="button" class="btn btn-primary" id="uploadOne" onclick="showUploadTeacherMsgWindow()">批量上传教师信息</button>
-            <button type="button" class="btn btn-primary" onclick="showUploadStudentMsgWindow()">批量上传新生信息</button>
         </div>
     </div>
 </div>

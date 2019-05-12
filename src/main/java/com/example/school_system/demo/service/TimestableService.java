@@ -8,4 +8,5 @@ public interface TimestableService {
     public List<Timestable> getClassTimestable(String classId);
     public List<Timestable> getClassRoomTimestable(String classroomName);
     public List<Timestable> getTimestableByTeacherNameAndTerm(String teacherName,String term);
+    public boolean insertBatchTimestable(List<Timestable> timestableList);
 }

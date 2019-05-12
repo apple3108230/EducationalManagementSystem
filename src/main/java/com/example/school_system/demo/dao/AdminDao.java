@@ -21,7 +21,6 @@ public interface AdminDao {
     public int deleteAllSuperModeTask();
     public String getLastAdminUsername();
     public int insertAdminAccount(User user);
-    public List<SensitiveOperation> getAllLog();
     public List<Academy> getAllAcademy();
     public String getAcademyIdByName(String academyName);
     public int insertAcademy(String academyName);
