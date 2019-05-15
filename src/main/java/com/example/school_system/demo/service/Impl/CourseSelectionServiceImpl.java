@@ -4,9 +4,11 @@ import com.example.school_system.demo.dao.CourseSelectionDao;
 import com.example.school_system.demo.dao.StudentDao;
 import com.example.school_system.demo.pojo.*;
 import com.example.school_system.demo.service.*;
+import com.example.school_system.demo.utils.RedisUtil;
 import com.example.school_system.demo.utils.StringUtil;
 import com.example.school_system.demo.utils.TimeUtil;
 import com.example.school_system.demo.utils.WebUtil;
+import org.apache.commons.collections4.map.HashedMap;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -18,6 +20,7 @@ import redis.clients.jedis.Jedis;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.sql.Time;
 import java.util.*;
 
@@ -34,6 +37,8 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
     private TaskService taskService;
     @Autowired
     private LogService logService;
+    @Autowired
+    private CourseService courseService;
 
     private static final String HASH_PREFIX="course:";
     private static final String COURSE_SET_PREFIX="course:select:";
@@ -50,7 +55,10 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
     }
 
     @Override
-    public void setCourseInRedis(Object data) {
+    public void setCourseInRedis(Object data) throws IOException {
+        if(!RedisUtil.redisConnectionIsExist()){
+            RedisUtil.autoOpenRedis();
+        }
         List<CourseVo> courseVos= (List<CourseVo>) data;
         for(int j=0;j<courseVos.size();j++){
             String id=courseVos.get(j).getId();
@@ -67,7 +75,10 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
      * @return  -1：已经选过此课程 0：课程可选人数不足 1：选课成功
      */
     @Override
-    public Long selectCourse(String courseId, String studentId) {
+    public Long selectCourse(String courseId, String studentId) throws IOException {
+        if(!RedisUtil.redisConnectionIsExist()){
+            RedisUtil.autoOpenRedis();
+        }
         String sha1=null;
         //流程：先判断所选择的课程是否被选完了，然后判断是否已经选了此课程，若都不符合前面两个条件，则扣除课程可选人数并写入选课记录
         String script=
@@ -93,7 +104,10 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
      */
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public void putCourseSelectionToDatabase() {
+    public void putCourseSelectionToDatabase() throws IOException {
+        if(!RedisUtil.redisConnectionIsExist()){
+            RedisUtil.autoOpenRedis();
+        }
         List<Course> courses=courseSelectionDao.defaultGetCourse();
         for(int i=0;i<courses.size();i++){
             String courseId=courses.get(i).getId();
@@ -109,12 +123,15 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
             });
             String studentId=json.toJSONString();
             String peopleNum=Integer.toString(json.size());
-            courseSelectionDao.insertCourseSelection(courseId,studentId,peopleNum);
+            insertCourseSelection(courseId,studentId,peopleNum);
         }
     }
 
     @Override
-    public Long cancelSelectedCourse(String courseId,String studentId) {
+    public Long cancelSelectedCourse(String courseId,String studentId) throws IOException {
+        if(!RedisUtil.redisConnectionIsExist()){
+            RedisUtil.autoOpenRedis();
+        }
         String sha1=null;
         String script="local isSelect=redis.call('sismember',KEYS[1],ARGV[1]) \n"
                 +"if isSelect ~= 0 then \n"
@@ -137,12 +154,19 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public void uploadTaskForSuperMode(String startTime, String endTime, HttpServletResponse response, HttpServletRequest request) {
+    public void uploadTaskForSuperMode(String startTime, String endTime, HttpServletResponse response, HttpServletRequest request) throws IOException {
         String mode="一键开启模式";
         List<PreSelectCourseTask> preSelectCourseTasks=adminService.getAllMajorClassCourse();
         boolean isInsert=adminService.insertBatchPreSelectCourseTask(preSelectCourseTasks,startTime,endTime,mode);
         JSONObject json=new JSONObject();
         if(isInsert){
+            List<Course> courses=courseService.getCourseByCondition("","","选修","");
+            List<CourseVo> courseVoList=new ArrayList<>();
+            courses.forEach(course -> {
+                CourseVo courseVo=course.toCourseVo();
+                courseVoList.add(courseVo);
+            });
+            setCourseInRedis(courseVoList);
             String jobName=PRE_SELECT_COURSE_JOB_NAME_FOR_SUPER_MODE;
             String scheduleTaskName="预选信息导入数据库";
             int state= 0;
@@ -284,6 +308,10 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
         }else{
             boolean isUpload=adminService.insertTaskForCustomMode(preSelectCourseTasks,startTime,endTime,mode);
             if(isUpload){
+                Course course=courseService.getCourseByMajorId(majorId);
+                List<CourseVo> courseVoList=new ArrayList<>();
+                courseVoList.add(course.toCourseVo());
+                setCourseInRedis(courseVoList);
                 String jobName=PRE_SELECT_COURSE_JOB_NAME_FOR_CUSTOM_MODE;
                 String scheduleTaskName="预选信息导入数据库(自定义)";
                 int state=setScheduleTaskForPreSelectCourse(endTime,scheduleTaskName,jobName);
@@ -315,4 +343,5 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
             }
         }
     }
+
 }

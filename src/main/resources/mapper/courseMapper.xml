@@ -46,4 +46,8 @@
         select course_id from course where major_name=#{majorName} ORDER BY course_id DESC LIMIT 1
     </select>
 
+    <select id="getCourseByMajorId" resultType="course" parameterType="string">
+        select * from course where major_name =(select major_name from major where major.id=#{majorId}) and class_type="选修"
+    </select>
+
 </mapper>

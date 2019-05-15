@@ -134,7 +134,9 @@ public class StudentController{
     @RequestMapping("/timestable")
     @ResponseBody
     public List<TimestableVo> getStudentTimestable(HttpServletRequest request, HttpServletResponse response, String term){
-        List<Timestable> timestables=studentService.getTimestableByStudentClass((String) request.getSession().getAttribute("studentClass"));
+        User user= (User) request.getSession().getAttribute("user");
+        String majorClass=studentService.getStudentById(user.getUsername()).getStudentClass();
+        List<Timestable> timestables=studentService.getTimestableByStudentClass(majorClass,term);
         if(timestables==null){
             JSONObject json=new JSONObject();
             json.put("message","is null");
@@ -155,7 +157,7 @@ public class StudentController{
      * @param courseId
      */
     @RequestMapping("/selectCourse")
-    public void selectCourse(HttpServletResponse response,HttpServletRequest request,String courseId){
+    public void selectCourse(HttpServletResponse response,HttpServletRequest request,String courseId) throws IOException {
         HttpSession session=request.getSession();
         User user= (User) session.getAttribute("user");
         String studentId=user.getUsername();
@@ -185,7 +187,7 @@ public class StudentController{
      * @param courseId 课程id
      */
     @RequestMapping("/cancelCourse")
-    public void cancelCourse(HttpServletResponse response,HttpServletRequest request,String courseId){
+    public void cancelCourse(HttpServletResponse response,HttpServletRequest request,String courseId) throws IOException {
         User user= (User) request.getSession().getAttribute("user");
         String studentId=user.getUsername();
         Long result=courseSelectionService.cancelSelectedCourse(courseId,studentId);

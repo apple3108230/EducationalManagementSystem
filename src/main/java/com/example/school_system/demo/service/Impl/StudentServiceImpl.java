@@ -44,8 +44,8 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public List<Timestable> getTimestableByStudentClass(String studentClass) {
-        return studentDao.getTimestableByStudentClass(studentClass);
+    public List<Timestable> getTimestableByStudentClass(String studentClass,String term) {
+        return studentDao.getTimestableByStudentClass(studentClass,term);
     }
 
     @Override

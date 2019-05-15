@@ -3,11 +3,11 @@
 <mapper namespace="com.example.school_system.demo.dao.TimestableDao">
 
     <select id="getAllClassId" resultType="string">
-        select id from major_class
+        select DISTINCT id from major_class
     </select>
 
     <select id="getAllClassRoomName" resultType="string">
-        select classroom_name from classroom
+        select DISTINCT classroom_name from classroom
     </select>
 
     <resultMap id="timestableResult" type="com.example.school_system.demo.pojo.Timestable">
@@ -57,5 +57,9 @@
             (#{timestable.className},#{timestable.courseId},#{timestable.time},#{timestable.classroomName},#{timestable.weeks},#{timestable.term},#{timestable.notice})
         </foreach>
     </insert>
+
+    <select id="getAllTerm" resultType="string">
+        select DISTINCT term from timestable
+    </select>
 
 </mapper>

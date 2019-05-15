@@ -14,4 +14,5 @@ public interface TimestableDao {
     public List<String> getAllClassRoomName();
     public List<Timestable> getTimestableByTeacherNameAndTerm(@Param("teacherName") String teacherName,@Param("term") String term);
     public int insertBatchTimestable(@Param("timestableList") List<Timestable> timestableList);
+    public List<String> getAllTerm();
 }

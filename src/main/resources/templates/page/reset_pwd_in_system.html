@@ -24,22 +24,24 @@
     </style>
     <script>
         $("form").submit(function () {
-            if($("#username").val()==null||$("#username").val()==""){
-                alert("您还没有输入账号");
+            if($("#password").val()==null||$("#password2").val()==""){
+                alert("您还有信息还没填写");
                 return false;
             }
-            $.ajax({
-                url:"",
-                type:"get",
-                dataType:"json",
-                data:$(this).serialize(),
-                success:function (data) {
-                    alert(data);
-                },
-                error:function () {
-                    alert("系统错误!修改失败！");
-                }
-            })
+            if($("#password").val()==$("#password2").val()){
+                $.ajax({
+                    url:"/resetPwd",
+                    type:"get",
+                    dataType:"text",
+                    data:"password="+$("#password").val(),
+                    success:function (data) {
+                        alert(data);
+                    },
+                    error:function () {
+                        alert("系统错误!修改失败！");
+                    }
+                })
+            }
         })
     </script>
 </head>
@@ -51,11 +53,12 @@
     <div style="width: 500px;height:400px;position: absolute;left: 40%;top: 25%;">
         <form>
             <div style="position:relative;left: 25%;margin-top:30px">
-                <label style="float: left;margin-top: 7px">需要重置的账号：</label>
-                <input type="text" class="form-control input-style" placeholder="账号" id="username" name="username">
+                <label style="float: left;margin-top: 7px">请输入密码：</label>
+                <input type="text" class="form-control input-style" style="position: relative;left: 5%" placeholder="密码" id="password" name="password">
             </div>
             <div style="position:relative;left: 25%;margin-top: 30px">
-                <input type="checkbox" value="resetBindEmail" name="checkboxValue">是否取消已绑定的邮箱
+                <label style="float: left;margin-top: 7px">请再次输入密码：</label>
+                <input type="text" class="form-control input-style" placeholder="密码" id="password2" name="password2">
             </div>
             <div style="position: relative;left: 40%;margin-top: 50px">
                 <button type="submit" class="btn btn-primary btn-lg">确定</button>

@@ -13,4 +13,5 @@ public interface CourseDao {
     public int updateCourse(Course course);
     public int deleteCourse(String id);
     public String getLastCourseIdByMajorName(String majorName);
+    public Course getCourseByMajorId(String majorId);
 }

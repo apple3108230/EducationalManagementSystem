@@ -8,6 +8,6 @@
         select * from course where class_type="选修"
     </select>
     <select id="getSelectCourseResult" parameterType="string" resultType="selectCourseResult">
-        select course_id,student_id from course_selection LEFT outer join course on course.class_type="选修" and course.major_name=#{majorName} and course_selection.course_id=course.id
+        select course_selection.course_id,student_id from course_selection LEFT outer join course on course.class_type="选修" and course.major_name=#{majorName} and course_selection.course_id=course.id
     </select>
 </mapper>

@@ -6,6 +6,8 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.io.IOException;
+
 public class AfterSelectCourse implements Job {
 
     @Autowired
@@ -14,6 +16,10 @@ public class AfterSelectCourse implements Job {
 
     @Override
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-       courseSelectionService.putCourseSelectionToDatabase();
+        try {
+            courseSelectionService.putCourseSelectionToDatabase();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

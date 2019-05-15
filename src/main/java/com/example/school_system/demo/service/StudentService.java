@@ -11,6 +11,6 @@ public interface StudentService {
     public Student getStudentById(String id);
     public void updateInfoById(Map map);
     public StudentStatusMsg getStudentStatusMsgId(String id);
-    public List<Timestable> getTimestableByStudentClass(String studentClass);
+    public List<Timestable> getTimestableByStudentClass(String studentClass,String term);
     public List<Course> getCourseByMajorName(String majorName);
 }

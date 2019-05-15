@@ -11,4 +11,5 @@ public interface CourseService {
     public boolean updateCourse(Course course);
     public boolean deleteCourse(String id);
     public Map<String,String> getNewCourseId(Course course);
+    public Course getCourseByMajorId(String majorId);
 }

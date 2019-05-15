@@ -1,5 +1,6 @@
 package com.example.school_system.demo.Interceptor;
 
+import com.example.school_system.demo.dao.TimestableDao;
 import com.example.school_system.demo.pojo.Student;
 import com.example.school_system.demo.pojo.User;
 import com.example.school_system.demo.service.StudentService;
@@ -11,12 +12,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class DefaultTimestableInterceptor implements HandlerInterceptor {
 
     @Autowired
     private StudentService studentService;
+    @Autowired
+    private TimestableDao timestableDao;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -26,9 +30,7 @@ public class DefaultTimestableInterceptor implements HandlerInterceptor {
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
         HttpSession session=request.getSession();
-        ArrayList<String> terms=new ArrayList<String>();
-        terms.add("2018年-2019年第一学期");
-        terms.add("2018年-2019年第二学期");
+        List<String> terms=timestableDao.getAllTerm();
         session.setAttribute("terms",terms);
 //        User user= (User) session.getAttribute("user");
 //        Student student=studentService.getStudentById(user.getUsername());

@@ -42,8 +42,12 @@
         </association>
     </resultMap>
     <select id="getTimestableByStudentClass" parameterType="string" resultMap="timestableResult">
-        select timestable.id,class_name,course.teacher_name,course.course_name,time,classroom_name,weeks,term,notice from timestable left outer join course on timestable.course_id=course_id
+        select course.id,class_name,course.teacher_name,course.course_name,time,classroom_name,weeks,term,notice from course
+        INNER JOIN
+        timestable on timestable.course_id=course.id where term=#{term} and timestable.class_name=#{studentClass}
+
     </select>
+
     <resultMap id="CourseResult" type="com.example.school_system.demo.pojo.Course">
         <id property="id" column="id"></id>
         <result property="courseName" column="course_name"></result>

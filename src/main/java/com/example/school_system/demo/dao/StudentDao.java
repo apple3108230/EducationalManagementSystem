@@ -14,7 +14,7 @@ public interface StudentDao {
     public Student getStudentById(String id);
     public void updateInfoById(@Param("map") Map map);
     public StudentStatusMsg getStudentStatusMsgId(String id);
-    public List<Timestable> getTimestableByStudentClass(String studentClass);
+    public List<Timestable> getTimestableByStudentClass(@Param("studentClass") String studentClass,@Param("term") String term);
     public List<Course> getCourseByMajorName(String majorName);
     public Course getCourseByCourseId(String courseId);
 }

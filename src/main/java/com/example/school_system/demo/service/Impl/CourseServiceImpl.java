@@ -89,4 +89,9 @@ public class CourseServiceImpl implements CourseService {
         idsMap.put("newId",stringBuffer.toString());
         return idsMap;
     }
+
+    @Override
+    public Course getCourseByMajorId(String majorId) {
+        return courseDao.getCourseByMajorId(majorId);
+    }
 }

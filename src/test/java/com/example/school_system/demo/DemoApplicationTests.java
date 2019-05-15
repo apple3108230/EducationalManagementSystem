@@ -8,6 +8,7 @@ import com.example.school_system.demo.dao.*;
 import com.example.school_system.demo.pojo.*;
 import com.example.school_system.demo.service.*;
 import com.example.school_system.demo.utils.RarUtil;
+import com.example.school_system.demo.utils.RedisUtil;
 import com.example.school_system.demo.utils.TimeUtil;
 import com.example.school_system.demo.utils.ZipUtil;
 import com.github.junrar.Archive;
@@ -68,6 +69,9 @@ public class DemoApplicationTests {
 
     @Test
     public void test() throws Exception {
+        if(!RedisUtil.redisConnectionIsExist()){
+            RedisUtil.autoOpenRedis();
+        }
     }
 }
 

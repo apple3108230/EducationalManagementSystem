@@ -240,7 +240,7 @@ public class AdminController {
      * @throws Exception
      */
     @GetMapping("/uploadTaskForSuperMode")
-    public void uploadTaskForSuperMode(String startTime,String endTime,HttpServletResponse response,HttpServletRequest request){
+    public void uploadTaskForSuperMode(String startTime,String endTime,HttpServletResponse response,HttpServletRequest request) throws IOException {
         courseSelectionService.uploadTaskForSuperMode(startTime, endTime, response,request);
     }
 

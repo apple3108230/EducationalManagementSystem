@@ -2,10 +2,9 @@ package com.example.school_system.demo.Interceptor;
 
 import com.example.school_system.demo.dao.CourseSelectionDao;
 import com.example.school_system.demo.dao.StudentDao;
-import com.example.school_system.demo.pojo.Course;
-import com.example.school_system.demo.pojo.SelectCourseResult;
-import com.example.school_system.demo.pojo.StudentStatusMsg;
-import com.example.school_system.demo.pojo.User;
+import com.example.school_system.demo.pojo.*;
+import com.example.school_system.demo.service.CourseSelectionService;
+import com.example.school_system.demo.service.StudentService;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -24,7 +23,7 @@ public class SelectCourseResultInterceptor implements HandlerInterceptor {
     @Autowired
     private StudentDao studentDao;
     @Autowired
-    private CourseSelectionDao courseSelectionDao;
+    private CourseSelectionService courseSelectionService;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -36,7 +35,7 @@ public class SelectCourseResultInterceptor implements HandlerInterceptor {
         User user= (User) request.getSession().getAttribute("user");
         String studentId=user.getUsername();
         StudentStatusMsg studentStatusMsg=studentDao.getStudentStatusMsgId(studentId);
-        List<SelectCourseResult> result=courseSelectionDao.getSelectCourseResult(studentStatusMsg.getMajor());
+        List<SelectCourseResult> result=courseSelectionService.getSelectCourseResult(studentStatusMsg.getMajor());
         List<Course> courses=new ArrayList<>();
         JSONParser parser=new JSONParser();
         result.forEach(val1->{
