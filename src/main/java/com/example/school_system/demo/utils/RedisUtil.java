@@ -3,7 +3,10 @@ package com.example.school_system.demo.utils;
 import org.omg.SendingContext.RunTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
+import redis.clients.jedis.Connection;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
 import java.awt.*;
@@ -14,9 +17,10 @@ import java.io.IOException;
 public class RedisUtil {
 
     @Autowired
-    public static JedisPool jedisPool;
+    protected static StringRedisTemplate redisTemplate;
 
-    private static String redisBatUrl;
+    private String redisBatUrl;
+    public static Process process;
 
     @Value("${redis.bat.url}")
     public void setRedisBatUrl(String url){
@@ -30,7 +34,10 @@ public class RedisUtil {
      */
     public static boolean redisConnectionIsExist(){
         try{
-            jedisPool.getResource();
+            Jedis jedis= (Jedis) redisTemplate.getConnectionFactory().getConnection().getNativeConnection();
+            if(!jedis.isConnected()){
+                return false;
+            }
         }catch (NullPointerException ex){
             return false;
         }
@@ -41,9 +48,14 @@ public class RedisUtil {
      * 开启redis服务
      * @throws IOException
      */
-    public static void autoOpenRedis() throws IOException {
-        File file=new File(redisBatUrl);
+    public void autoOpenRedisServer() throws IOException {
         String cmd="cmd.exe   /C   start   "+redisBatUrl;
-        Runtime.getRuntime().exec(cmd);
+        Process process=Runtime.getRuntime().exec(cmd);
+        this.process=process;
     }
+
+//    public static void main(String[] args){
+//        System.out.println(RedisUtil.redisConnectionIsExist());
+//    }
+
 }

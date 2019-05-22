@@ -31,7 +31,13 @@ public class CookieUtil {
         return null;
     }
 
-    //创建一个cookie
+    /**创建一个cookie
+     *
+     * @param response
+     * @param cookieName
+     * @param value
+     * @param maxAge 单位（s）
+     */
     public static void creatCookie(HttpServletResponse response, String cookieName, String value,int maxAge){
         Cookie cookie=new Cookie(cookieName,value);
         cookie.setPath("/");

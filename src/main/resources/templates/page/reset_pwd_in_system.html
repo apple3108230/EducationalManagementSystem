@@ -23,26 +23,46 @@
         }
     </style>
     <script>
-        $("form").submit(function () {
-            if($("#password").val()==null||$("#password2").val()==""){
+
+        //禁止后退
+        history.go(1);
+
+        $().ready(function (){
+          alert("修改密码成功后，将会自动退出系统！请用户注意！");
+        });
+
+        function checkPwd(){
+            if($("#password").val()==""||$("#password2").val()==""){
                 alert("您还有信息还没填写");
                 return false;
             }
             if($("#password").val()==$("#password2").val()){
+                return true;
+            }
+        }
+
+        function resetPassword(){
+            if(checkPwd()){
                 $.ajax({
                     url:"/resetPwd",
-                    type:"get",
-                    dataType:"text",
+                    type:"post",
                     data:"password="+$("#password").val(),
                     success:function (data) {
-                        alert(data);
+                        alert(data.message);
+                        var a=$("#logout", parent.document);
+                        if(a.text()=="退出"){
+                            a.click();
+                        }else{
+                            window.location.href="/logout";
+                        }
                     },
                     error:function () {
                         alert("系统错误!修改失败！");
                     }
                 })
             }
-        })
+        }
+
     </script>
 </head>
 <body>
@@ -54,14 +74,14 @@
         <form>
             <div style="position:relative;left: 25%;margin-top:30px">
                 <label style="float: left;margin-top: 7px">请输入密码：</label>
-                <input type="text" class="form-control input-style" style="position: relative;left: 5%" placeholder="密码" id="password" name="password">
+                <input type="password" class="form-control input-style" style="position: relative;left: 5%" placeholder="密码" id="password" name="password">
             </div>
             <div style="position:relative;left: 25%;margin-top: 30px">
                 <label style="float: left;margin-top: 7px">请再次输入密码：</label>
-                <input type="text" class="form-control input-style" placeholder="密码" id="password2" name="password2">
+                <input type="password" class="form-control input-style" placeholder="密码" id="password2" name="password2">
             </div>
             <div style="position: relative;left: 40%;margin-top: 50px">
-                <button type="submit" class="btn btn-primary btn-lg">确定</button>
+                <button type="button" class="btn btn-primary btn-lg" onclick="resetPassword()">确定</button>
             </div>
         </form>
     </div>

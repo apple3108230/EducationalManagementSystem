@@ -25,6 +25,12 @@
         }
     </style>
     <script>
+
+        //当直接关闭页面时，直接退出系统
+        $(window).on('beforeunload',function(){
+            logout();
+        });
+
         function logout() {
             if(confirm("是否退出登录？")){
                 $.ajax({

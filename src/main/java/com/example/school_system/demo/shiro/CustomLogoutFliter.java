@@ -13,7 +13,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * 重写shiro中的logoutFilter 退出登录前先进行清除个人信息（清除shiro中的session和servlet中的session信息），然后重定向至登录页面
+ * 重写shiro中的logoutFilter 退出登录前先进行清除个人信息（清除shiro中的session和servlet中的session、cookie信息），然后重定向至登录页面
  *
  */
 public class CustomLogoutFliter extends LogoutFilter {
@@ -26,6 +26,7 @@ public class CustomLogoutFliter extends LogoutFilter {
         //清除servlet中的session和退出登录
         try{
             context.removeAttribute("user");
+            //会移除shiro中的session以及web中的所有有关联的session以及cookie
             subject.logout();
         }catch (SessionException e){
             throw new Exception("退出失败！原因："+e.getMessage());

@@ -1,8 +1,10 @@
 package com.example.school_system.demo.controller;
 
+import com.example.school_system.demo.exception.OtherException;
 import com.example.school_system.demo.exception.UserException;
 import com.example.school_system.demo.pojo.*;
 import com.example.school_system.demo.utils.*;
+import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.crypto.hash.SimpleHash;
@@ -11,6 +13,8 @@ import org.json.simple.JSONObject;
 import org.springframework.mail.MailException;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -73,11 +77,13 @@ public class BaseServiceController extends BaseController{
                 throw new UserException("密码错误！");
             }else if("captchaCodeError".equals(exceptionClassName)){
                 throw new UserException("验证码错误！");
-            }else{
+            }else if("UnknownAccountRoleException".equals(exceptionClassName)){
+                throw new UserException("非法账号！");
+            } else{
                 throw new Exception();
             }
         }
-        return toPage("home");
+        return toPage("login");
     }
 
     @GetMapping("/bindingEmail")
@@ -150,6 +156,8 @@ public class BaseServiceController extends BaseController{
 
     /**
      * 重置密码 用户名作为salt，加密次数为1024次，加密方式为MD5,数据库保存salt值
+     * 此方法适用于在系统内重置密码或在系统外重置密码
+     * 若登录时检测到账号的密码为初始密码，则获取存放在HTTPSession中的username进行重置密码
      * @param password
      * @param request
      * @param response
@@ -157,25 +165,33 @@ public class BaseServiceController extends BaseController{
      */
     @PostMapping("/resetPwd")
     public void resetPwd(String password,HttpServletRequest request,HttpServletResponse response) throws UserException {
+        String username=null;
         User user= (User) request.getSession().getAttribute("user");
-        String username=user.getUsername();
-        if(username.isEmpty()){
-            throw new UserException("无法重置密码！（原因：无法找到用户）");
-        }
-        else{
-            //用户名作为salt
-            ByteSource source=(ByteSource.Util.bytes(username));
-            //加密次数为1024次
-            int hashInterations=1024;
-            String newPwd=(new SimpleHash("MD5",password,source,hashInterations)).toString();
-            String salt=source.toString();
-            int effect= baseService.resetPwdByUserName(newPwd,salt,username);
-            JSONObject json=new JSONObject();
-            if(effect>=0){
-                json.put("message","重置成功！");
-            } else{
-                json.put("message","重置失败，请联系管理员！");
+        String usernameForSession=(String) request.getSession().getAttribute("username");
+        //若无法获取HTTPSession中的user，则尝试从HTTPSession中获取username
+        if(user!=null){
+            username=user.getUsername();
+        }else{
+            if(usernameForSession!=null){
+                username= usernameForSession;
+            }else{
+                throw new UserException("unknown login account!");
             }
+        }
+        //用户名作为salt
+        ByteSource source=(ByteSource.Util.bytes(username));
+        //加密次数为1024次
+        int hashInterations=1024;
+        String newPwd=(new SimpleHash("MD5",password,source,hashInterations)).toString();
+        String salt=source.toString();
+        int effect= baseService.resetPwdByUserName(newPwd,salt,username);
+        JSONObject json=new JSONObject();
+        if(effect>=0){
+            json.put("message","重置成功！");
+            SecurityUtils.getSubject().logout();
+            WebUtil.printJSON(json.toJSONString(),response);
+        } else{
+            json.put("message","重置失败，请联系管理员！");
             WebUtil.printJSON(json.toJSONString(),response);
         }
     }

@@ -5,6 +5,7 @@ import com.example.school_system.demo.PageCutter.PageInfo;
 import com.example.school_system.demo.controller.AdminController;
 import com.example.school_system.demo.controller.TeacherController;
 import com.example.school_system.demo.dao.*;
+import com.example.school_system.demo.exception.UserException;
 import com.example.school_system.demo.pojo.*;
 import com.example.school_system.demo.service.*;
 import com.example.school_system.demo.utils.RarUtil;
@@ -54,9 +55,7 @@ import java.util.zip.ZipFile;
 public class DemoApplicationTests {
 
     @Autowired
-    private StudentPersonalMessageDao studentPersonalMessageDao;
-    @Autowired
-    private AcademyDao academyDao;
+    private BaseService baseService;
 
     @Test
     public void contextLoads() throws MessagingException {
@@ -69,9 +68,7 @@ public class DemoApplicationTests {
 
     @Test
     public void test() throws Exception {
-        if(!RedisUtil.redisConnectionIsExist()){
-            RedisUtil.autoOpenRedis();
-        }
+        System.out.println(new UserException("1").getClass().getPackage().getName().equals("com.example.school_system.demo.exception"));
     }
 }
 

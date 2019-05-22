@@ -39,8 +39,13 @@ public class PreSelectCourseResultInterceptor implements HandlerInterceptor {
         }
         courseIds.forEach(value->{
             Course course=studentDao.getCourseByCourseId(value);
-            courseList.add(course);
+            if(course!=null){
+                courseList.add(course);
+            }
         });
+        if(courseList.size()==0||courseList==null){
+            WebUtil.printToWeb("您还没有预选课程！",response);
+        }
         request.getSession().setAttribute("courseList",courseList);
     }
 

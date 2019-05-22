@@ -80,6 +80,7 @@
         $().ready(function () {
             $.ajax({
                 url:"/admin/getSensitiveOperationLog",
+                data:"pageNum=1",
                 dataType:"json",
                 type:"get",
                 success:function (data) {

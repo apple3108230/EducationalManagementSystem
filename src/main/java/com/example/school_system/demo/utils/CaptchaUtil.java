@@ -8,11 +8,15 @@ public class CaptchaUtil {
     public static boolean checkCaptchaCode(HttpServletRequest request,String entryCode){
         HttpSession session=request.getSession();
         String code= (String) session.getAttribute("captcha_Code");
-        if(!code.isEmpty()&&!entryCode.isEmpty()&&code.equalsIgnoreCase(entryCode)){
-            return true;
+        if(code!=null&&entryCode!=null&&!entryCode.trim().isEmpty()){
+            if(code.equalsIgnoreCase(entryCode)){
+                return true;
+            }
+//            return false;
         }else{
             //return false;
             return true;
         }
+        return true;
     }
 }

@@ -36,7 +36,7 @@
             //获取选择的页数
             var pageNum=$(a).text();
             $.ajax({
-                url:"",
+                url:"/admin/getSystemErrorLog",
                 dataType:"json",
                 type:"get",
                 data:"pageNum="+pageNum,
@@ -68,10 +68,11 @@
             $(".pagination").html(li+"<li><a href=\"#\">&raquo;</a></li>");
             for(var i=0;i<data[1].length;i++){
                 var id=data[1][i].id;
-                var action=data[1][i].action;
+                var className=data[1][i].className;
+                var methodName=data[1][i].methodName;
+                var message=data[1][i].message;
                 var time=data[1][i].time;
-                var operator=data[1][i].operator;
-                var htmlStr="<td>"+id+"</td>"+"<td>"+operator+"</td>"+"<td>"+action+"</td>"+"<td>"+time+"</td>";
+                var htmlStr="<td>"+id+"</td>"+"<td>"+className+"</td>"+"<td>"+methodName+"</td>"+"<td>"+message+"</td>"+"<td>"+time+"</td>";
                 $("#"+temp).html(htmlStr);
                 temp=parseInt(temp)+1;
             }
@@ -80,6 +81,7 @@
         $().ready(function () {
             $.ajax({
                 url:"/admin/getSystemErrorLog",
+                data:"pageNum=1",
                 dataType:"json",
                 type:"get",
                 success:function (data) {

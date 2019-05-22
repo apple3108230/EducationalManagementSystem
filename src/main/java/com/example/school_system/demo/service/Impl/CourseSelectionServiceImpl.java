@@ -56,9 +56,6 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
 
     @Override
     public void setCourseInRedis(Object data) throws IOException {
-        if(!RedisUtil.redisConnectionIsExist()){
-            RedisUtil.autoOpenRedis();
-        }
         List<CourseVo> courseVos= (List<CourseVo>) data;
         for(int j=0;j<courseVos.size();j++){
             String id=courseVos.get(j).getId();
@@ -76,9 +73,6 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
      */
     @Override
     public Long selectCourse(String courseId, String studentId) throws IOException {
-        if(!RedisUtil.redisConnectionIsExist()){
-            RedisUtil.autoOpenRedis();
-        }
         String sha1=null;
         //流程：先判断所选择的课程是否被选完了，然后判断是否已经选了此课程，若都不符合前面两个条件，则扣除课程可选人数并写入选课记录
         String script=
@@ -105,9 +99,6 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
     public void putCourseSelectionToDatabase() throws IOException {
-        if(!RedisUtil.redisConnectionIsExist()){
-            RedisUtil.autoOpenRedis();
-        }
         List<Course> courses=courseSelectionDao.defaultGetCourse();
         for(int i=0;i<courses.size();i++){
             String courseId=courses.get(i).getId();
@@ -129,9 +120,6 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
 
     @Override
     public Long cancelSelectedCourse(String courseId,String studentId) throws IOException {
-        if(!RedisUtil.redisConnectionIsExist()){
-            RedisUtil.autoOpenRedis();
-        }
         String sha1=null;
         String script="local isSelect=redis.call('sismember',KEYS[1],ARGV[1]) \n"
                 +"if isSelect ~= 0 then \n"

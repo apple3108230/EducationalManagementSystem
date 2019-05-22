@@ -2,7 +2,6 @@ package com.example.school_system.demo.utils;
 
 import com.example.school_system.demo.pojo.Times;
 
-import java.sql.Time;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

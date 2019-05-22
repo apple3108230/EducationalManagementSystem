@@ -7,6 +7,7 @@ import com.example.school_system.demo.exception.UserException;
 import com.example.school_system.demo.pojo.SystemError;
 import com.example.school_system.demo.service.LogService;
 import com.example.school_system.demo.utils.TimeUtil;
+import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.session.UnknownSessionException;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterThrowing;
@@ -29,19 +30,28 @@ public class LogAspect {
     @Autowired
     private LogService logService;
 
-//    @Pointcut("execution(* com.example.school_system.demo.*.*.*(..))")
-//    private void pointCut(){}
-//
-//    @AfterThrowing(pointcut = "pointCut()",throwing = "throwable")
+    /**
+     * 这里切点不能切到LogAspect类，否则当数据库连接异常时，记录系统异常日志功能会进入死循环
+     */
+    @Pointcut("execution(* com.example.school_system.demo.*.*.*(..))&& !execution(* com.example.school_system.demo.aop.LogAspect.*(..))")
+    private void pointCut(){}
+
+    @AfterThrowing(pointcut = "pointCut()",throwing = "throwable")
     public void getAllSystemErrorToLog(JoinPoint joinPoint,Throwable throwable){
-        if(!(throwable instanceof UnknownSessionException)|| !(throwable instanceof EOFException)||!(throwable instanceof OtherException)||!(throwable instanceof ResolveExcelException)||!(throwable instanceof UserException)||!(throwable instanceof SystemException)||!(throwable instanceof SQLException)){
+        String packageName=throwable.getClass().getPackage().getName();
+        //不记录UnknownSessionException、EOFException、exception包下的异常类型和AuthenticationException
+        if(!(throwable instanceof UnknownSessionException)|| !(throwable instanceof EOFException)||!(throwable instanceof SQLException)){
             System.out.println("resolve system error....");
             //类名
             String className=joinPoint.getTarget().getClass().getName();
             //方法名
             String methodName=joinPoint.getSignature().getName();
             //异常信息
-            String message=throwable.getMessage();
+            String message="";
+            StackTraceElement[] stackTraceElements=throwable.getStackTrace();
+            for(StackTraceElement stackTraceElement:stackTraceElements){
+                message += "\tat " + stackTraceElement + "\r\n";
+            }
             SystemError systemError=new SystemError();
             systemError.setClassName(className);
             systemError.setMessage(message);

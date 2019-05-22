@@ -25,24 +25,24 @@
         }
     </style>
     <script>
+        //当直接关闭页面时，直接退出系统
+        $(window).on('beforeunload',function(){
+            logout();
+        });
+
         function logout() {
-            if(confirm("是否退出登录？")){
-                $.ajax({
-                    url:"/logout",
-                    dataType:"text",
-                    type:"GET",
-                    success:function () {
-                        alert("退出成功！");
-                        window.location.href="/to/login";
-                    },
-                    error:function (data) {
-                        alert(data);
-                    }
-                });
-                return true;
-            }else{
-                return false;
-            }
+            $.ajax({
+                url:"/logout",
+                dataType:"text",
+                type:"GET",
+                success:function () {
+                    alert("退出成功！");
+                    window.location.href="/to/login";
+                },
+                error:function (data) {
+                    alert(data);
+                }
+            });
         }
         //防止退出登录后，使用后退功能还能返回到系统中
         history.go(1);
@@ -53,7 +53,7 @@
     <h3 style="text-align: center">
         XXXXX大学教务系统
     </h3>
-    <a style="position: fixed;top: 3%;right: 0;" onclick="logout()">退出</a>
+    <a style="position: fixed;top: 3%;right: 0;" onclick="logout()" id="logout">退出</a>
 </div>
 <div class="nav" style="position: absolute;top: 7%;width: 15%;height: 93%;margin: 0">
     <div class="nav-top">

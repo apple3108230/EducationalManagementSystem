@@ -1,17 +1,23 @@
 package com.example.school_system.demo.shiro;
 
+import com.example.school_system.demo.exception.UnknownAccountRoleException;
+import com.example.school_system.demo.exception.UserException;
 import com.example.school_system.demo.pojo.User;
+import com.example.school_system.demo.service.BaseService;
 import com.example.school_system.demo.utils.CaptchaUtil;
 import com.example.school_system.demo.utils.WebUtil;
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.authc.AuthenticationToken;
-import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.authc.*;
+import org.apache.shiro.crypto.hash.SimpleHash;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ByteSource;
+import org.apache.shiro.web.filter.authc.AuthenticatingFilter;
 import org.apache.shiro.web.filter.authc.FormAuthenticationFilter;
 import org.apache.shiro.web.util.WebUtils;
 import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -25,6 +31,17 @@ import javax.servlet.http.HttpSession;
  * 自定义一个表单认证过滤器 实现自己控制表单认证流程（自动拦截表单中的username和password）
  */
 public class CustomFormAuthenticationFilter extends FormAuthenticationFilter {
+
+    @Value("${student.account.original-password}")
+    private String defaultStudentPassword;
+    @Value("${teacher.account.original-password}")
+    private String defaultTeacherPassword;
+    @Value("${admin.account.original-password}")
+    private String defaultAdminPassword;
+    @Autowired
+    private BaseService baseService;
+    @Autowired
+    private AuthenticatingFilter authenticatingFilter;
 
     /**
      *
@@ -47,8 +64,38 @@ public class CustomFormAuthenticationFilter extends FormAuthenticationFilter {
         if (isLoginRequest(request, response)) {
             //验证用户是否合法和验证码是否正确
             if (isLoginSubmission(request, response)) {
+                //判断验证码是否正确
                 if (CaptchaUtil.checkCaptchaCode(httpServletRequest, httpServletRequest.getParameter("captchaCode"))) {
-                    return executeLogin(request, response);
+                    String username=request.getParameter("username");
+                    String password=request.getParameter("password");
+                    //System.out.println("username:"+username+" password:"+password);
+                    String MD5Password=new SimpleHash("MD5",password,ByteSource.Util.bytes(username),1024).toString();
+                    User user=new User(username,MD5Password);
+                    boolean isDefaultPassword = false;
+                    try {
+                        /**判断此用户的密码是否为初始密码。若是初始密码，则需要重置密码后才能登录；否则进入executeLogin方法，判断账号和密码是否正确
+                         * 此方法会在判断输入的账号和密码进行判断。若账号或密码不存在，则抛出IncorrectCredentialsException；
+                         *                                       若账号不存在，则抛出UnknownAccountException；
+                         *                                       若账号的角色不合法，则抛出UnknownAccountRoleException；
+                         *                                       抛出异常后，进入onLoginFailure方法
+                         */
+                        isDefaultPassword=checkAccountPasswordIsDefault(user);
+                    }catch (AuthenticationException e){
+                        //生成用户填写的登录信息的UsernamePasswordToken
+                        UsernamePasswordToken token=new UsernamePasswordToken(username,password.toCharArray());
+                        onLoginFailure(token,e,request,response);
+                    }
+                    //若用户的密码不是初始密码，则进入executeLogin方法，判断账号和密码是否正确；若是初始密码，则需要重置密码后才能登录
+                    if(!isDefaultPassword){
+                        executeLogin(request,response);
+                    }else{
+                        JSONObject json=new JSONObject();
+                        json.put("message","您需要修改账号密码才能进入系统！");
+                        httpServletRequest.getSession().setAttribute("username",username);
+                        WebUtil.printJSON(json.toJSONString(), httpServletResponse);
+                        return false;
+                    }
+                    //System.out.println("是否为初始密码："+isDefaultPassword);
                 } else {
                     if (WebUtil.isAjax(httpServletRequest)) {
                         JSONObject json=new JSONObject();
@@ -94,10 +141,12 @@ public class CustomFormAuthenticationFilter extends FormAuthenticationFilter {
         HttpSession session=httpServletRequest.getSession();
         //在跳转之前把用户信息存放在session中
         session.setAttribute("user",user);
-
-        if(WebUtil.isAjax(httpServletRequest)){
-            JSONObject json=new JSONObject();
+        JSONObject json=new JSONObject();
+        if(WebUtil.isAjax(httpServletRequest)&&user.getEmail()!=null){
             json.put("message","登录成功！");
+            WebUtil.printJSON(json.toJSONString(),httpServletResponse);
+        }else if(WebUtil.isAjax(httpServletRequest)&&user.getEmail()==null){
+            json.put("message","登录成功！请您及时绑定邮箱，否则无法重置账号密码！");
             WebUtil.printJSON(json.toJSONString(),httpServletResponse);
         }
         else {
@@ -134,15 +183,18 @@ public class CustomFormAuthenticationFilter extends FormAuthenticationFilter {
         if("IncorrectCredentialsException".equals(msg)){
             json.put("message","密码错误！");
             WebUtil.printJSON(json.toJSONString(),httpServletResponse);
-            json.clear();
         }else if("UnknownAccountException".equals(msg)){
             json.put("message","用户不存在！");
             WebUtil.printJSON(json.toJSONString(),httpServletResponse);
-            json.clear();
         }else if("CaptchaCodeError".equals(msg)){
             json.put("message","验证码错误！");
             WebUtil.printJSON(json.toJSONString(),httpServletResponse);
-            json.clear();
+        }else if("ConcurrentAccessException".equals(msg)){
+            json.put("message","此账号已经是登录状态！");
+            WebUtil.printJSON(json.toJSONString(),httpServletResponse);
+        }else if("UnknownAccountRoleException".equals(msg)){
+            json.put("message","非法账号！");
+            WebUtil.printJSON(json.toJSONString(),httpServletResponse);
         }
         return false;
     }
@@ -168,6 +220,45 @@ public class CustomFormAuthenticationFilter extends FormAuthenticationFilter {
             return true;
         }
         return false;
+   }
+
+    /**
+     * 登录进入系统前先判断用户密码是否为初始密码
+     * @param user 登录的账号信息
+     * @return
+     * @throws UserException
+     */
+   private boolean checkAccountPasswordIsDefault(User user) throws AuthenticationException {
+       ByteSource byteSource=ByteSource.Util.bytes(user.getUsername());
+       String defaultPassword;
+       User userInDataBase=baseService.getUserByUserName(user.getUsername());
+       if(userInDataBase==null) {
+           throw new UnknownAccountException("unknown account");
+       }
+       if(!userInDataBase.equals(user)){
+           throw new IncorrectCredentialsException("username or password error");
+       }
+       if(userInDataBase.getRole().contains("student")){
+           defaultPassword=new SimpleHash("MD5",defaultStudentPassword,byteSource,1024).toString();
+           if(defaultPassword.equals(user.getPassword())){
+               return true;
+           }
+           return false;
+       }else if(userInDataBase.getRole().contains("teacher")){
+           defaultPassword=new SimpleHash("MD5",defaultTeacherPassword,byteSource,1024).toString();
+           if(defaultPassword.equals(user.getPassword())){
+               return true;
+           }
+           return false;
+       }else if(userInDataBase.getRole().contains("admin")){
+           defaultPassword=new SimpleHash("MD5",defaultAdminPassword,byteSource,1024).toString();
+           if(defaultPassword.equals(user.getPassword())){
+               return true;
+           }
+           return false;
+       }else{
+           throw new UnknownAccountRoleException("unknown account role");
+       }
    }
 
 }

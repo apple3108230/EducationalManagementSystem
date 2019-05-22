@@ -1,6 +1,7 @@
 package com.example.school_system.demo.scheduleJob;
 
 import com.example.school_system.demo.service.CourseSelectionService;
+import com.example.school_system.demo.utils.RedisUtil;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -18,6 +19,10 @@ public class AfterSelectCourse implements Job {
     public void execute(JobExecutionContext jobExecutionContext) throws JobExecutionException {
         try {
             courseSelectionService.putCourseSelectionToDatabase();
+            if(RedisUtil.process!=null){
+                //若是系统自动启动的redis服务，则在此业务结束后将自动关闭
+                RedisUtil.process.destroy();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

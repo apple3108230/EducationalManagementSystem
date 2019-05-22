@@ -131,14 +131,19 @@
         $.validator.setDefaults({
             submitHandler:function() {
                 $.ajax({
-                    type:"POST",
+                    type:"post",
                     url:"/loginCheck",
                     async:false,
                     dataType:"json",
                     data:$("#customerForm").serialize(),
                     success:function (responesText) {
-                        if(responesText.message=="登录成功！"){
+                        if(responesText.message=="登录成功！"||responesText.message=="登录成功！请您及时绑定邮箱，否则无法重置账号密码！"){
                             window.location.href="/to/home/welcomePage";
+                            refresh();
+                        } else if(responesText.message=="您需要修改账号密码才能进入系统！"){
+                            alert(responesText.message);
+                            window.location.href="/to/reset_pwd_in_system";
+                            refresh();
                         }else {
                             alert(responesText.message);
                             $("#captchaCode").val("");
@@ -168,8 +173,15 @@
                 },
             });
         });
+        function loginCheck() {
+            if($("#username").val()==""){
+
+            }
+        }
         //刷新验证码 后面加上Math.random是防止使用缓存
         function refresh() {
+            $("#username").val("");
+            $("#password").val("");
             $("#captcha_img").attr("src","/kaptchaCode?time="+new Date().getTime());
         }
     </script>

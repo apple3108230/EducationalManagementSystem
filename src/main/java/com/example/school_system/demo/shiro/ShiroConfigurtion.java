@@ -109,16 +109,6 @@ public class ShiroConfigurtion {
         return shiroFilterFactoryBean;
     }
 
-//    @Bean
-//    public FilterRegistrationBean filterRegistrationBean(){
-//        FilterRegistrationBean filterRegistrationBean=new FilterRegistrationBean();
-//        DelegatingFilterProxy delegatingFilterProxy=new DelegatingFilterProxy();
-//        delegatingFilterProxy.setTargetFilterLifecycle(true);
-//        delegatingFilterProxy.setTargetBeanName("shiroFilter");
-//        filterRegistrationBean.setFilter(delegatingFilterProxy);
-//        return filterRegistrationBean;
-//    }
-
     /**
      * 设置rememberMeCookie
      * cookie名称为rememberMe
