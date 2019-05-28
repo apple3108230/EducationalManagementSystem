@@ -68,7 +68,7 @@ public class DemoApplicationTests {
 
     @Test
     public void test() throws Exception {
-        System.out.println(new UserException("1").getClass().getPackage().getName().equals("com.example.school_system.demo.exception"));
     }
+
 }
 

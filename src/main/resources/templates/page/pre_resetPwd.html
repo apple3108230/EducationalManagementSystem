@@ -101,11 +101,12 @@
                         if(json.message=="success"){
                             window.location.href="/to/reset_pwd";
                         }else{
-                            alert(data.message);
+                            alert(json.message);
                         }
                     },
                     error:function (data) {
-                        alert(data.responseText);
+                        // var json=JSON.parse(data.responseText);
+                        // alert(json.message);
                     }
                 });
             }

@@ -139,18 +139,16 @@ public class BaseServiceController extends BaseController{
     }
 
     @GetMapping("/checkCaptchaBeforeResetPwd")
-    private void checkCaptchaBeforeResetPwd(HttpServletRequest request,HttpServletResponse response,String captchaCode){
+    public void checkCaptchaBeforeResetPwd(HttpServletRequest request,HttpServletResponse response,String captchaCode){
         HttpSession session=request.getSession();
         String code= (String) session.getAttribute((String) session.getAttribute("email"));
         JSONObject json=new JSONObject();
         if(captchaCode.equals(code)){
             json.put("message","success");
             WebUtil.printJSON(json.toJSONString(),response);
-            json.clear();
         }else{
             json.put("message","验证码错误！");
             WebUtil.printJSON(json.toJSONString(),response);
-            json.clear();
         }
     }
 
