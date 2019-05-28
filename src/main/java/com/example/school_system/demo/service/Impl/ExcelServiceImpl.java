@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -74,6 +75,24 @@ public class ExcelServiceImpl implements ExcelService {
     }
 
     /**
+     *判断excel文件后缀名来生成对应的Workbook类
+     * @param isXls 后缀名是否为Xls
+     * @param fileName excel文件名
+     * @return
+     * @throws IOException
+     */
+    private Workbook getWorkBook(boolean isXls,String fileName) throws IOException {
+        Workbook workbook=null;
+        if(isXls){
+            workbook=new HSSFWorkbook(new FileInputStream(excelSavePath+"/"+fileName));
+        }else {
+            workbook=new XSSFWorkbook(new FileInputStream(excelSavePath+"/"+fileName));
+        }
+        return workbook;
+    }
+
+
+    /**
      * 解析完教师上传的EXCEL文件后进行更新数据库
      * @param response
      * @param fileNames 教师上传的所有文件名
@@ -86,11 +105,7 @@ public class ExcelServiceImpl implements ExcelService {
             Workbook workbook=null;
             //不同版本的excel文件需要的生成的workbook不一样，所以需要进行判断
             try{
-                if(isXls(fileName)){
-                    workbook=new HSSFWorkbook(new FileInputStream(excelSavePath+"/"+fileName));
-                }else{
-                    workbook=new XSSFWorkbook(new FileInputStream(excelSavePath+"/"+fileName));
-                }
+                workbook=getWorkBook(isXls(fileName),fileName);
             }catch (IOException e){
                 JSONObject json=new JSONObject();
                 json.put("message","上传失败！原因："+e.getMessage());
@@ -183,11 +198,7 @@ public class ExcelServiceImpl implements ExcelService {
             Workbook workbook=null;
             //不同版本的excel文件需要的生成的workbook不一样，所以需要进行判断
             try{
-                if(isXls(fileName)){
-                    workbook=new HSSFWorkbook(new FileInputStream(excelSavePath+"/"+fileName));
-                }else{
-                    workbook=new XSSFWorkbook(new FileInputStream(excelSavePath+"/"+fileName));
-                }
+                workbook=getWorkBook(isXls(fileName),fileName);
             }catch (IOException e){
                 JSONObject json=new JSONObject();
                 json.put("message","上传失败！原因："+e.getMessage());
@@ -204,6 +215,7 @@ public class ExcelServiceImpl implements ExcelService {
                     //第一行是标题，所以跳过第一行直接从第二行获取
                     for(int j=1;j<=lastRowNum;j++){
                         Row row=sheet.getRow(j);
+                        //遍历excel当前行的所有列并以遍历pojo属性的方式写入pojo中
                         StudentStatusMsg studentStatusMsg=new StudentStatusMsg();
                         Class clz=studentStatusMsg.getClass();
                         Field[] fields=clz.getDeclaredFields();
@@ -250,11 +262,7 @@ public class ExcelServiceImpl implements ExcelService {
             Workbook workbook=null;
             //不同版本的excel文件需要的生成的workbook不一样，所以需要进行判断
             try{
-                if(isXls(fileName)){
-                    workbook=new HSSFWorkbook(new FileInputStream(excelSavePath+"/"+fileName));
-                }else{
-                    workbook=new XSSFWorkbook(new FileInputStream(excelSavePath+"/"+fileName));
-                }
+                workbook=getWorkBook(isXls(fileName),fileName);
             }catch (IOException e){
                 JSONObject json=new JSONObject();
                 json.put("message","上传失败！原因："+e.getMessage());
@@ -324,11 +332,7 @@ public class ExcelServiceImpl implements ExcelService {
             Workbook workbook=null;
             //不同版本的excel文件需要的生成的workbook不一样，所以需要进行判断
             try{
-                if(isXls(fileName)){
-                    workbook=new HSSFWorkbook(new FileInputStream(excelSavePath+"/"+fileName));
-                }else{
-                    workbook=new XSSFWorkbook(new FileInputStream(excelSavePath+"/"+fileName));
-                }
+                workbook=getWorkBook(isXls(fileName),fileName);
             }catch (IOException e){
                 JSONObject json=new JSONObject();
                 json.put("message","上传失败！原因："+e.getMessage());
@@ -403,11 +407,7 @@ public class ExcelServiceImpl implements ExcelService {
             Workbook workbook=null;
             //不同版本的excel文件需要的生成的workbook不一样，所以需要进行判断
             try{
-                if(isXls(fileName)){
-                    workbook=new HSSFWorkbook(new FileInputStream(excelSavePath+"/"+fileName));
-                }else{
-                    workbook=new XSSFWorkbook(new FileInputStream(excelSavePath+"/"+fileName));
-                }
+                workbook=getWorkBook(isXls(fileName),fileName);
             }catch (IOException e){
                 JSONObject json=new JSONObject();
                 json.put("message","上传失败！原因："+e.getMessage());
