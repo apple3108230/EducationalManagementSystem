@@ -32,22 +32,22 @@
             var temp=1;
             var li="<li><a href=\"#\">&laquo;</a></li>";
             for(var j=1;j<parseInt(totalPage)+1;j++){
-                var temp1="<li><a href=\"#\" onclick=\"getTaskByPageNum(this)\">"+j+"</a></li>";
+                var temp1="<li><a href=\"#\" onclick=\"getScoresByPageNum(this)\">"+j+"</a></li>";
                 li=li+temp1;
             }
             $(".pagination").html(li+"<li><a href=\"#\">&raquo;</a></li>");
             for(var i=0;i<data[1].length;i++){
-                var course=data[1][i];
-                var courseType=data[1][i];
-                var studentId=data[1][i];
-                var usualScore=data[1][i];
-                var examScore=data[1][i];
-                var totalScore=data[1][i];
-                var credit=data[1][i];
-                var gpa=data[1][i];
-                var creditGpa=data[1][i];
-                var term=data[1][i];
-                htmlStr=htmlStr+"<td>"+course+"</td>"+"<td>"+courseType+"</td>"+"<td>"+studentId+"</td>"+"<td>"+usualScore+"</td>"+"<td>"+examScore+"</td>"+"<td>"+totalScore+"</td>"+"<td>"+credit+"</td>"+"<td>"+gpa+"</td>"+"<td>"+creditGpa+"</td>"+"<td>"+term+"</td>";
+                var course=data[1][i].course;
+                var courseType=data[1][i].courseType;
+                var studentId=data[1][i].studentId;
+                var usualScore=data[1][i].usualScore;
+                var examScore=data[1][i].examScore;
+                var totalScore=data[1][i].totalScore;
+                var credit=data[1][i].credit;
+                var gpa=data[1][i].gpa;
+                var creditGpa=data[1][i].creditGpa;
+                var term=data[1][i].term;
+                htmlStr=htmlStr+"<td>"+studentId+"</td>"+"<td>"+course+"</td>"+"<td>"+courseType+"</td>"+"<td>"+usualScore+"</td>"+"<td>"+examScore+"</td>"+"<td>"+totalScore+"</td>"+"<td>"+credit+"</td>"+"<td>"+gpa+"</td>"+"<td>"+creditGpa+"</td>"+"<td>"+term+"</td>";
                 $("#"+htmlStr.charAt(0)).html(htmlStr.substring(1));
                 temp=parseInt(temp)+1;
                 htmlStr=temp.toString()+"<input type='radio' name='selectedTask' value="+"'"+temp.toString()+"'>";
@@ -206,19 +206,10 @@
 
         function searchScore(){
             var termCondition=$("#termCondition").val();
-            var courseCondition=$("#courseIdCondition").val();
-            var classIdCondition=$("#classIdCondition").val();
             var studentIdCondition=$("#studentIdCondition").val();
-            var otherCondition=$("input[type='radio']:checked").val();
-            if(otherCondition==undefined){
-                otherCondition="";
-            }
-            var conditions={termCondition:termCondition,courseCondition:courseCondition,classIdCondition:classIdCondition,studentIdCondition:studentIdCondition,otherCondition:otherCondition,pageNum:1};
+            var conditions={termCondition:termCondition,studentIdCondition:studentIdCondition,pageNum:1};
             $("#conditionDiv").html("<input type='hidden' id='hiddenTermCondition' value="+"'"+termCondition+"'>"+
-                                    "<input type='hidden' id='hiddenCourseCondition' value="+"'"+courseCondition+"'>"+
-                                    "<input type='hidden' id='hiddenClassIdCondition' value="+"'"+classIdCondition+"'>"+
-                                    "<input type='hidden' id='hiddenStudentIdCondition' value="+"'"+studentIdCondition+"'>"+
-                                    "<input type='hidden' id='hiddenOtherCondition' value="+"'"+otherCondition+"'>");
+                                    "<input type='hidden' id='hiddenStudentIdCondition' value="+"'"+studentIdCondition+"'>");
             console.log(conditions);
             if(hasSelectCondition()){
                 $.ajax({
@@ -241,21 +232,6 @@
 
     </script>
     <style>
-
-        .div1{
-            position: absolute;top: 0%;left: 0%;
-            height: 100%;width: 100%;
-            background-color:rgba(0,0,0,0.3);
-            z-index: 100;
-            display: none;
-        }
-        .div2{
-            width: 400px;height: 230px;
-            background-color: white;
-            position: absolute;top:17%;left: 30%;
-            z-index: 1000;
-            border-radius: 10px;
-        }
 
         .input-style{
             width:150px;
@@ -290,45 +266,12 @@
 </head>
 <body>
 <div class="container">
-    <div class="div1" id="selectConditionWindow">
-        <div class="div2">
-            <div class="modal-header">
-                <button type="button" onclick="$('#selectConditionWindow').hide()" class="close">&times;</button>
-                <h4 class="modal-title">筛选条件</h4>
-            </div>
-            <div class="modal-body">
-                <div>
-                    <input type="radio" name="condition" value="OnlyWatchOwnAcademy">
-                    <label>仅看所在学院学生成绩</label>
-                </div>
-                <div>
-                    <input type="radio" name="condition" value="OnlyWatchElectiveCourse">
-                    <label>仅看选修成绩</label>
-                </div>
-                <div>
-                    <input type="radio" name="condition" value="OnlyWatchCompulsorySubjects">
-                    <label>仅看必修成绩</label>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" onclick="$('#selectConditionWindow').hide()">确定</button>
-            </div>
-        </div>
-    </div>
     <div style="position:absolute;top: 1%;left: 10%;width: 85%;height: 90%">
         <div style="height: 50px;width: 100%;background-color:lightgray">
             <div class="col-lg-7" style="float: left">
                 <div style="margin: 8px">
                     <label style="float: left;margin: 8px">学期年度</label>
                     <input class="input-style form-control" placeholder="学年年度" id="termCondition">
-                </div>
-                <div style="margin: 8px;position: absolute;left: 200px;top: 0px">
-                    <label style="position:relative;left: 60px;margin: 8px">课程编号</label>
-                    <input class="input-style form-control" placeholder="课程编号" style="position: absolute;left: 140px;top: 0px" id="courseIdCondition">
-                </div>
-                <div style="margin: 8px;position: absolute;left: 200px;top: 0px">
-                    <label style="position:relative;left: 310px;margin: 8px">班级编号</label>
-                    <input class="input-style form-control" placeholder="班级编号" style="position: absolute;left: 390px;top: 0px" id="classIdCondition">
                 </div>
                 <div style="margin: 8px;position: absolute;left: 200px;top: 0px">
                     <label style="position:relative;left: 560px;margin: 8px">学生学号</label>
@@ -346,10 +289,6 @@
                     <i class="glyphicon glyphicon-search"></i>
                     <span>查询</span>
                 </button>
-                <button type="button" class="btn btn-warning delete" id="printTable" style="margin-left: 8px">
-                    <i class="glyphicon glyphicon-print "></i>
-                    <span>打印</span>
-                </button>
                 <shiro:hasRole name="teacherAdmin">
                     <button type="button" class="btn btn-danger delete" id="updateScore" onclick="BeforeUpdateScore()" style="margin-left: 8px">
                         <i class="glyphicon glyphicon-wrench "></i>
@@ -362,9 +301,9 @@
             <thead style="background-color: white">
             <tr>
                 <th>&nbsp;&nbsp;</th>
+                <th>学生学号</th>
                 <th>课程名</th>
                 <th>课程类型</th>
-                <th>学生学号</th>
                 <th>平时成绩</th>
                 <th>期末成绩</th>
                 <th>总成绩</th>

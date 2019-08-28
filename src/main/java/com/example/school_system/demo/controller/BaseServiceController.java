@@ -59,9 +59,9 @@ public class BaseServiceController extends BaseController{
 
     //进入登录界面
     @GetMapping("/home")
-    public String index(HttpServletRequest request) throws UserException {
+    public String index(HttpServletRequest request) throws Exception {
         //判断是否使用了rememberMe功能，使用了则直接进入系统，否则进入登录页面
-        if (CookieUtil.cookieExist(request,"rememberMe")) {
+        if (CookieUtil.getInstance().cookieExist(request,"rememberMe")) {
             return toPrivatePage("welcomePage",request);
         }
         return toPage("login");
@@ -210,11 +210,7 @@ public class BaseServiceController extends BaseController{
             json.put("message","您输入的结束时间小于开始时间！请重新输入！");
             WebUtil.printJSON(json.toJSONString(),response);
         }
-        if(result== TimeUtil.TIME_IS_ILLEGAL){
-            json.put("message","您输入的时间不合法！请重新输入！");
-            WebUtil.printJSON(json.toJSONString(),response);
-        }
-        if(result==TimeUtil.OK){
+        if(result==TimeUtil.OK||result==TimeUtil.TIME_IS_ILLEGAL){
             json.put("message","success");
             WebUtil.printJSON(json.toJSONString(),response);
         }

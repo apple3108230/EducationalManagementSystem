@@ -20,6 +20,9 @@ import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.FileInputStream;
@@ -33,7 +36,7 @@ import java.util.List;
 public class ExcelServiceImpl implements ExcelService {
 
     @Autowired
-    private TeacherService teacherService;
+    private StudentScoreService studentScoreService;
     @Autowired
     private StudentStatusMsgService studentStatusMsgService;
     @Autowired
@@ -54,6 +57,8 @@ public class ExcelServiceImpl implements ExcelService {
     private CourseService courseService;
     @Autowired
     private TimestableService timestableService;
+    @Autowired
+    private StudentService studentService;
 
     @Value("${excel.save-path}")
     private String excelSavePath;
@@ -99,6 +104,7 @@ public class ExcelServiceImpl implements ExcelService {
      * @throws IOException
      */
     @Override
+    @Transactional
     public void resolveExcelAndInsertScore(HttpServletResponse response, HttpServletRequest request,List<String> fileNames){
         List<StudentScore> scoreBatchList=new ArrayList<>();
         fileNames.forEach(fileName->{
@@ -131,8 +137,16 @@ public class ExcelServiceImpl implements ExcelService {
                         }
                         //学生学号
                         if(row.getCell(1)!=null){
+                            String id=row.getCell(1).getStringCellValue();
                             row.getCell(1).setCellType(Cell.CELL_TYPE_STRING);
-                            score.setStudentId(row.getCell(1).getStringCellValue());
+                            if(studentService.getStudentById(id)==null){
+                                try {
+                                    throw new ResolveExcelException(id+" 此学号不存在！");
+                                } catch (ResolveExcelException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            score.setStudentId(id);
                         }
                         //平时成绩 期末成绩 学分
                         if(row.getCell(2)!=null&&row.getCell(3)!=null&&row.getCell(4)!=null){
@@ -152,7 +166,7 @@ public class ExcelServiceImpl implements ExcelService {
                             List<Course> courses=courseService.getCourseByCondition("",score.getCourse(),"","");
                             if(courses.size()==0){
                                 try {
-                                    throw new ResolveExcelException("找不到考试科目！");
+                                    throw new ResolveExcelException(score.getCourse()+" 科目不存在！");
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                 }
@@ -169,7 +183,7 @@ public class ExcelServiceImpl implements ExcelService {
                 }
             }
         });
-        boolean isInsert=teacherService.insertScoreByStudentId(scoreBatchList);
+        boolean isInsert=studentScoreService.insertScoreByStudentId(scoreBatchList);
         JSONObject json=new JSONObject();
         if(isInsert){
             SensitiveOperation sensitiveOperation=new SensitiveOperation();
@@ -192,6 +206,7 @@ public class ExcelServiceImpl implements ExcelService {
     }
 
     @Override
+    @Transactional
     public void resolveExcelAndInsertStudentStatusMsg(HttpServletResponse response, List<String> fileNames,HttpServletRequest request) {
         List<StudentStatusMsg> studentStatusMsgList=new ArrayList<>();
         fileNames.forEach(fileName->{
@@ -256,6 +271,7 @@ public class ExcelServiceImpl implements ExcelService {
     }
 
     @Override
+    @Transactional
     public void resolveExcelAndInsertTeacherMsg(HttpServletResponse response, List<String> fileNames,HttpServletRequest request) {
         List<TeacherMsg> teacherMsgList=new ArrayList<>();
         fileNames.forEach(fileName->{
@@ -326,6 +342,7 @@ public class ExcelServiceImpl implements ExcelService {
     }
 
     @Override
+    @Transactional
     public void resolveExcelAndInsertStudentMsg(HttpServletResponse response, List<String> fileNames,HttpServletRequest request) throws Exception {
         List<Student> studentList=new ArrayList<>();
         fileNames.forEach(fileName->{
@@ -401,6 +418,7 @@ public class ExcelServiceImpl implements ExcelService {
     }
 
     @Override
+    @Transactional
     public void resolveExcelAndInsertTimestable(HttpServletResponse response, List<String> fileNames, HttpServletRequest request) {
         List<Timestable> timestableList=new ArrayList<>();
         fileNames.forEach(fileName->{

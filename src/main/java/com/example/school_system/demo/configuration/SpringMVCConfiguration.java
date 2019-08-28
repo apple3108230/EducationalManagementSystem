@@ -21,6 +21,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 public class SpringMVCConfiguration extends WebMvcConfigurerAdapter {
 
     @Autowired
+    private QueryScoreInterceptor queryScoreInterceptor;
+    @Autowired
     private StudentStatusMsgInterceptor studentStatusMsgInterceptor;
     @Autowired
     private DefaultTimestableInterceptor defaultTimestableInterceptor;
@@ -52,6 +54,7 @@ public class SpringMVCConfiguration extends WebMvcConfigurerAdapter {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(queryScoreInterceptor).addPathPatterns("/to/home/query_score");
         registry.addInterceptor(studentStatusMsgInterceptor).addPathPatterns("/to/home/student_status_msg");
         registry.addInterceptor(defaultTimestableInterceptor).addPathPatterns("/to/home/student_timestable").addPathPatterns("/to/home/teacher_timestable");
         registry.addInterceptor(courseSelectionInterceptor).addPathPatterns("/to/home/pre_select_course");

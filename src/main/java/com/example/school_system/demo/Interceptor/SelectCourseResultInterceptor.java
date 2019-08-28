@@ -5,6 +5,7 @@ import com.example.school_system.demo.dao.StudentDao;
 import com.example.school_system.demo.pojo.*;
 import com.example.school_system.demo.service.CourseSelectionService;
 import com.example.school_system.demo.service.StudentService;
+import com.example.school_system.demo.utils.WebUtil;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -44,13 +45,19 @@ public class SelectCourseResultInterceptor implements HandlerInterceptor {
                 json.forEach((key,value)->{
                     if(!value.toString().isEmpty()&&value.equals(studentId)){
                         String courseId=val1.getCourseId();
-                        courses.add(studentDao.getCourseByCourseId(courseId));
+                        Course course=studentDao.getCourseByCourseId(courseId);
+                        if(course!=null){
+                            courses.add(course);
+                        }
                     }
                 });
             } catch (ParseException e) {
                 e.printStackTrace();
             }
         });
+        if(courses.size()==0){
+            WebUtil.printToWeb("无正选结果！",response);
+        }
         request.getSession().setAttribute("courses",courses);
     }
 

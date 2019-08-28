@@ -1,27 +1,20 @@
 package com.example.school_system.demo.service.Impl;
 
 import com.example.school_system.demo.dao.CourseSelectionDao;
-import com.example.school_system.demo.dao.StudentDao;
 import com.example.school_system.demo.pojo.*;
 import com.example.school_system.demo.service.*;
-import com.example.school_system.demo.utils.RedisUtil;
-import com.example.school_system.demo.utils.StringUtil;
 import com.example.school_system.demo.utils.TimeUtil;
 import com.example.school_system.demo.utils.WebUtil;
-import org.apache.commons.collections4.map.HashedMap;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.scheduling.quartz.JobDetailFactoryBean;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import redis.clients.jedis.Jedis;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.sql.Time;
 import java.util.*;
 
 @Service
@@ -194,7 +187,7 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
      * @throws Exception
      */
     @Override
-    @Transactional(propagation = Propagation.NESTED)
+    @Transactional()
     public int setScheduleTaskForPreSelectCourse(String time, String scheduleTaskName, String jobName) throws Exception {
         Map<String,String> conditionMap=new HashMap<>();
         conditionMap.put("schedule_task",scheduleTaskName);
@@ -274,7 +267,7 @@ public class CourseSelectionServiceImpl implements CourseSelectionService {
     }
 
     @Override
-    @Transactional(propagation = Propagation.REQUIRED)
+    @Transactional()
     public void uploadTaskForCustomMode(String majorId, String classId, String startTime, String endTime, HttpServletResponse response,HttpServletRequest request) throws Exception {
         String mode="自定义模式";
         Map<String,String> conditionMap=new HashMap<>();

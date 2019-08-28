@@ -19,7 +19,7 @@
             display: none;
         }
         .div2{
-            width: 400px;height: 230px;
+            width: 400px;height: 350px;
             background-color: white;
             position: absolute;top:17%;left: 30%;
             z-index: 1000;
@@ -96,7 +96,11 @@
             var temp=1;
             var li="<li><a href=\"#\">&laquo;</a></li>";
             for(var j=1;j<parseInt(totalPage)+1;j++){
-                var temp1="<li><a href=\"#\" onclick=\"getTaskByPageNum(this)\">"+j+"</a></li>";
+                var temp1;
+                if(j==1){
+                    temp1="<li><a href=\"#\" onclick=\"getTaskByPageNum(this)\">"+j+" class=\"active\"</a></li>";
+                }
+                temp1="<li><a href=\"#\" onclick=\"getTaskByPageNum(this)\">"+j+"</a></li>";
                 li=li+temp1;
             }
             $(".pagination").html(li+"<li><a href=\"#\">&raquo;</a></li>");
@@ -300,6 +304,13 @@
             var academyName=$("#hiddenAcademyNameCondition").val();
             var majorName=$("#hiddenMajorNameCondition").val();
             var classId=$("#hiddenClassIdCondition").val();
+            if(academyName==undefined){
+                academyName="";
+            }if(majorName==undefined){
+                majorName="";
+            }if(classId==undefined){
+                classId="";
+            }
             $.ajax({
                 url:"/admin/getTasks",
                 type:"get",
@@ -318,10 +329,10 @@
             $("#"+row).each(function (){
                 // var academy=$(this).children('td').eq(1).html();
                 // var majorName=$(this).children('td').eq(2).html();
-                var className=$(this).children('td').eq(3).html();
+                var className=$(this).children('td').eq(2).html();
                 $.ajax({
                     url:"/admin/deleteTask",
-                    type:"post",
+                    type:"get",
                     dataType:"json",
                     data:"className="+className,
                     success:function (data) {
@@ -329,21 +340,7 @@
                             for(var i=1;i<21;i++){
                                 $("#"+i).html("");
                             }
-                            var pageNum=$(".active").text();
-                            var academyName=$("#hiddenAcademyNameCondition").val();
-                            var majorName=$("#hiddenMajorNameCondition").val();
-                            var classId=$("#hiddenClassIdCondition").val();
-                            $.ajax({
-                                url:'/admin/getTasks',
-                                data:"pageNum="+pageNum+"&academyName="+academyName+"&majorName="+majorName+"&classId="+classId,
-                                dataType:"json",
-                                success:function (data) {
-                                    getTasks(data);
-                                },
-                                error:function () {
-                                    alert("system error!");
-                                }
-                            })
+                            getAllTask();
                         }else{
                             alert("删除失败！请联系管理员！");
                             return false;
@@ -365,7 +362,7 @@
                 "<input type='hidden' id='hiddenMajorNameCondition' value="+"'"+majorNameCondition+"'>"+
                 "<input type='hidden' id='hiddenClassIdCondition' value="+"'"+classIdCondition+"'>");
             $.ajax({
-                url:"",
+                url:"/admin/getTasks",
                 async:false,
                 type:"get",
                 dataType:"json",

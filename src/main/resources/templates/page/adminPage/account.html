@@ -43,6 +43,9 @@
                         if(roles[i]=="admin"){
                             roleStr=roleStr+"管理员 ";
                         }
+                        if(roles[i]=="student"){
+                            roleStr=roleStr+"学生  ";
+                        }
                     }
                 }else{
                     if(role=="teacher"){
@@ -53,6 +56,9 @@
                     }
                     if(role=="admin"){
                         roleStr=roleStr+"管理员 ";
+                    }
+                    if(role=="student"){
+                        roleStr=roleStr+"学生 ";
                     }
                 }
                 htmlStr=htmlStr+"<td>"+username+"</td>"+"<td>"+roleStr+"</td>";
@@ -74,7 +80,7 @@
             var otherCondition=$("#hiddenOtherCondition").val();
             var conditions={username:username,otherCondition:otherCondition,pageNum:pageNum};
             $.ajax({
-                url:"",
+                url:"/admin/queryRole",
                 dataType:"json",
                 type:"post",
                 contentType:"application/json",
@@ -170,7 +176,7 @@
                 }
 
                 $.ajax({
-                    url:"/admin/updateAccount",
+                    url:"/admin/updateRole",
                     type:"post",
                     dataType:"json",
                     contentType: "application/json",

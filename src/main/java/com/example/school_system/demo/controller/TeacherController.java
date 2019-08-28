@@ -1,11 +1,9 @@
 package com.example.school_system.demo.controller;
 
+import com.example.school_system.demo.dao.StudentScoreDao;
 import com.example.school_system.demo.dao.TeacherDao;
 import com.example.school_system.demo.pojo.*;
-import com.example.school_system.demo.service.ExcelService;
-import com.example.school_system.demo.service.LogService;
-import com.example.school_system.demo.service.TeacherService;
-import com.example.school_system.demo.service.TimestableService;
+import com.example.school_system.demo.service.*;
 import com.example.school_system.demo.utils.ScoreUtil;
 import com.example.school_system.demo.utils.StringUtil;
 import com.example.school_system.demo.utils.TimeUtil;
@@ -37,14 +35,16 @@ public class TeacherController {
     @Autowired
     private ExcelService excelService;
     @Autowired
-    private TeacherDao teacherDao;
+    private StudentScoreService studentScoreService;
     @Autowired
     private LogService logService;
+    @Autowired
+    private CourseService courseService;
 
     @Value("${excel.save-path}")
     private String excelSavePath;
 
-    public Map<String,String> parseQueryScoreCondition(User user,QueryScoreCondition queryScoreCondition) throws IllegalAccessException {
+    private Map<String,String> parseQueryScoreCondition(User user,QueryScoreCondition queryScoreCondition) throws IllegalAccessException {
         Map<String,String> conditionMap=new HashMap<>();
         Class cls=queryScoreCondition.getClass();
         Field[] fields=cls.getDeclaredFields();
@@ -68,18 +68,6 @@ public class TeacherController {
                 case "otherCondition":
                     if(value!=null&&!value.isEmpty()&&value.equals("OnlyWatchElectiveCourse")){
                         conditionMap.put("course_type","选修");
-                    }
-                    if(value!=null&&!value.isEmpty()&&value.equals("OnlyWatchCompulsorySubjects")){
-                        conditionMap.put("course_type","必修");
-                    }
-                    if(value!=null&&!value.isEmpty()&&value.equals("OnlyWatchOwnAcademy")){
-                        String academy=user.getUsername().substring(0,2);
-                        conditionMap.put("student_id",academy+"%");
-                    }
-                    break;
-                case "classIdCondition":
-                    if(value!=null&&!value.isEmpty()){
-                        conditionMap.put("student_id",value.substring(0,7)+"%");
                     }
                     break;
                 default:
@@ -168,7 +156,7 @@ public class TeacherController {
         String studentId=studentScorePo.getStudentId();
         String course=studentScorePo.getCourse();
         String term=studentScorePo.getTerm();
-        int result=teacherDao.checkScoreExist(studentId,course,term);
+        int result=studentScoreService.checkScoreExist(studentId,course,term);
         JSONObject json=new JSONObject();
         if(result>=1){
             json.put("message","已经存在此成绩记录！");
@@ -189,9 +177,13 @@ public class TeacherController {
             String creditGpa=ScoreUtil.countCreditGpa(score.getCredit(),gpa);
             StudentScore studentScore=score.toStudentScore(totalScore,gpa,creditGpa);
             studentScore.setId(StringUtil.CustomUUID());
+            Course course=courseService.getCourseByCondition("",score.getCourse(),"","").get(0);
+            if(course!=null){
+                studentScore.setCourseType(course.getClassType());
+            }
             studentScores.add(studentScore);
         });
-        boolean i=teacherService.insertScoreByStudentId(studentScores);
+        boolean i=studentScoreService.insertScoreByStudentId(studentScores);
         JSONObject json=new JSONObject();
         if(i){
             //上传至操作日志
@@ -218,7 +210,7 @@ public class TeacherController {
     public List queryScore(@RequestBody QueryScoreCondition queryScoreCondition,HttpServletRequest request) throws IllegalAccessException {
         User user= (User) request.getSession().getAttribute("user");
         Map<String,String> conditionMap=parseQueryScoreCondition(user,queryScoreCondition);
-        List<StudentScore> studentScores=teacherDao.selectStudentScoresByCondition(conditionMap);
+        List<StudentScore> studentScores=studentScoreService.selectStudentScoresByCondition(conditionMap);
         PageInfo<StudentScore> info=new PageInfo<>(studentScores);
         int totalPage=info.getPages();
         Map map=new HashMap();
@@ -231,7 +223,7 @@ public class TeacherController {
 
     @PostMapping("/updateScore")
     public void updateScore(@RequestBody StudentScore studentScore,HttpServletResponse response,HttpServletRequest request){
-        boolean isUpdate=teacherService.updateStudentScoreByCourseAndStudentId(studentScore);
+        boolean isUpdate=studentScoreService.updateStudentScoreByCourseAndStudentId(studentScore);
         JSONObject json=new JSONObject();
         if(isUpdate){
             User user= (User) request.getSession().getAttribute("user");
@@ -251,7 +243,7 @@ public class TeacherController {
     @PostMapping("/deleteScore")
     //由于参数中不可以使用多个@RequestBody来解析json中的每个键值对 所以只能解析成pojo类
     public void deleteScore(@RequestBody DeleteScoreInfo deleteScoreInfo, HttpServletResponse response,HttpServletRequest request){
-        boolean isDelete=teacherService.deleteStudentScoreByCourseAndStudentId(deleteScoreInfo);
+        boolean isDelete=studentScoreService.deleteStudentScoreByCourseAndStudentId(deleteScoreInfo);
         JSONObject json=new JSONObject();
         if(isDelete){
             User user= (User) request.getSession().getAttribute("user");
@@ -273,7 +265,7 @@ public class TeacherController {
     public List getNextPage(@RequestBody QueryScoreCondition queryScoreCondition,HttpServletRequest request) throws IllegalAccessException {
         User user= (User) request.getSession().getAttribute("user");
         Map<String,String> conditionMap=parseQueryScoreCondition(user,queryScoreCondition);
-        List<StudentScore> studentScores=teacherDao.selectStudentScoresByCondition(conditionMap);
+        List<StudentScore> studentScores=studentScoreService.selectStudentScoresByCondition(conditionMap);
         PageInfo<StudentScore> info=new PageInfo<>(studentScores);
         int totalPage=info.getPages();
         List jsonList=new ArrayList();

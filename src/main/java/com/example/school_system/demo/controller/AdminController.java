@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-@RequestMapping("/admin")
+@RequestMapping(value = "admin")
 public class AdminController {
 
     @Autowired
@@ -271,7 +271,7 @@ public class AdminController {
     public List getTasks(String academyNameCondition,String majorNameCondition,String classIdCondition,String pageNum) throws SchedulerException {
         PageHelper.startPage(Integer.parseInt(pageNum),20);
         Map infoMap=new HashMap();
-        if(academyNameCondition.isEmpty()&&majorNameCondition.isEmpty()&&classIdCondition.isEmpty()){
+        if(academyNameCondition.trim().isEmpty()&&majorNameCondition.trim().isEmpty()&&classIdCondition.trim().isEmpty()){
             if(checkAfterSelectedCourseTaskExist()){
                 infoMap.put("useSuperMode",true);
             }

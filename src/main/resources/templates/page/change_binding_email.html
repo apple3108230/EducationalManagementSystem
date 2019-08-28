@@ -26,8 +26,7 @@
                     dataType:"text",
                     type:"GET",
                     success:function (data) {
-                        var json=JSON.parse(data);
-                        alert(json.message);
+                        alert(data.message);
                     }
                 })
             }

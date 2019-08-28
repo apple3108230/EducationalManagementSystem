@@ -18,8 +18,6 @@ import java.util.List;
 public class DefaultTimestableInterceptor implements HandlerInterceptor {
 
     @Autowired
-    private StudentService studentService;
-    @Autowired
     private TimestableDao timestableDao;
 
     @Override

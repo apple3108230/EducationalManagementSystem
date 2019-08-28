@@ -4,11 +4,13 @@ import com.example.school_system.demo.exception.UserException;
 import com.example.school_system.demo.pojo.*;
 import com.example.school_system.demo.service.CourseSelectionService;
 import com.example.school_system.demo.service.StudentService;
+import com.example.school_system.demo.service.TeacherService;
 import com.example.school_system.demo.utils.WebUtil;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.xml.sax.SAXException;
 
@@ -26,6 +28,8 @@ public class StudentController{
     private StudentService studentService;
     @Autowired
     private CourseSelectionService courseSelectionService;
+    @Autowired
+    private TeacherService teacherService;
 
 
     /**
@@ -199,6 +203,13 @@ public class StudentController{
         }
         json.put("message","无法取消此课程！");
         WebUtil.printJSON(json.toJSONString(),response);
+    }
+
+    @ResponseBody
+    @RequestMapping("/getScore")
+    public StudentScore getScore(String term, HttpServletRequest request){
+        User user= (User) request.getSession().getAttribute("user");
+        return studentService.getStudentScore(term,user.getUsername());
     }
 
 }

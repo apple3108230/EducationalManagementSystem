@@ -16,9 +16,22 @@ import java.io.*;
  * 在生成pdf文件之前，使用thymeleaf对模板进行数据渲染
  */
 public class GenerateDataForHtml {
+
+    private static GenerateDataForHtml generateDataForHtml;
+
+    private GenerateDataForHtml(){}
+
+    public static GenerateDataForHtml getInstance(){
+        if(generateDataForHtml==null){
+            synchronized (GenerateDataForHtml.class){
+                generateDataForHtml=new GenerateDataForHtml();
+            }
+        }
+        return generateDataForHtml;
+    }
+
     /**
      *
-     * @param pdfUrl 生成pdf的位置
      * @param templateName 模板名
      * @param request HttpServletRequest
      * @param response HttpServletRespones
@@ -26,7 +39,7 @@ public class GenerateDataForHtml {
      * @return 返回html的字符串
      * @throws IOException
      */
-    protected static String generate(String pdfUrl, String templateName,HttpServletRequest request, HttpServletResponse response, ServletContext servletContext) throws IOException {
+    public String generate(String templateName,HttpServletRequest request, HttpServletResponse response, ServletContext servletContext) throws IOException {
         //这里需要获取一个ApplicationContext并注入SpringResourceTemplateResolver中，否则会出现application context cannot null的异常
         ApplicationContext applicationContext= WebApplicationContextUtils.getWebApplicationContext(servletContext);
         //thymeleaf的模板解析器

@@ -1,13 +1,30 @@
 package com.example.school_system.demo.utils;
 
+import org.springframework.stereotype.Component;
+
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+
 public class CookieUtil {
 
+
+    private static CookieUtil cookieUtil;
+
+    private CookieUtil(){}
+
+    public static CookieUtil  getInstance(){
+        if(cookieUtil==null){
+            synchronized (CookieUtil.class){
+                cookieUtil=new CookieUtil();
+            }
+        }
+        return cookieUtil;
+    }
+
     //检查cookie是否存在
-    public static boolean cookieExist(HttpServletRequest request,String cookieName){
+    public boolean cookieExist(HttpServletRequest request,String cookieName){
         Cookie[] cookies=request.getCookies();
         if(cookies==null){
             return false;
@@ -21,7 +38,7 @@ public class CookieUtil {
     }
 
     //获取cookie值
-    public static String getCookie(HttpServletRequest request,String cookieName){
+    public String getCookie(HttpServletRequest request,String cookieName){
         Cookie[] cookies=request.getCookies();
         for(Cookie cookie:cookies){
             if(cookie.getName().equals(cookieName)){
@@ -38,7 +55,7 @@ public class CookieUtil {
      * @param value
      * @param maxAge 单位（s）
      */
-    public static void creatCookie(HttpServletResponse response, String cookieName, String value,int maxAge){
+    public void creatCookie(HttpServletResponse response, String cookieName, String value,int maxAge){
         Cookie cookie=new Cookie(cookieName,value);
         cookie.setPath("/");
         cookie.setMaxAge(maxAge);

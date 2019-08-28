@@ -12,7 +12,4 @@ import java.util.List;
 
 public interface TeacherService {
     public TeacherMsg getTeacherMsgById(String id);
-    public boolean insertScoreByStudentId(@Param("scoreBatch") List<StudentScore> scoreMap);
-    public boolean updateStudentScoreByCourseAndStudentId(StudentScore studentScore);
-    public boolean deleteStudentScoreByCourseAndStudentId(DeleteScoreInfo deleteScoreInfo);
 }

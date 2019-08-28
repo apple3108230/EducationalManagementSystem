@@ -78,7 +78,6 @@
                     dataType:"json",
                     data:$("#personal_msg").serialize(),
                     success:function (data) {
-                        var json=JSON.parse(data);
                         alert(data.message);
                     },
                     error:function (data) {

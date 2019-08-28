@@ -1,5 +1,7 @@
 package com.example.school_system.demo.pojo;
 
+import org.apache.ibatis.type.Alias;
+
 public class Academy {
     /**
      *

@@ -80,7 +80,7 @@ public class WebUtil {
         Random random=new Random();
         String codeString="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         int randomNum=codeString.length();
-        StringBuilder randomCode=new StringBuilder();
+        StringBuffer randomCode=new StringBuffer();
         for(int i=0;i<6;i++){
             randomCode.append(codeString.charAt((random.nextInt(randomNum))));
         }
@@ -109,7 +109,7 @@ public class WebUtil {
      */
     public static void createPDF(String pdfUrl, HttpServletResponse response, HttpServletRequest request, ServletContext context) throws SAXException {
         try {
-            String htmlString=GenerateDataForHtml.generate(pdfUrl,"/page/studentPage/student_status_msg",request,response,context);
+            String htmlString=GenerateDataForHtml.getInstance().generate("/page/studentPage/student_status_msg",request,response,context);
             FileOutputStream outputStream=new FileOutputStream(pdfUrl);
             ITextRenderer renderer=new ITextRenderer();
             DocumentBuilder documentBuilder= DocumentBuilderFactory.newInstance().newDocumentBuilder();

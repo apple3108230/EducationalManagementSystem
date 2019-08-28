@@ -106,7 +106,7 @@
     </select>
 
     <delete id="deleteTaskByClassName" parameterType="string">
-        delete * from pre_select_course_task where class_name=#{className}
+        delete from pre_select_course_task where class_name=#{className}
     </delete>
 
     <delete id="deleteAllSuperModeTask">

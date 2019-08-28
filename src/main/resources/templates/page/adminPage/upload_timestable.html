@@ -32,10 +32,18 @@
                 if(/(xls|xlsx)$/.test(fileName)&&fileSize <= 1024 * 1024 * 3){
                     return true;
                 }else if(!/(xls|xlsx)$/.test(fileName)){
-                    //alert("文件名为："+file.name+"格式不正确");
+                    alert("文件名为："+file.name+"格式不正确");
+                    $("#addFile").attr("disabled",false);
+                    $("#deleteAll").attr("disabled",true);
+                    $("#StartUploadFile").attr("disabled",true);
+                    $("#cancelUpload").attr("disabled",true);
                     return false;
                 }else if(fileSize > 1024 * 1024 * 3){
-                    //alert("文件名为："+file.name+"超过3m！")
+                    alert("文件名为："+file.name+"超过3m！");
+                    $("#addFile").attr("disabled",false);
+                    $("#deleteAll").attr("disabled",true);
+                    $("#StartUploadFile").attr("disabled",true);
+                    $("#cancelUpload").attr("disabled",true);
                     return false;
                 }else{
                     return false;
@@ -127,12 +135,14 @@
                 })
                 //上传请求成功时触发的回调函数
                 .on("fileuploaddone", function(e, data) {
-                    alert(data.result);
+                    alert("上传成功！");
                     $("#addFile").attr("disabled",false);
                     $("#deleteAll").attr("disabled",true);
                     $("#StartUploadFile").attr("disabled",true);
                     $("#cancelUpload").attr("disabled",true);
-
+                    for(var i=0;i<10;i++){
+                        $("#"+i).html("");
+                    }
                 })
                 //上传请求结束后，不管成功，错误或者中止都会被触发
                 .on("fileuploadalways", function(e, data) {
@@ -220,23 +230,26 @@
                         <div class="row fileupload-buttonbar">
                             <div class="col-lg-12 jquery-fileupload" style="float: right;margin: 3px" >
                                 <input type="file" id="uploadFiles" style="display: none" multiple>
-                                <span class="btn btn-success fileinput-button" id="addFile">
+                                <span class="btn btn-success fileinput-button" id="addFile" >
                                     <i class="glyphicon glyphicon-plus"></i>
                                     <span>添加文件</span>
                                     <input type="button">
                                 </span>
-                                <button type="button" class="btn btn-primary start" id="StartUploadFile" disabled="disabled">
+                                <span class="btn btn-primary fileinput-button" id="StartUploadFile" disabled="disabled">
                                     <i class="glyphicon glyphicon-upload"></i>
                                     <span>开始上传</span>
-                                </button>
-                                <button type="button" class="btn btn-warning cancel"v id="cancelUpload" disabled="disabled">
+                                    <input type="button">
+                                </span>
+                                <span class="btn btn-warning fileinput-button" id="cancelUpload" disabled="disabled">
                                     <i class="glyphicon glyphicon-ban-circle"></i>
                                     <span>取消上传</span>
-                                </button>
-                                <button type="button" class="btn btn-danger delete" id="deleteAll" disabled="disabled">
+                                    <input type="button">
+                                </span>
+                                <span class="btn btn-danger fileinput-button" id="deleteAll" disabled="disabled">
                                     <i class="glyphicon glyphicon-trash"></i>
                                     <span>重新选择文件</span>
-                                </button>
+                                    <input type="button">
+                                </span>
                             </div>
                         </div>
                     </tr>

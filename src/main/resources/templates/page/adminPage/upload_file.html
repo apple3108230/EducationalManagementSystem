@@ -56,10 +56,18 @@
                 if(/(xls|xlsx)$/.test(fileName)&&fileSize <= 1024 * 1024 * 3){
                     return true;
                 }else if(!/(xls|xlsx)$/.test(fileName)){
-                    //alert("文件名为："+file.name+"格式不正确");
+                    alert("文件名为："+file.name+"格式不正确");
+                    $("#addFile").attr("disabled",false);
+                    $("#deleteAll").attr("disabled",true);
+                    $("#StartUploadFile").attr("disabled",true);
+                    $("#cancelUpload").attr("disabled",true);
                     return false;
                 }else if(fileSize > 1024 * 1024 * 3){
-                    //alert("文件名为："+file.name+"超过3m！")
+                    alert("文件名为："+file.name+"超过3m！");
+                    $("#addFile").attr("disabled",false);
+                    $("#deleteAll").attr("disabled",true);
+                    $("#StartUploadFile").attr("disabled",true);
+                    $("#cancelUpload").attr("disabled",true);
                     return false;
                 }else{
                     return false;
@@ -244,27 +252,26 @@
                         <div class="row fileupload-buttonbar">
                             <div class="col-lg-12 jquery-fileupload" style="float: right;margin: 3px" >
                                 <input type="file" id="uploadFiles" style="display: none" multiple>
-                                <span class="btn btn-success fileinput-button" id="addFile">
+                                <span class="btn btn-success fileinput-button" id="addFile" >
                                     <i class="glyphicon glyphicon-plus"></i>
                                     <span>添加文件</span>
                                     <input type="button">
                                 </span>
-                                <button type="button" class="btn btn-primary start" id="StartUploadFile" disabled="disabled">
+                                <span class="btn btn-primary fileinput-button" id="StartUploadFile" disabled="disabled">
                                     <i class="glyphicon glyphicon-upload"></i>
                                     <span>开始上传</span>
-                                </button>
-                                <button type="button" class="btn btn-warning cancel"v id="cancelUpload" disabled="disabled">
+                                    <input type="button">
+                                </span>
+                                <span class="btn btn-warning fileinput-button" id="cancelUpload" disabled="disabled">
                                     <i class="glyphicon glyphicon-ban-circle"></i>
                                     <span>取消上传</span>
-                                </button>
-                                <button type="button" class="btn btn-danger delete" id="deleteAll" disabled="disabled">
+                                    <input type="button">
+                                </span>
+                                <span class="btn btn-danger fileinput-button" id="deleteAll" disabled="disabled">
                                     <i class="glyphicon glyphicon-trash"></i>
                                     <span>重新选择文件</span>
-                                </button>
-                                <button type="button" class="btn btn-danger delete" id="back" onclick="backToChoosePage()">
-                                    <i class="	glyphicon glyphicon-arrow-left"></i>
-                                    <span>返回选择页面</span>
-                                </button>
+                                    <input type="button">
+                                </span>
                             </div>
                         </div>
                     </tr>

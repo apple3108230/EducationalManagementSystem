@@ -86,10 +86,10 @@ public class TimeUtil {
         }
         String[] timeStr=strs[1].split(":");
         String hour=null;
-        if(timeStr[0].startsWith("0")){
-            hour=timeStr[0].replace("0","");
+        if(timeStr[0].startsWith("0")&&timeStr[0].endsWith("0")){
+            hour=timeStr[0];
         }else {
-            hour = timeStr[0];
+            hour = timeStr[0].replace("0","");
         }
         String minute=null;
         if(timeStr[1].startsWith("0")&&timeStr[1].endsWith("0")){
@@ -120,7 +120,12 @@ public class TimeUtil {
     }
 
     public static int checkTime(String startTime,String endTime) throws ParseException {
-        Map<String,String> startTimeMap= parseTimeString(startTime);
+        Map<String,String> startTimeMap=null;
+        if(startTime.isEmpty()){
+            startTimeMap=parseTimeString(getNowTime());
+        }else{
+            startTimeMap= parseTimeString(startTime);
+        }
         Map<String,String> endTimeMap= parseTimeString(endTime);
         if(!checkMonthAndDayIslegal(startTimeMap.get("year"),startTimeMap.get("month"),startTimeMap.get("day"))&&!checkMonthAndDayIslegal(endTimeMap.get("year"),endTimeMap.get("month"),endTimeMap.get("day"))){
             return TIME_IS_ILLEGAL;

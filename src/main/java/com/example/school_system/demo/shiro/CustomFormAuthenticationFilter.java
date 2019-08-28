@@ -18,7 +18,6 @@ import org.apache.shiro.web.util.WebUtils;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -38,10 +37,23 @@ public class CustomFormAuthenticationFilter extends FormAuthenticationFilter {
     private String defaultTeacherPassword;
     @Value("${admin.account.original-password}")
     private String defaultAdminPassword;
+
     @Autowired
     private BaseService baseService;
-    @Autowired
-    private AuthenticatingFilter authenticatingFilter;
+
+
+//    @Override
+//    protected boolean isAccessAllowed(ServletRequest request, ServletResponse response, Object mappedValue) {
+//        Subject subject=getSubject(request, response);
+//        if(!subject.isAuthenticated()&&subject.isRemembered()){
+//            Session session=subject.getSession();
+//            if(session.getAttribute("user")==null){
+//                User user= (User) subject.getPrincipal();
+//                session.setAttribute("user",user);
+//            }
+//        }
+//        return subject.isAuthenticated()||subject.isRemembered();
+//    }
 
     /**
      *
@@ -65,7 +77,7 @@ public class CustomFormAuthenticationFilter extends FormAuthenticationFilter {
             //验证用户是否合法和验证码是否正确
             if (isLoginSubmission(request, response)) {
                 //判断验证码是否正确
-                if (CaptchaUtil.checkCaptchaCode(httpServletRequest, httpServletRequest.getParameter("captchaCode"))) {
+                if (CaptchaUtil.getInstance().checkCaptchaCode(httpServletRequest, httpServletRequest.getParameter("captchaCode"))) {
                     String username=request.getParameter("username");
                     String password=request.getParameter("password");
                     //System.out.println("username:"+username+" password:"+password);
@@ -73,7 +85,8 @@ public class CustomFormAuthenticationFilter extends FormAuthenticationFilter {
                     User user=new User(username,MD5Password);
                     boolean isDefaultPassword = false;
                     try {
-                        /**判断此用户的密码是否为初始密码。若是初始密码，则需要重置密码后才能登录；否则进入executeLogin方法，判断账号和密码是否正确
+                        /**
+                         * 判断此用户的密码是否为初始密码。若是初始密码，则需要重置密码后才能登录；否则进入executeLogin方法，判断账号和密码是否正确
                          * 此方法会在判断输入的账号和密码进行判断。若账号或密码不存在，则抛出IncorrectCredentialsException；
                          *                                       若账号不存在，则抛出UnknownAccountException；
                          *                                       若账号的角色不合法，则抛出UnknownAccountRoleException；

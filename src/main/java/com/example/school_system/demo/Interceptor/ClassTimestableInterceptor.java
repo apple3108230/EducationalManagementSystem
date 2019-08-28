@@ -31,7 +31,7 @@ public class ClassTimestableInterceptor implements HandlerInterceptor {
         List<String> classIds=timestableDao.getAllClassId();
         List<String> classIdsToWeb= new ArrayList<>();
         classIds.forEach(value->{
-            classIdsToWeb.add(StringUtil.formatIdString(value));
+            classIdsToWeb.add(value);
         });
         request.getSession().setAttribute("classIds",classIdsToWeb);
     }

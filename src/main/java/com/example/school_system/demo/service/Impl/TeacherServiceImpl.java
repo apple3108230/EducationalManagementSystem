@@ -1,6 +1,7 @@
 package com.example.school_system.demo.service.Impl;
 
 import com.example.school_system.demo.controller.TeacherController;
+import com.example.school_system.demo.dao.StudentScoreDao;
 import com.example.school_system.demo.dao.TeacherDao;
 import com.example.school_system.demo.pojo.DeleteScoreInfo;
 import com.example.school_system.demo.pojo.StudentScore;
@@ -34,38 +35,10 @@ public class TeacherServiceImpl implements TeacherService {
     @Autowired
     private TeacherDao teacherDao;
 
-
-
     @Override
     public TeacherMsg getTeacherMsgById(String id) {
         return teacherDao.getTeacherMsgById(id);
     }
 
-    @Override
-    public boolean insertScoreByStudentId(List<StudentScore> scoreList) {
-        int result=teacherDao.insertScoreByStudentId(scoreList);
-        if(result>0){
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean updateStudentScoreByCourseAndStudentId(StudentScore studentScore) {
-        int result=teacherDao.updateStudentScoreByCourseAndStudentId(studentScore);
-        if(result>=0){
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean deleteStudentScoreByCourseAndStudentId(DeleteScoreInfo deleteScoreInfo) {
-        int result=teacherDao.deleteStudentScoreByCourseAndStudentId(deleteScoreInfo);
-        if(result>=0){
-            return true;
-        }
-        return false;
-    }
 
 }
